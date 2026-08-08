@@ -16,6 +16,14 @@ Microsoft FreeCell 互換の配置を生成するフリーセル (クラシッ�
   `page.evaluate` 内から識別子として直接参照できる(`window.` は不要・付けても不可)。
 - カード操作は Pointer Events ベース(`#game` への `pointerdown` と、
   `document` の `pointermove` / `pointerup` で処理される)。
+- 制御文(`if` / `else` / `for` / `while`)は**必ずブロック `{}` を使う**こと。
+  ブレースなしの単行文(`if (cond) return;` など)は禁止。
+
+## 品質チェック
+
+- Markdown ファイル(`AGENTS.md`、`README.md`、`CHANGELOG.md`、スキルなど)を
+  作成・編集したら、VS Code の markdownlint 診断を確認し、該当する診断を
+  修正してから終了すること(診断が利用可能な場合)。
 
 ## ブラウザテスト
 

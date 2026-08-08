@@ -79,15 +79,21 @@ function isRed(card) {
 
 function isValidSequence(cards) {
   for (let i = 0; i + 1 < cards.length; i++) {
-    if (cards[i].rank !== cards[i + 1].rank + 1) return false;
-    if (isRed(cards[i]) === isRed(cards[i + 1])) return false;
+    if (cards[i].rank !== cards[i + 1].rank + 1) {
+      return false;
+    }
+    if (isRed(cards[i]) === isRed(cards[i + 1])) {
+      return false;
+    }
   }
   return true;
 }
 
 function foundationRank(suit) {
   for (const pile of foundations) {
-    if (pile.length > 0 && pile[0].suit === suit) return pile[pile.length - 1].rank;
+    if (pile.length > 0 && pile[0].suit === suit) {
+      return pile[pile.length - 1].rank;
+    }
   }
   return 0;
 }
@@ -95,20 +101,26 @@ function foundationRank(suit) {
 /** そのカードを受け入れられるホームのインデックス。なければ -1 */
 function foundationTargetFor(card) {
   for (let i = 0; i < NUM_HOME; i++) {
-    if (canDropOnHome(card, i)) return i;
+    if (canDropOnHome(card, i)) {
+      return i;
+    }
   }
   return -1;
 }
 
 function canDropOnHome(card, homeIndex) {
   const pile = foundations[homeIndex];
-  if (pile.length === 0) return card.rank === 1;
+  if (pile.length === 0) {
+    return card.rank === 1;
+  }
   return pile[0].suit === card.suit && pile[pile.length - 1].rank === card.rank - 1;
 }
 
 function canDropOnCascade(group, cascadeIndex) {
   const pile = cascades[cascadeIndex];
-  if (pile.length === 0) return true;
+  if (pile.length === 0) {
+    return true;
+  }
   const top = pile[pile.length - 1];
   return top.rank === group[0].rank + 1 && isRed(top) !== isRed(group[0]);
 }
@@ -125,7 +137,9 @@ function maxMovable(destCascadeIndex) {
 
 /** 安全にホームへ送れるかの判定(自動移動用) */
 function canAutoHome(card) {
-  if (card.rank <= 2) return true;
+  if (card.rank <= 2) {
+    return true;
+  }
   const need = card.rank - 1;
   for (let s = 0; s < 4; s++) {
     if (isRed({ suit: s }) !== isRed(card) && foundationRank(s) < need) {
@@ -147,7 +161,9 @@ function findCardLocation(cardId) {
   }
   for (let i = 0; i < NUM_CASCADES; i++) {
     const pos = cascades[i].findIndex((c) => c.id === cardId);
-    if (pos >= 0) return { zone: "cascade", index: i, cardIndex: pos };
+    if (pos >= 0) {
+      return { zone: "cascade", index: i, cardIndex: pos };
+    }
   }
   for (let i = 0; i < NUM_HOME; i++) {
     if (foundations[i].some((c) => c.id === cardId)) {
@@ -174,7 +190,9 @@ function selectedGroup() {
 
 /** そのカード(列)をつかめるか */
 function isGrabbable(loc) {
-  if (loc.zone === "free") return true;
+  if (loc.zone === "free") {
+    return true;
+  }
   if (loc.zone === "cascade") {
     return isValidSequence(cascades[loc.index].slice(loc.cardIndex));
   }
@@ -211,34 +229,54 @@ function takeGroup(loc) {
 }
 
 function placeGroup(group, dest) {
-  if (dest.zone === "free") freeCells[dest.index] = group[0];
-  else if (dest.zone === "home") foundations[dest.index].push(group[0]);
-  else cascades[dest.index].push(...group);
+  if (dest.zone === "free") {
+    freeCells[dest.index] = group[0];
+  } else if (dest.zone === "home") {
+    foundations[dest.index].push(group[0]);
+  } else {
+    cascades[dest.index].push(...group);
+  }
 }
 
 /**
  * 移動を試みる。成功時は {ok:true}、失敗時は {ok:false, reason}
  */
 function attemptMove(from, destZone, destIndex) {
-  if (won) return { ok: false, reason: "finished" };
+  if (won) {
+    return { ok: false, reason: "finished" };
+  }
   const group = groupFrom(from);
-  if (group.length === 0) return { ok: false, reason: "invalid" };
+  if (group.length === 0) {
+    return { ok: false, reason: "invalid" };
+  }
 
   if (destZone === "free") {
-    if (group.length !== 1) return { ok: false, reason: "invalid" };
-    if (freeCells[destIndex] !== null) return { ok: false, reason: "occupied" };
+    if (group.length !== 1) {
+      return { ok: false, reason: "invalid" };
+    }
+    if (freeCells[destIndex] !== null) {
+      return { ok: false, reason: "occupied" };
+    }
   } else if (destZone === "home") {
-    if (group.length !== 1) return { ok: false, reason: "invalid" };
+    if (group.length !== 1) {
+      return { ok: false, reason: "invalid" };
+    }
     if (!canDropOnHome(group[0], destIndex)) {
       // 正しいホームが別にある場合はそちらへ誘導
       const alt = foundationTargetFor(group[0]);
-      if (alt < 0) return { ok: false, reason: "invalid" };
+      if (alt < 0) {
+        return { ok: false, reason: "invalid" };
+      }
       destIndex = alt;
     }
   } else {
-    if (!canDropOnCascade(group, destIndex)) return { ok: false, reason: "invalid" };
+    if (!canDropOnCascade(group, destIndex)) {
+      return { ok: false, reason: "invalid" };
+    }
     const limit = maxMovable(destIndex);
-    if (group.length > limit) return { ok: false, reason: "too-many", limit };
+    if (group.length > limit) {
+      return { ok: false, reason: "too-many", limit };
+    }
   }
 
   historyStack.push(snapshot());
@@ -253,7 +291,9 @@ function attemptMove(from, destZone, destIndex) {
 }
 
 function undo() {
-  if (historyStack.length === 0) return;
+  if (historyStack.length === 0) {
+    return;
+  }
   restore(historyStack.pop());
   selected = null;
   render();
@@ -271,7 +311,9 @@ function autoMoveHome() {
     // フリーセルとカスケードの先頭から、安全にホームへ送れるカードを探す
     const candidates = [];
     for (let i = 0; i < NUM_FREE; i++) {
-      if (freeCells[i]) candidates.push({ loc: { zone: "free", index: i }, card: freeCells[i] });
+      if (freeCells[i]) {
+        candidates.push({ loc: { zone: "free", index: i }, card: freeCells[i] });
+      }
     }
     for (let i = 0; i < NUM_CASCADES; i++) {
       const pile = cascades[i];
@@ -291,7 +333,9 @@ function autoMoveHome() {
       }
     }
   }
-  if (!movedAny) showToast("ホームへ移動できるカードはありません");
+  if (!movedAny) {
+    showToast("ホームへ移動できるカードはありません");
+  }
 }
 
 /* =========================================================
@@ -311,7 +355,9 @@ function makeCardEl(card) {
 let cardElMap = null; // render() 時に構築する cardId -> 要素のマップ
 
 function cardElById(cardId) {
-  if (cardElMap) return cardElMap.get(Number(cardId)) ?? null;
+  if (cardElMap) {
+    return cardElMap.get(Number(cardId)) ?? null;
+  }
   return document.querySelector(`#game .card[data-card-id="${cardId}"]`);
 }
 
@@ -371,21 +417,27 @@ function updateHighlights() {
     for (let pos = 0; pos < pile.length; pos++) {
       if (isValidSequence(pile.slice(pos))) {
         const el = cardElById(pile[pos].id);
-        if (el) el.classList.add("movable");
+        if (el) {
+          el.classList.add("movable");
+        }
       }
     }
   }
   for (let i = 0; i < NUM_FREE; i++) {
     if (freeCells[i]) {
       const el = cardElById(freeCells[i].id);
-      if (el) el.classList.add("movable");
+      if (el) {
+        el.classList.add("movable");
+      }
     }
   }
   // 選択中カードのハイライト
   if (selected) {
     for (const card of selectedGroup()) {
       const el = cardElById(card.id);
-      if (el) el.classList.add("selected");
+      if (el) {
+        el.classList.add("selected");
+      }
     }
   }
 }
@@ -418,9 +470,13 @@ function startTimerIfNeeded() {
 
 function checkWin() {
   const done = foundations.reduce((n, p) => n + p.length, 0);
-  if (done < 52) return;
+  if (done < 52) {
+    return;
+  }
   won = true;
-  if (timerHandle) clearInterval(timerHandle);
+  if (timerHandle) {
+    clearInterval(timerHandle);
+  }
   updateTimerLabel();
   const time = document.getElementById("timer").textContent;
   document.getElementById("overlay-title").textContent = "🎉 クリア！";
@@ -434,7 +490,9 @@ function resetCommon() {
   moveCount = 0;
   selected = null;
   won = false;
-  if (timerHandle) clearInterval(timerHandle);
+  if (timerHandle) {
+    clearInterval(timerHandle);
+  }
   timerHandle = null;
   timerStart = null;
   updateTimerLabel();
@@ -444,7 +502,9 @@ function resetCommon() {
 function startGame(num) {
   gameNumber = num;
   const seedInput = document.getElementById("seed-input");
-  if (seedInput) seedInput.value = num;
+  if (seedInput) {
+    seedInput.value = num;
+  }
   dealGame(num);
   resetCommon();
   render();
@@ -474,12 +534,16 @@ function showToast(msg) {
   }
   toast.textContent = msg;
   toast.classList.add("show");
-  if (toastHandle) clearTimeout(toastHandle);
+  if (toastHandle) {
+    clearTimeout(toastHandle);
+  }
   toastHandle = setTimeout(() => toast.classList.remove("show"), 1800);
 }
 
 function shakeEl(el) {
-  if (!el) return;
+  if (!el) {
+    return;
+  }
   el.classList.remove("shake");
   void el.offsetWidth; // アニメーション再開用
   el.classList.add("shake");
@@ -508,7 +572,9 @@ function failFeedback(res, destZone, destIndex) {
 
 function zoneOfEl(el) {
   const z = el && el.closest ? el.closest("[data-zone]") : null;
-  if (!z) return null;
+  if (!z) {
+    return null;
+  }
   return { zone: z.dataset.zone, index: Number(z.dataset.index), el: z };
 }
 
@@ -516,7 +582,9 @@ function zoneOfEl(el) {
 let lastClick = { time: 0, cardId: -1 };
 
 function handleClick(targetEl) {
-  if (won) return;
+  if (won) {
+    return;
+  }
   const cardEl = targetEl.closest ? targetEl.closest(".card") : null;
 
   // 枠(空きマス)をクリックした場合
@@ -524,13 +592,17 @@ function handleClick(targetEl) {
     const zone = zoneOfEl(targetEl);
     if (zone && selected) {
       const res = attemptMove(selected, zone.zone, zone.index);
-      if (!res.ok) failFeedback(res, zone.zone, zone.index);
+      if (!res.ok) {
+        failFeedback(res, zone.zone, zone.index);
+      }
     }
     return;
   }
 
   const loc = findCardLocation(Number(cardEl.dataset.cardId));
-  if (!loc) return;
+  if (!loc) {
+    return;
+  }
 
   // ダブルクリック判定: 同じカードを 400ms 以内に再クリック → 自動移動
   const now = performance.now();
@@ -538,7 +610,9 @@ function handleClick(targetEl) {
   lastClick = { time: now, cardId: cardEl.dataset.cardId };
   if (isDblClick) {
     selected = null;
-    if (!dblClickAutoMove(loc)) render(); // 移動できなければ選択解除だけ反映
+    if (!dblClickAutoMove(loc)) {
+      render(); // 移動できなければ選択解除だけ反映
+    }
     return;
   }
 
@@ -555,7 +629,9 @@ function handleClick(targetEl) {
     }
     // 選択中のカードを対象の場所へ移動してみる
     const res = attemptMove(selected, loc.zone, loc.index);
-    if (res.ok) return;
+    if (res.ok) {
+      return;
+    }
     if (res.reason === "too-many") {
       failFeedback(res, loc.zone, loc.index);
       return;
@@ -588,8 +664,12 @@ function handleClick(targetEl) {
 let dragState = null; // { from, group, offsetX, offsetY, active, hiddenEls }
 
 function onPointerDown(e) {
-  if (e.button !== 0 && e.pointerType === "mouse") return;
-  if (won) return;
+  if (e.button !== 0 && e.pointerType === "mouse") {
+    return;
+  }
+  if (won) {
+    return;
+  }
   const cardEl = e.target.closest ? e.target.closest("#game .card") : null;
   dragState = {
     startX: e.clientX,
@@ -598,9 +678,13 @@ function onPointerDown(e) {
     targetEl: e.target,
     active: false,
   };
-  if (!cardEl) return;
+  if (!cardEl) {
+    return;
+  }
   const loc = findCardLocation(Number(cardEl.dataset.cardId));
-  if (!loc || !isGrabbable(loc)) return;
+  if (!loc || !isGrabbable(loc)) {
+    return;
+  }
   dragState.from = loc;
   dragState.group = groupFrom(loc);
   const rect = cardEl.getBoundingClientRect();
@@ -650,14 +734,20 @@ function getValidDropTargets() {
   const targets = [];
   if (group.length === 1) {
     freeSlotEls.forEach((el, i) => {
-      if (freeCells[i] === null) targets.push({ zone: "free", index: i, hitEl: el, hintEl: el });
+      if (freeCells[i] === null) {
+        targets.push({ zone: "free", index: i, hitEl: el, hintEl: el });
+      }
     });
     homeSlotEls.forEach((el, i) => {
-      if (canDropOnHome(group[0], i)) targets.push({ zone: "home", index: i, hitEl: el, hintEl: el });
+      if (canDropOnHome(group[0], i)) {
+        targets.push({ zone: "home", index: i, hitEl: el, hintEl: el });
+      }
     });
   }
   cascadeEls.forEach((el, i) => {
-    if (dragState.from.zone === "cascade" && dragState.from.index === i) return;
+    if (dragState.from.zone === "cascade" && dragState.from.index === i) {
+      return;
+    }
     if (canDropOnCascade(group, i) && group.length <= maxMovable(i)) {
       const pile = cascades[i];
       let hintEl, hitEl;
@@ -687,9 +777,13 @@ function clearDropHints() {
  * 重なりがあればそれを優先し、なければ近接距離(許容マージン内)で最も近い候補を選ぶ。 */
 function computeDropTarget() {
   const targets = getValidDropTargets();
-  if (!targets.length) return null;
+  if (!targets.length) {
+    return null;
+  }
   const draggedEl = dragLayer.firstElementChild;
-  if (!draggedEl) return null;
+  if (!draggedEl) {
+    return null;
+  }
   const dragged = draggedEl.getBoundingClientRect();
   const margin = 60; // カード外側に広げるドロップ許容範囲(px)
   const dcx = dragged.left + dragged.width / 2;
@@ -704,7 +798,9 @@ function computeDropTarget() {
     const nx = Math.max(r.left - dcx, 0, dcx - r.right);
     const ny = Math.max(r.top - dcy, 0, dcy - r.bottom);
     const dist = Math.hypot(nx, ny);
-    if (overlap <= 0 && dist > margin) continue; // 許容範囲外は除外
+    if (overlap <= 0 && dist > margin) {
+      continue; // 許容範囲外は除外
+    }
     const score = overlap > 0 ? overlap : -dist; // 重なり優先、次いで近接
     if (score > bestScore) {
       bestScore = score;
@@ -718,17 +814,25 @@ function computeDropTarget() {
 function updateDropTargetHighlight() {
   const cur = computeDropTarget();
   document.querySelectorAll("#game .drop-target").forEach((el) => {
-    if (!cur || el !== cur.hintEl) el.classList.remove("drop-target");
+    if (!cur || el !== cur.hintEl) {
+      el.classList.remove("drop-target");
+    }
   });
-  if (cur) cur.hintEl.classList.add("drop-target");
+  if (cur) {
+    cur.hintEl.classList.add("drop-target");
+  }
 }
 
 function onPointerMove(e) {
-  if (!dragState || !dragState.from) return;
+  if (!dragState || !dragState.from) {
+    return;
+  }
   if (!dragState.active) {
     const dx = e.clientX - dragState.startX;
     const dy = e.clientY - dragState.startY;
-    if (dx * dx + dy * dy < 36) return; // 6px 未満はクリック扱い
+    if (dx * dx + dy * dy < 36) {
+      return; // 6px 未満はクリック扱い
+    }
     startDrag();
   }
   positionDragLayer(e.clientX, e.clientY);
@@ -736,7 +840,9 @@ function onPointerMove(e) {
 }
 
 function onPointerUp(e) {
-  if (!dragState) return;
+  if (!dragState) {
+    return;
+  }
   const st = dragState;
   // ドロップ先の判定は dragState が生きている間に計算する
   const target = st.active ? computeDropTarget() : null;
@@ -748,11 +854,16 @@ function onPointerUp(e) {
     let handled = false;
     if (target) {
       const res = attemptMove(st.from, target.zone, target.index);
-      if (res.ok) handled = true;
-      else if (res.reason === "too-many") showToast(tooManyMessage(res.limit));
+      if (res.ok) {
+        handled = true;
+      } else if (res.reason === "too-many") {
+        showToast(tooManyMessage(res.limit));
+      }
     }
     dragLayer.style.display = "none";
-    if (!handled) render(); // 元に戻す
+    if (!handled) {
+      render(); // 元に戻す
+    }
     return;
   }
   // クリック扱い
@@ -760,10 +871,14 @@ function onPointerUp(e) {
 }
 
 function onPointerCancel() {
-  if (!dragState) return;
+  if (!dragState) {
+    return;
+  }
   clearDropHints();
   dragState = null;
-  if (dragLayer) dragLayer.style.display = "none";
+  if (dragLayer) {
+    dragLayer.style.display = "none";
+  }
   render();
 }
 
@@ -775,16 +890,26 @@ function onPointerCancel() {
 
 /** ダブルクリック時の自動移動。移動できたら true を返す */
 function dblClickAutoMove(loc) {
-  if (loc.zone === "home") return false;
+  if (loc.zone === "home") {
+    return false;
+  }
   const group = groupFrom(loc);
-  if (group.length !== 1) return false; // 先頭 1 枚のみ対象
+  if (group.length !== 1) {
+    return false; // 先頭 1 枚のみ対象
+  }
 
   const card = group[0];
   const target = foundationTargetFor(card);
-  if (target >= 0) return attemptMove(loc, "home", target).ok;
-  if (loc.zone === "free") return false; // フリーセル同士の移動はしない
+  if (target >= 0) {
+    return attemptMove(loc, "home", target).ok;
+  }
+  if (loc.zone === "free") {
+    return false; // フリーセル同士の移動はしない
+  }
   const emptyFree = freeCells.findIndex((c) => c === null);
-  if (emptyFree >= 0) return attemptMove(loc, "free", emptyFree).ok;
+  if (emptyFree >= 0) {
+    return attemptMove(loc, "free", emptyFree).ok;
+  }
   return false;
 }
 
@@ -845,7 +970,9 @@ function init() {
 
   const seedInput = document.getElementById("seed-input");
   seedInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") newGameFromInput();
+    if (e.key === "Enter") {
+      newGameFromInput();
+    }
   });
 
   const game = document.getElementById("game");
@@ -856,7 +983,9 @@ function init() {
 
   // オーバーレイ: カード外クリックで閉じる(盤面を眺められるように)
   document.getElementById("overlay").addEventListener("click", (e) => {
-    if (e.target.id === "overlay") e.target.classList.add("hidden");
+    if (e.target.id === "overlay") {
+      e.target.classList.add("hidden");
+    }
   });
 
   document.addEventListener("keydown", (e) => {
@@ -871,7 +1000,9 @@ function init() {
 
   let resizeHandle = null;
   window.addEventListener("resize", () => {
-    if (resizeHandle) clearTimeout(resizeHandle);
+    if (resizeHandle) {
+      clearTimeout(resizeHandle);
+    }
     resizeHandle = setTimeout(() => render(), 100);
   });
 
