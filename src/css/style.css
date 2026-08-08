@@ -1,0 +1,416 @@
+:root {
+  --card-w: 88px;
+  --card-h: 124px;
+  --card-radius: 10px;
+  --felt: #1c6b48;
+  --felt-dark: #14533a;
+  --gold: #e6c15a;
+  --slot-bg: rgba(255, 255, 255, 0.08);
+  --slot-border: rgba(255, 255, 255, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  background: radial-gradient(ellipse at 50% 0%, #2a8a60 0%, var(--felt) 45%, var(--felt-dark) 100%);
+  min-height: 100vh;
+  color: #fff;
+  user-select: none;
+  -webkit-user-select: none;
+  overflow-x: auto;
+}
+
+/* ---------- ツールバー ---------- */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding: 10px 18px;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(4px);
+}
+
+.toolbar h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.controls button {
+  padding: 7px 14px;
+  border: none;
+  border-radius: 8px;
+  background: #f5f0e6;
+  color: #234;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  transition: transform 0.08s ease, background 0.15s ease;
+}
+
+.controls button:hover {
+  background: #fff;
+  transform: translateY(-1px);
+}
+
+.controls button:active {
+  transform: translateY(1px);
+}
+
+.controls button:disabled {
+  opacity: 0.45;
+  cursor: default;
+  transform: none;
+}
+
+.seed-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+.seed-label input {
+  width: 76px;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.move-counter,
+.timer {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+/* ---------- 盤面レイアウト ---------- */
+
+#game {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 18px 12px 40px;
+}
+
+.top-area {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.free-cells,
+.home-cells {
+  display: flex;
+  gap: 10px;
+}
+
+/* ---------- スロット(枠) ---------- */
+
+.slot {
+  width: var(--card-w);
+  height: var(--card-h);
+  border: 2px dashed var(--slot-border);
+  border-radius: var(--card-radius);
+  background: var(--slot-bg);
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.slot.drop-hint {
+  border-color: var(--gold);
+  box-shadow: 0 0 12px 2px rgba(230, 193, 90, 0.55);
+  background: rgba(230, 193, 90, 0.15);
+}
+
+.slot.home::after,
+.slot.free::after {
+  content: attr(data-label);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ---------- カスケード ---------- */
+
+.cascade-area {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cascade {
+  width: var(--card-w);
+  min-height: var(--card-h);
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.cascade .slot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+}
+
+/* ---------- カード ---------- */
+
+.card {
+  width: var(--card-w);
+  height: var(--card-h);
+  border-radius: var(--card-radius);
+  background: linear-gradient(160deg, #ffffff 0%, #f2efe6 100%);
+  border: 1px solid #b9b4a4;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+  position: absolute;
+  cursor: grab;
+  touch-action: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 6px 7px;
+  transition: box-shadow 0.12s ease, outline 0.12s ease;
+}
+
+.card.red {
+  color: #c8322b;
+}
+
+.card.black {
+  color: #1d1d28;
+}
+
+.card .corner {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 3px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.card .corner .rank {
+  font-size: 1.1rem;
+}
+
+.card .corner .suit {
+  font-size: 1.05rem;
+}
+
+.card .corner.bottom {
+  align-self: flex-end;
+  transform: rotate(180deg);
+}
+
+.card .center-suit {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.4rem;
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.card.movable:hover {
+  outline: 2px solid rgba(230, 193, 90, 0.8);
+  outline-offset: 1px;
+}
+
+.card.selected {
+  outline: 3px solid var(--gold);
+  outline-offset: 1px;
+  box-shadow: 0 0 14px 3px rgba(230, 193, 90, 0.75);
+}
+
+.card.dragging {
+  z-index: 1000 !important;
+  cursor: grabbing;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.5);
+  transition: none;
+}
+
+.card.drop-hint {
+  outline: 2px dashed var(--gold);
+  outline-offset: 2px;
+}
+
+/* ドロップされようとしている候補を強調(カード・スロット両対応) */
+.drop-target {
+  outline: 3px solid #6ff09a !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 16px 4px rgba(111, 240, 154, 0.7) !important;
+  z-index: 50;
+}
+
+.card.drag-hidden {
+  visibility: hidden;
+}
+
+.card.shake,
+.slot.shake {
+  animation: shake 0.3s ease;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+/* ---------- ドラッグ中のカード ---------- */
+
+#drag-layer {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 999;
+  display: none;
+  pointer-events: none;
+}
+
+#drag-layer .card {
+  position: absolute;
+  left: 0;
+}
+
+/* ---------- トースト ---------- */
+
+#toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(20, 30, 25, 0.92);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  z-index: 3000;
+  max-width: 90vw;
+  text-align: center;
+}
+
+#toast.show {
+  opacity: 1;
+}
+
+/* ---------- 勝利オーバーレイ ---------- */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.overlay.hidden {
+  display: none;
+}
+
+.overlay-card {
+  background: #fdfaf1;
+  color: #234;
+  border-radius: 16px;
+  padding: 32px 44px;
+  text-align: center;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  animation: pop 0.35s ease;
+}
+
+.overlay-card h2 {
+  margin: 0 0 10px;
+  color: #b8860b;
+  font-size: 1.8rem;
+}
+
+.overlay-card button {
+  margin-top: 16px;
+  padding: 10px 22px;
+  border: none;
+  border-radius: 10px;
+  background: #1c6b48;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.overlay-card button:hover {
+  background: #24855b;
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ---------- 小さい画面 ---------- */
+
+@media (max-width: 800px) {
+  :root {
+    --card-w: 10.5vw;
+    --card-h: 14.7vw;
+    --card-radius: 8px;
+  }
+
+  .card .corner .rank {
+    font-size: 3.4vw;
+  }
+
+  .card .corner .suit {
+    font-size: 3.1vw;
+  }
+
+  .card .center-suit {
+    font-size: 6.5vw;
+  }
+}
