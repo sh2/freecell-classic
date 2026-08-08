@@ -823,6 +823,28 @@ function updateDropTargetHighlight() {
   }
 }
 
+/** ドロップ位置の列が「枚数超過」で受け入れられない場合、その上限を返す。それ以外は null */
+function tooManyLimitAt(x, y) {
+  const el = document.elementFromPoint(x, y);
+  const cascadeEl = el && el.closest ? el.closest(".cascade") : null;
+  if (!cascadeEl) {
+    return null;
+  }
+  const i = Number(cascadeEl.dataset.index);
+  const from = dragState.from;
+  if (from.zone === "cascade" && from.index === i) {
+    return null; // 移動元の列
+  }
+  if (!canDropOnCascade(dragState.group, i)) {
+    return null; // ランク/色の不一致など、枚数以外の理由
+  }
+  const limit = maxMovable(i);
+  if (dragState.group.length <= limit) {
+    return null;
+  }
+  return limit;
+}
+
 function onPointerMove(e) {
   if (!dragState || !dragState.from) {
     return;
@@ -846,6 +868,8 @@ function onPointerUp(e) {
   const st = dragState;
   // ドロップ先の判定は dragState が生きている間に計算する
   const target = st.active ? computeDropTarget() : null;
+  // 有効なドロップ先が無く、ドロップ位置の列が枚数超過ならその上限を記録する
+  const tooManyLimit = st.active && !target ? tooManyLimitAt(e.clientX, e.clientY) : null;
   dragState = null;
 
   if (st.active) {
@@ -859,6 +883,8 @@ function onPointerUp(e) {
       } else if (res.reason === "too-many") {
         showToast(tooManyMessage(res.limit));
       }
+    } else if (tooManyLimit !== null) {
+      showToast(tooManyMessage(tooManyLimit));
     }
     dragLayer.style.display = "none";
     if (!handled) {
