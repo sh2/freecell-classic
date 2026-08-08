@@ -342,13 +342,18 @@ function autoMoveHome() {
  * 描画
  * ========================================================= */
 
+/** 中央にランク(大)とスート(小)を縦に並べる MS FreeCell 風の表示 */
+function centerMarkHtml(card) {
+  return `<div class="center-mark"><span class="center-rank">${RANKS[card.rank]}</span><span class="center-suit">${SUITS[card.suit]}</span></div>`;
+}
+
 function makeCardEl(card) {
   const el = document.createElement("div");
   el.className = "card " + (isRed(card) ? "red" : "black");
   el.dataset.cardId = card.id;
   const corner = (cls) =>
     `<div class="corner ${cls}"><span class="rank">${RANKS[card.rank]}</span><span class="suit">${SUITS[card.suit]}</span></div>`;
-  el.innerHTML = corner("top") + `<div class="center-suit">${SUITS[card.suit]}</div>` + corner("bottom");
+  el.innerHTML = corner("top") + centerMarkHtml(card) + corner("bottom");
   return el;
 }
 

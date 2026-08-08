@@ -230,15 +230,27 @@ body {
   transform: rotate(180deg);
 }
 
-.card .center-suit {
+/* 中央マーク: ランク(大)の下にスート(小)を縦に並べる MS FreeCell 風 */
+.card .center-mark {
   position: absolute;
   inset: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 2.4rem;
-  opacity: 0.85;
+  gap: 2px;
   pointer-events: none;
+}
+
+.card .center-mark .center-rank {
+  font-size: 2.1rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.card .center-mark .center-suit {
+  font-size: 1.35rem;
+  line-height: 1;
 }
 
 .card.movable:hover {
@@ -410,7 +422,11 @@ body {
     font-size: 3.1vw;
   }
 
-  .card .center-suit {
-    font-size: 6.5vw;
+  .card .center-mark .center-rank {
+    font-size: 6vw;
+  }
+
+  .card .center-mark .center-suit {
+    font-size: 4vw;
   }
 }
