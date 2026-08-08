@@ -1,0 +1,52 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # 手動実行も可能
+
+# Pages デプロイに必要な権限(actions/deploy-pages が要求)
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# デプロイの同時実行を防ぐ
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ---- CI: デプロイ前に構文チェック(失敗するとデプロイも止まる) ----
+      - name: Syntax check (game.js)
+        run: node --check src/js/game.js
+
+      # 配信するファイルだけを public/ に集める(.git などは含めない)
+      - name: Prepare static files
+        run: |
+          mkdir -p public
+          cp index.html public/
+          cp -r src public/
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
