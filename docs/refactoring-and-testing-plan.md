@@ -422,11 +422,11 @@ Markdown を追加・変更した後は、VS Code の markdownlint 診断を確�
 - [x] Phase 3: ルール判定の抽出
 - [x] Phase 4: 状態遷移の抽出
 - [x] Phase 5: View、入力、アプリケーション制御の抽出
-- [ ] Phase 6: AGENTS、スキル、README、CHANGELOG の更新
-- [ ] Vitest 全件成功
-- [ ] Playwright 全件成功
-- [ ] GitHub Pages 相当のサブパス配信確認
-- [ ] Markdownlint 診断の解消
+- [x] Phase 6: AGENTS、スキル、README、CHANGELOG の更新
+- [x] Vitest 全件成功
+- [x] Playwright 全件成功
+- [x] GitHub Pages 相当のサブパス配信確認
+- [x] Markdownlint 診断の解消
 
 ## 将来の GitHub Actions 統合
 
