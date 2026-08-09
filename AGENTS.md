@@ -4,9 +4,10 @@ Microsoft FreeCell 互換の配置を生成するフリーセル (クラシッ�
 
 ## プロジェクト概要
 
-- 静的 HTML/CSS/JS のみで構成。依存ライブラリ・ビルドステップなし
+- 静的 HTML/CSS/JS のみで構成。本番はビルド・依存ライブラリなし
   (`index.html` + `src/css/style.css` + `src/js/main.js` の 1 ページ構成)。
-- 遊び方・機能・起動方法の詳細は [README.md](./README.md) を参照。
+- npm は開発時のテスト実行 (Vitest / Playwright) のみに使用する。
+- 遊び方・機能・起動方法・開発環境の詳細は [README.md](./README.md) を参照。
 - ゲーム番号 (No.) は 1〜32000。Microsoft 版 FreeCell と互換の配置を生成する。
 
 ## 開発時の注意
@@ -23,6 +24,10 @@ Microsoft FreeCell 互換の配置を生成するフリーセル (クラシッ�
 
 ## 品質チェック
 
+- ソースファイル(`index.html`、`src/**`)を変更したら、必ず `npm test`
+  (単体 + E2E)で全テストが成功することを確認する。
+  - 単体のみ: `npm run test:unit` / `npm run test:unit:watch`
+  - E2E のみ: `npm run test:e2e` / `npm run test:e2e:ui`
 - Markdown ファイル(`AGENTS.md`、`README.md`、`CHANGELOG.md`、スキルなど)を
   作成・編集したら、VS Code の markdownlint 診断を確認し、該当する診断を
   修正してから終了すること(診断が利用可能な場合)。
@@ -32,7 +37,7 @@ Microsoft FreeCell 互換の配置を生成するフリーセル (クラシッ�
 ブラウザでの動作確認・UI テスト・バグの再現/検証は、
 [`.agents/skills/freecell-playwright-testing/`](./.agents/skills/freecell-playwright-testing/SKILL.md)
 のスキルを参照すること(サーバー起動手順、クリック/ドラッグ操作の再現方法、
-内部状態への直接アクセス、検証済み動作一覧を収録)。
+内部状態へのアクセス方法、検証済み動作一覧を収録)。
 
 ## 変更履歴
 

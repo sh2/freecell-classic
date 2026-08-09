@@ -35,5 +35,52 @@ python3 -m http.server 8000
 
 ## 技術構成
 
-- HTML / CSS / JavaScript (vanilla、依存ライブラリなし)
-- 静的な 1 ページ構成(`index.html` + `src/css/style.css` + `src/js/game.js`)
+- HTML / CSS / JavaScript (vanilla、本番は依存ライブラリ・ビルドなし)
+- 静的な 1 ページ構成(`index.html` + `src/css/style.css` + `src/js/main.js`)。
+- ブラウザーコードはネイティブ ES Modules で責務を分割している。
+  - `src/js/constants.js`: 定数(スート、ランク、各セル数、最大ゲーム番号)
+  - `src/js/deal.js`: ディール生成(Microsoft FreeCell 互換)
+  - `src/js/rules.js`: 移動ルール・最大移動枚数・安全な自動移動の判定
+  - `src/js/game-state.js`: 状態遷移・履歴・Undo・勝利判定・番号補正
+  - `src/js/view.js`: DOM 構築・描画・トースト・勝利オーバーレイ
+  - `src/js/interactions.js`: クリック・Pointer Events・ドラッグ&ドロップ
+  - `src/js/app.js`: ゲーム開始・モデルと View の調停・タイマー
+  - `src/js/main.js`: エントリポイント(初期化とテスト API の公開)
+- テストは Vitest(単体)+ Playwright(ブラウザー E2E)。
+
+## 開発
+
+### 必要環境
+
+- Node.js (LTS) と npm。GitHub Pages への配信は静的ファイルのみで、ビルドは
+  不要。npm はテストの実行にのみ使用する。
+
+### 依存の導入
+
+```bash
+npm install
+```
+
+E2E テストの初回実行前に、ブラウザー本体が必要になる場合があります。
+
+```bash
+npx playwright install chromium
+```
+
+### ローカルテスト
+
+```bash
+npm test                # 単体テスト + E2E テストをまとめて実行
+npm run test:unit       # 単体テスト (Vitest) を 1 回だけ実行
+npm run test:unit:watch # 単体テストを watch で実行
+npm run test:e2e        # E2E テスト (Playwright) を実行
+npm run test:e2e:ui     # E2E テストを UI モードで実行
+```
+
+- Playwright は `playwright.config.js` の `webServer` 設定でローカル HTTP
+  サーバーを自動起動する。ポートは `node:net` で選んだランダムな空きポートを
+  使い、環境変数 `FREECELL_E2E_PORT` で固定もできる。
+- ブラウザーでの手動確認は「起動方法」の HTTP サーバーを立ち上げて行う。
+  クリック・ドラッグ操作の再現方法は
+  [`.agents/skills/freecell-playwright-testing/`](./.agents/skills/freecell-playwright-testing/SKILL.md)
+  を参照。

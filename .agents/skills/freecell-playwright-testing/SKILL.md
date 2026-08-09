@@ -1,6 +1,6 @@
 ---
 name: freecell-playwright-testing
-description: 'Playwright / 統合ブラウザでフリーセル (freecell-classic) の動作をテストするノウハウ。クリック・ドラッグ&ドロップ操作の再現方法、DOM 構造、内部状態への直接アクセス、検証済み動作一覧を含む。Use when: ブラウザでゲームの動作確認、UI テスト、バグの再現・検証を行う。'
+description: 'Playwright / 統合ブラウザでフリーセル (freecell-classic) の動作をテストするノウハウ。クリック・ドラッグ&ドロップ操作の再現方法、DOM 構造、内部状態へのアクセス(公開テスト API)、検証済み動作一覧を含む。Use when: ブラウザでゲームの動作確認、UI テスト、バグの再現・検証を行う。'
 ---
 
 # FreeCell ブラウザテストガイド (Playwright)
@@ -20,6 +20,9 @@ cd /home/taira/nfs/git/freecell-classic && python3 -m http.server 8377 --bind 12
 - 起動は `mode='async'` で行い、ターミナル ID を控えること。
 - その後 `http://127.0.0.1:8377/` を `open_browser_page` で開く。
 - 統合ブラウザはリモートポート転送により、ローカルアドレスでアクセス可能。
+- 自動テストをまとめて動かす場合は `npm run test:e2e` を使う
+  (`playwright.config.js` の `webServer` が HTTP サーバーを自動起動する)。
+  上記 python サーバーは手動確認・デバッグ用。
 
 ## 2. ページ構造の概要
 
@@ -83,6 +86,12 @@ window.__clickPoint = function (cardId) {
 
 ### 3.4 状態確認用スナップショットヘルパー
 
+内部状態(`cascades` / `freeCells` / `foundations` / `moveCount` / `selected` /
+`won` / `timerRunning`)は、`window.__testApi.snapshot()` で取得する(3.6 参照)。
+
+DOM の描画状態(手数テキスト・選択クラス・各ゾーンの枚数)を確認したい場合は
+次のヘルパーを使う:
+
 ```js
 window.__snap = function () {
   return {
@@ -111,31 +120,49 @@ window.__snap = function () {
   **Game 20**(列1トップの 1♦ → 列0トップの 2♠)など。
   2枚セット移動のテストには **Game 12**(列0トップが 9♦-8♣ のペア)。
 
-### 3.6 内部状態・関数への直接アクセス(最重要テクニック)
+### 3.6 内部状態・関数へのアクセス(最重要テクニック)
 
-game.js はクラシックスクリプト(`<script src>`、モジュールでない)のため、
-トップレベルの `let`/`const` 変数や `function` は**グローバル語彙環境**に入り、
-`page.evaluate` の中から識別子として直接参照できる(`window.` は不要・付けても不可)。
+`src/js/*.js` はネイティブ ES Modules のため、トップレベルの `let`/`const` 変数や
+`function` はモジュールスコープに入り、`page.evaluate` から識別子として直接
+参照できない。内部状態へ触れる場合は、`main.js` が公開するテスト API
+(`getTestApi()`)を使う。
+
+ページは `<script type="module">` で既に `main.js` を実行済みのため、同じ URL を
+dynamic import するとモジュールキャッシュが働き、`init()` は二重実行されない。
+次のようにしてテスト API を注入する:
 
 ```js
-const state = await page.evaluate(() => ({
-  // 内部状態の直接参照
-  cascades: cascades.map(p => p.map(c => c.rank + ['C','D','H','S'][c.suit])),
-  freeCells, foundations, moveCount, won, selected,
-  // 内部関数の直接呼び出し
-  maxMovable: maxMovable(null),
-  canMove: attemptMove({zone:'cascade', index:0, cardIndex:0}, 'cascade', 1).ok,
-}));
+await page.evaluate(async () => {
+  const main = await import("./src/js/main.js");
+  window.__testApi = main.getTestApi();
+});
 ```
 
-- 検証済み: `cascades` `freeCells` `foundations` `moveCount` `selected` などの
-  状態変数、`attemptMove` `maxMovable` `dealGame` `checkWin` `showToast` などの
-  関数がすべて `page.evaluate` 内でそのまま使える。
-- 検証済み: Game #1 のディール結果が Microsoft FreeCell #1 と完全一致。
-- UI では再現が難しい盤面(全カードのホーム詰め、枚数超過など)を作るときは、
-  この直接アクセスで状態を書き換えてから `render()` を呼ぶとよい。
-- **注意**: 状態を書き換えたら必ず `render()` を呼ぶこと(DOM と同期されない)。
-  `attemptMove` は内部で render まで行うため呼び分けに注意。
+公開 API は次の 5 つ(`src/js/app.js` の実装を参照)。
+
+- `snapshot()`: 読み取り専用スナップショット。`gameNumber`、`cascades` /
+  `freeCells` / `foundations`(カードは id 0〜51 の配列)、`moveCount`、
+  `historyLength`、`selected`、`won`、`timerRunning` を返す。
+  内部配列の可変参照は返さない。
+- `startGame(n)`: ゲーム番号 n で開始する(タイマーを止めて描画まで行う)。
+- `maxMovable(destCascadeIndex)`: 移動先カスケードの最大移動枚数を返す。
+- `setBoard(board)`: 盤面 fixture を検証して適用し、履歴・選択をクリアして
+  render() まで行う。カード id の一意性と各ゾーンの形式(8 列・4 フリーセル・
+  4 ホーム・id 範囲)が不正ならエラーになる。UI では再現しにくい盤面
+  (全カードのホーム詰め、枚数超過など)の作成に使う。
+- `setWinBoard(moveCount)`: 全カードをホームに揃えた勝利盤面にして
+  勝利処理(`checkWin`)まで実行する。
+
+- カード id の対応: `id % 4` がスート(0=♣, 1=♦, 2=♥, 3=♠)、
+  `Math.floor(id / 4) + 1` がランク(1=A, 11=J, 12=Q, 13=K)。
+- **状態を書き換えたら描画も行われる**(`setBoard` / `setWinBoard` /
+  `startGame` は render まで実行)。クラシックスクリプト時代のグローバルな
+  `render()` は存在しない。
+- 手動ブラウザ確認では `window.__testApi` は未定義なので、上記の dynamic
+  import で注入してから使う。ページをリロードすると消えるため再注入する。
+- E2E テストでは `tests/e2e/helpers.js` の `state` / `domState` / `setBoard` /
+  `setWinBoard` / `maxMovable` / `openGame` を使えば、`page.evaluate` を直接
+  書かずに済む。
 
 ## 4. ドラッグ&ドロップ操作のノウハウ(検証済み)
 
@@ -181,12 +208,13 @@ window.__slotPoint = function (selector, i) {
 
 ### 4.3 ドラッグの成否の検証ポイント
 
-- 成功時: 手数が +1、`cascades`/`freeCells` の内容変化、`#drag-layer` が非表示化。
-- 失敗時(無効な場所): 手数は変わらず、`render()` で元位置にスナップバック。
-- 枚数超過時: `attemptMove` が `{ok:false, reason:'too-many'}` を返し、
-  トースト「一度に移動できるのは最大 N 枚です…」が表示される。
+- 成功時: 手数が +1、`snapshot()` の `cascades`/`freeCells` の内容変化、
+  `#drag-layer` が非表示化。
+- 失敗時(無効な場所): 手数は変わらず、元位置にスナップバック。
+- 枚数超過時: 移動は拒否され、トースト「一度に移動できるのは最大 N 枚です…」が
+  表示される。
 
-## 5. 検証済み動作一覧(2026-08-05 時点)
+## 5. 検証済み動作一覧(2026-08-09 時点)
 
 - [x] ディールが Microsoft FreeCell 互換(Game #1 の配置一致)。
 - [x] カードのクリック選択/選択解除(3.1〜3.3)。
