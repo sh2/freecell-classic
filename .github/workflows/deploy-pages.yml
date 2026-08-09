@@ -25,8 +25,12 @@ jobs:
         uses: actions/checkout@v4
 
       # ---- CI: デプロイ前に構文チェック(失敗するとデプロイも止まる) ----
-      - name: Syntax check (game.js)
-        run: node --check src/js/game.js
+      # game.js は責務分離で削除されたため、src/js 配下の全 ES Modules を対象にする
+      - name: Syntax check (ES modules)
+        run: |
+          for f in src/js/*.js; do
+            node --check "$f"
+          done
 
       # 配信するファイルだけを public/ に集める(.git などは含めない)
       - name: Prepare static files

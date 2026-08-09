@@ -21,6 +21,40 @@
 
 ### リファクタリング
 
+- View・入力・アプリケーション制御を抽出し、`src/js/game.js` を削除した
+  (`docs/refactoring-and-testing-plan.md` の Phase 5)。
+  - `src/js/view.js` を新設。`createView` が DOM 構築(`buildBoard`)、描画
+    (`render` / `updateHighlights` / `updateStatus`)、タイマー表示
+    (`setTimerLabel`)、トースト・シェイク、勝利画面(`showWin` / `hideOverlay`)、
+    ドラッグレイヤー・ドロップヒント操作を提供する。DOM 参照はすべて
+    View 内へ閉じ込めた。
+  - `src/js/interactions.js` を新設。`createInteractions` がクリック
+    (`handleClick`)と Pointer Events / ドラッグ&ドロップのハンドラを提供する。
+    ダブルクリック判定用の `lastClick` と `dragState` を保持し、移動の実行は
+    app 層の `attemptMove` / `dblClickAutoMove` へ委譲する。成功後の副作用
+    (タイマー・描画・勝利処理)は app 側が担当する。
+  - `src/js/app.js` を新設。`createApp` が state の保持、タイマー管理、モデル
+    操作後の副作用順(`onMoveSucceeded`: lastClick リセット → タイマー開始 →
+    描画 → 勝利処理)の調停、`mount` でのイベント登録、E2E テスト API
+    (`snapshot` / `setBoard` / `setWinBoard` / `maxMovable`)を提供する。
+    現在時刻・interval・乱数は `deps` で差し替え可能にし、既定値は
+    ブラウザーの `Date.now` / `setInterval` / `clearInterval` / `Math.random`。
+    勝利メッセージの経過時間は DOM の時刻テキストを読まず、タイマー状態から
+    生成して View へ渡す(計画書 Phase 5 の要件)。
+  - `src/js/main.js` を本格的なエントリへ拡張。`createView` → `createApp` →
+    `createInteractions` を配線して `app.mount()` を 1 回呼び、`getTestApi()`
+    を公開する。`init()` の二重実行はモジュールキャッシュで回避される。
+  - `src/js/game.js` を削除。残っていた責務(描画・入力・アプリ制御)が
+    上記 3 モジュールへ移り、計画書の目標ディレクトリ構成へ到達した。
+  - `.github/workflows/deploy-pages.yml` の構文チェックを
+    `node --check src/js/game.js` から `src/js/*.js` のループへ追従
+    (game.js 削除で壊れるため)。
+  - `tests/unit/app.test.js` を追加(10 件)。最初の成功手でタイマーが 1 回だけ
+    開始されること、失敗手では開始しないこと、新規ゲーム・やり直し・勝利で
+    interval が停止すること、経過時間が `M:SS` 形式で View に渡されること、
+    無効なゲーム番号で注入した乱数が使われること、勝利メッセージへ経過時間が
+    渡されること(タイマー未開始は `0:00`)を検証。
+
 - 状態遷移を `src/js/game-state.js` へ抽出した(`docs/refactoring-and-testing-plan.md`
   の Phase 4)。
   - `src/js/game-state.js` を新設。`createState`(状態生成)、`groupFrom` /

@@ -275,6 +275,17 @@ fixture 読込 API をテストモードに限定するかは、ランキング�
 既存の構文チェックを ESM 構成へ追従させる最小限のワークフロー修正を行う。
 テストを Actions に組み込む変更は対象外のままとする。
 
+> 実施メモ(2026-08-09): `view.js` / `interactions.js` / `app.js` を新設し、
+> `game.js` を削除した。`app.js` は `deps`(now / setInterval / clearInterval /
+> random)を差し替え可能な依存として受け取り、テストでは fake clock と固定乱数を
+> 注入した。`checkWin` は DOM の時刻テキストを読まず、タイマー状態から経過時間を
+> 生成して View へ渡す。`main.js` は `createView` → `createApp` →
+> `createInteractions` を配線し、`getTestApi()` を公開する。削除に伴い
+> `deploy-pages.yml` の構文チェックを `src/js/*.js` のループへ追従した。
+> Phase 5 完了時点で単体 90 件・E2E 44 件が全て成功し、リポジトリ相当の
+> サブパス(`/freecell-classic/`)から全モジュールが読み込めることをブラウザで
+> 確認した。
+
 ### Phase 6: 文書の同期
 
 - `AGENTS.md` を ES Modules と新しい品質チェック手順へ更新する。
@@ -400,7 +411,7 @@ Markdown を追加・変更した後は、VS Code の markdownlint 診断を確�
 - [x] Phase 2: 定数とディールの抽出
 - [x] Phase 3: ルール判定の抽出
 - [x] Phase 4: 状態遷移の抽出
-- [ ] Phase 5: View、入力、アプリケーション制御の抽出
+- [x] Phase 5: View、入力、アプリケーション制御の抽出
 - [ ] Phase 6: AGENTS、スキル、README、CHANGELOG の更新
 - [ ] Vitest 全件成功
 - [ ] Playwright 全件成功
