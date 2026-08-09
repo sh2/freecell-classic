@@ -5,7 +5,7 @@ Microsoft FreeCell 互換の配置を生成するフリーセル (クラシッ�
 ## プロジェクト概要
 
 - 静的 HTML/CSS/JS のみで構成。本番はビルド・依存ライブラリなし
-  (`index.html` + `src/css/style.css` + `src/js/main.js` の 1 ページ構成)。
+  (`index.html` + `src/css/style.css` + `src/js/*.js` の 1 ページ構成)。
 - npm は開発時のテスト実行 (Vitest / Playwright) のみに使用する。
 - 遊び方・機能・起動方法・開発環境の詳細は [README.md](./README.md) を参照。
 - ゲーム番号 (No.) は 1〜32000。Microsoft 版 FreeCell と互換の配置を生成する。

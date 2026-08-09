@@ -38,7 +38,7 @@ python3 -m http.server 8000
 ## 技術構成
 
 - HTML / CSS / JavaScript (vanilla、本番は依存ライブラリ・ビルドなし)
-- 静的な 1 ページ構成(`index.html` + `src/css/style.css` + `src/js/main.js`)。
+- 静的な 1 ページ構成(`index.html` + `src/css/style.css` + `src/js/*.js`)。
 - ブラウザーコードはネイティブ ES Modules で責務を分割している。
   - `src/js/constants.js`: 定数(スート、ランク、各セル数、最大ゲーム番号)
   - `src/js/deal.js`: ディール生成(Microsoft FreeCell 互換)
