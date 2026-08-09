@@ -198,6 +198,16 @@ Phase 5 で暫定 API を正式な app API へ置き換える。テスト API �
 返し、既存のグローバル配列を変更しない。Game #1 の既知配置、52 枚の一意性、列長、
 決定性、配列参照の非共有を Vitest で検証する。
 
+> 実施メモ(2026-08-09): テスト API の `snapshot()` が、`game.js` 内に既存の
+> 履歴保存用 `snapshot()` と同名衝突し、ESM では同一モジュール内の重複関数宣言が
+> SyntaxError になるためページ全体が読み込めなかった。単体テストは `game.js` を
+> import しないため検出されず、E2E 実行で初めて発覚した。履歴保存用を
+> `captureHistoryState()` へリネームして解消。テスト API は `main.js` の
+> `getTestApi()` を helpers.js が `window.__testApi` として保持し、同じ URL の
+> dynamic import(モジュールキャッシュ)で `init()` の二重実行を回避している。
+> あわせて AGENTS.md の「クラシックスクリプト」記述を ESM 構成へ最小訂正した
+> (本格的な文書同期は Phase 6)。
+
 ### Phase 3: ルール判定の抽出
 
 `rules.js` を追加し、暗黙のグローバル参照を `state` 引数へ置き換える。色交互降順、
@@ -367,7 +377,7 @@ Markdown を追加・変更した後は、VS Code の markdownlint 診断を確�
 
 - [x] Phase 0: 実装計画書の作成
 - [x] Phase 1: 現行 E2E テストの追加
-- [ ] Phase 2: 定数とディールの抽出
+- [x] Phase 2: 定数とディールの抽出
 - [ ] Phase 3: ルール判定の抽出
 - [ ] Phase 4: 状態遷移の抽出
 - [ ] Phase 5: View、入力、アプリケーション制御の抽出

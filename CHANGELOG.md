@@ -2,6 +2,28 @@
 
 ## 2026-08-09
 
+### リファクタリング
+
+- ES Modules への切り替えと定数・ディールの抽出(`docs/refactoring-and-testing-plan.md`
+  の Phase 2)。
+  - `index.html` を `<script type="module" src="src/js/main.js">` へ切り替え。
+  - `src/js/main.js` を新設。`game.js` の `init()` を 1 回だけ呼び出し、
+    E2E テスト用の公開 API(`getTestApi`)を再 export する。
+  - `src/js/game.js` を ES Module へ変更。末尾の自動 `init()` を削除し、
+    `init`、読み取り専用スナップショット(`snapshot`)、検証付き fixture 読み込み
+    (`setBoard` / `setWinBoard`)を export。fixture はカード id の一意性と各ゾーンの
+    形式(列数・セル数・id 範囲)を検証してから適用し、内部配列の可変参照は返さない。
+  - `src/js/constants.js` を新設。`SUITS`、`RANKS`、各セル数、`MAX_GAME_NUMBER` を
+    名前付き export。
+  - `src/js/deal.js` を新設。`msRng` と `dealGame(gameNumber)` を移動。
+    `dealGame` はグローバル状態を変更せず新しい初期盤面を返す。
+  - `tests/e2e/helpers.js` の内部状態アクセスを、クラシックスクリプトのグローバル
+    直接参照から `main.js` の公開テスト API(`window.__testApi`)へ差し替え。
+    同じ URL の dynamic import でモジュールキャッシュが働き、`init()` は
+    二重実行されない。
+  - `tests/unit/deal.test.js` を追加。Game #1 の既知配置、52 枚の一意性、
+    列長、決定性、配列参照の非共有、`msRng` の決定性を検証。
+
 ### 改善
 
 - ローカルテスト基盤を導入した(`docs/refactoring-and-testing-plan.md` の Phase 1)。

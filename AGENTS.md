@@ -5,15 +5,17 @@ Microsoft FreeCell 互換の配置を生成するフリーセル (クラシッ�
 ## プロジェクト概要
 
 - 静的 HTML/CSS/JS のみで構成。依存ライブラリ・ビルドステップなし
-  (`index.html` + `src/css/style.css` + `src/js/game.js` の 1 ページ構成)。
+  (`index.html` + `src/css/style.css` + `src/js/main.js` の 1 ページ構成)。
 - 遊び方・機能・起動方法の詳細は [README.md](./README.md) を参照。
 - ゲーム番号 (No.) は 1〜32000。Microsoft 版 FreeCell と互換の配置を生成する。
 
 ## 開発時の注意
 
-- `src/js/game.js` はクラシックスクリプト(`<script src>`、モジュールでない)。
-  トップレベルの `let`/`const` 変数や `function` はグローバル語彙環境に入り、
-  `page.evaluate` 内から識別子として直接参照できる(`window.` は不要・付けても不可)。
+- ブラウザーコードはネイティブ ES Modules(`import` / `export`、相対パス +
+  `.js` 拡張子)。エントリは `index.html` → `src/js/main.js` で、`init()` は
+  1 回だけ呼び出す。トップレベルの識別子はモジュールスコープに入るため、
+  `page.evaluate` 内から直接参照できない。E2E テストから内部状態へ触れる
+  場合は `tests/e2e/helpers.js`(main.js の公開テスト API)を使う。
 - カード操作は Pointer Events ベース(`#game` への `pointerdown` と、
   `document` の `pointermove` / `pointerup` で処理される)。
 - 制御文(`if` / `else` / `for` / `while`)は**必ずブロック `{}` を使う**こと。

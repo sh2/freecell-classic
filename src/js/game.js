@@ -1,16 +1,14 @@
-"use strict";
-
 /* =========================================================
  * フリーセル (FreeCell) - 依存ライブラリなしの vanilla JS
  * ゲーム番号 1〜32000 は Microsoft 版 FreeCell と同じ配置になります
+ *
+ * 責務分離の移行中モジュール。定数・ディールは抽出済みで、残りの
+ * ルール・状態・描画・入力・アプリ制御はこのファイルに集約している
+ * (Phase 3〜5 で順に抽出する)。
  * ========================================================= */
 
-const SUITS = ["♣", "♦", "♥", "♠"]; // Microsoft 版と同じスート順
-const RANKS = ["", "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
-const NUM_CASCADES = 8;
-const NUM_FREE = 4;
-const NUM_HOME = 4;
-const MAX_GAME_NUMBER = 32000; // Microsoft 版 FreeCell と同じ互換範囲
+import { SUITS, RANKS, NUM_CASCADES, NUM_FREE, NUM_HOME, MAX_GAME_NUMBER } from "./constants.js";
+import { dealGame } from "./deal.js";
 
 /* ---------------- 状態 ---------------- */
 
@@ -31,43 +29,6 @@ const freeSlotEls = [];
 const homeSlotEls = [];
 const cascadeEls = [];
 let dragLayer = null;
-
-/* =========================================================
- * 乱数・ディール (Microsoft FreeCell 互換)
- * ========================================================= */
-
-/** Microsoft C ランタイム互換 LCG: state = (214013*state + 2531011) mod 2^31 */
-function msRng(seed) {
-  const MASK = 2147483648; // 2^31
-  // s < 2^31 のとき s*214013 + 2531011 < 2^53 なので倍精度浮動小数点で厳密に計算できる
-  let s = ((seed % MASK) + MASK) % MASK;
-  return function () {
-    s = (s * 214013 + 2531011) % MASK;
-    return Math.floor(s / 65536); // state >> 16
-  };
-}
-
-function dealGame(num) {
-  const rand = msRng(num);
-  const deck = [];
-  for (let i = 0; i < 52; i++) {
-    deck.push({ suit: i % 4, rank: Math.floor(i / 4) + 1, id: i });
-  }
-  cascades = Array.from({ length: NUM_CASCADES }, () => []);
-  // Microsoft 版と同じ「選んだカードを末尾と交換して取り出す」方式
-  let n = deck.length;
-  let col = 0;
-  while (n > 0) {
-    const j = rand() % n;
-    const card = deck[j];
-    deck[j] = deck[n - 1];
-    n--;
-    cascades[col].push(card);
-    col = (col + 1) % NUM_CASCADES;
-  }
-  freeCells = Array(NUM_FREE).fill(null);
-  foundations = Array.from({ length: NUM_HOME }, () => []);
-}
 
 /* =========================================================
  * ルール判定ヘルパー
@@ -203,7 +164,8 @@ function isGrabbable(loc) {
  * 移動の実行
  * ========================================================= */
 
-function snapshot() {
+/** 履歴保存用に現在の盤面を複製する(カードオブジェクト自体は共有) */
+function captureHistoryState() {
   return {
     cascades: cascades.map((p) => p.slice()),
     freeCells: freeCells.slice(),
@@ -279,7 +241,7 @@ function attemptMove(from, destZone, destIndex) {
     }
   }
 
-  historyStack.push(snapshot());
+  historyStack.push(captureHistoryState());
   placeGroup(takeGroup(from), { zone: destZone, index: destIndex });
   moveCount++;
   selected = null;
@@ -510,7 +472,10 @@ function startGame(num) {
   if (seedInput) {
     seedInput.value = num;
   }
-  dealGame(num);
+  const board = dealGame(num);
+  cascades = board.cascades;
+  freeCells = board.freeCells;
+  foundations = board.foundations;
   resetCommon();
   render();
 }
@@ -986,9 +951,10 @@ function buildBoard() {
 
 /* =========================================================
  * 初期化
+ * エントリポイント(main.js)からのみ 1 回呼び出される。
  * ========================================================= */
 
-function init() {
+export function init() {
   buildBoard();
 
   document.getElementById("new-game-btn").addEventListener("click", newGameFromInput);
@@ -1051,4 +1017,164 @@ function newRandomGame() {
   startGame(randomGameNumber());
 }
 
-init();
+/* =========================================================
+ * E2E テスト用の公開 API (移行期間の暫定インターフェース)
+ * Phase 5 で正式な app API へ置き換える。
+ * - 内部配列の可変参照は返さない(スナップショットはカード id で返す)。
+ * - fixture はカードの一意性と各ゾーンの形式を検証してから適用する。
+ * - この API はモジュール export 経由でのみ利用でき、window へは公開しない。
+ * ========================================================= */
+
+/** カード id として有効か(0〜51 の整数) */
+function isCardId(value) {
+  return Number.isInteger(value) && value >= 0 && value < 52;
+}
+
+/** board fixture を検証する。問題があればエラーメッセージ文字列、なければ null */
+function validateBoard(board) {
+  if (board === null || typeof board !== "object" || Array.isArray(board)) {
+    return "board はオブジェクトでなければなりません";
+  }
+  const seen = new Set();
+  const addCard = (label, id) => {
+    if (!isCardId(id)) {
+      return `${label} に不正なカード id があります: ${String(id)}`;
+    }
+    if (seen.has(id)) {
+      return `カード id ${id} が重複しています`;
+    }
+    seen.add(id);
+    return null;
+  };
+  if (board.cascades !== undefined) {
+    if (!Array.isArray(board.cascades)) {
+      return "cascades は配列でなければなりません";
+    }
+    if (board.cascades.length > NUM_CASCADES) {
+      return `cascades は ${NUM_CASCADES} 列以下でなければなりません`;
+    }
+    for (let i = 0; i < board.cascades.length; i++) {
+      const pile = board.cascades[i];
+      if (!Array.isArray(pile)) {
+        return `cascades[${i}] は配列でなければなりません`;
+      }
+      for (const id of pile) {
+        const err = addCard(`cascades[${i}]`, id);
+        if (err) {
+          return err;
+        }
+      }
+    }
+  }
+  if (board.freeCells !== undefined) {
+    if (!Array.isArray(board.freeCells)) {
+      return "freeCells は配列でなければなりません";
+    }
+    if (board.freeCells.length > NUM_FREE) {
+      return `freeCells は ${NUM_FREE} 個以下でなければなりません`;
+    }
+    for (let i = 0; i < board.freeCells.length; i++) {
+      const id = board.freeCells[i];
+      if (id === null) {
+        continue;
+      }
+      const err = addCard(`freeCells[${i}]`, id);
+      if (err) {
+        return err;
+      }
+    }
+  }
+  if (board.foundations !== undefined) {
+    if (!Array.isArray(board.foundations)) {
+      return "foundations は配列でなければなりません";
+    }
+    if (board.foundations.length > NUM_HOME) {
+      return `foundations は ${NUM_HOME} 個以下でなければなりません`;
+    }
+    for (let i = 0; i < board.foundations.length; i++) {
+      const pile = board.foundations[i];
+      if (!Array.isArray(pile)) {
+        return `foundations[${i}] は配列でなければなりません`;
+      }
+      for (const id of pile) {
+        const err = addCard(`foundations[${i}]`, id);
+        if (err) {
+          return err;
+        }
+      }
+    }
+  }
+  if (board.moveCount !== undefined && (!Number.isInteger(board.moveCount) || board.moveCount < 0)) {
+    return "moveCount は 0 以上の整数でなければなりません";
+  }
+  return null;
+}
+
+/**
+ * E2E テスト用の読み取り専用スナップショット。
+ * 内部配列の可変参照は返さず、カードは id で返す。
+ */
+export function snapshot() {
+  return {
+    gameNumber,
+    cascades: cascades.map((pile) => pile.map((card) => card.id)),
+    freeCells: freeCells.map((card) => (card ? card.id : null)),
+    foundations: foundations.map((pile) => pile.map((card) => card.id)),
+    moveCount,
+    historyLength: historyStack.length,
+    selected: selected
+      ? { zone: selected.zone, index: selected.index, cardIndex: selected.cardIndex ?? null }
+      : null,
+    won,
+    timerRunning: timerStart !== null && timerHandle !== null && !won,
+  };
+}
+
+/**
+ * 盤面 fixture を検証して適用する(E2E テスト専用)。
+ * 各ゾーンはカード id の配列(または null)で指定し、指定が不足したゾーンは
+ * 空(null)で埋めて 8 列・4 フリーセル・4 ホームの形式に正規化する。
+ * 履歴・選択はクリアし、`won` を false にして render() まで行う。
+ */
+export function setBoard(board) {
+  const err = validateBoard(board);
+  if (err) {
+    throw new Error(`setBoard: ${err}`);
+  }
+  const card = (id) => ({ suit: id % 4, rank: Math.floor(id / 4) + 1, id });
+  cascades = Array.from({ length: NUM_CASCADES }, (_, i) => (board.cascades?.[i] ?? []).map(card));
+  freeCells = Array.from({ length: NUM_FREE }, (_, i) => {
+    const id = board.freeCells?.[i] ?? null;
+    return id === null ? null : card(id);
+  });
+  foundations = Array.from({ length: NUM_HOME }, (_, i) => (board.foundations?.[i] ?? []).map(card));
+  moveCount = board.moveCount ?? 0;
+  historyStack = [];
+  selected = null;
+  won = false;
+  render();
+}
+
+/** 全カードをホームに揃えた勝利盤面にして checkWin() まで実行する */
+export function setWinBoard(moveCount = 52) {
+  const foundations = [];
+  for (let s = 0; s < NUM_HOME; s++) {
+    const pile = [];
+    for (let r = 1; r <= 13; r++) {
+      pile.push((r - 1) * 4 + s);
+    }
+    foundations.push(pile);
+  }
+  setBoard({
+    cascades: Array.from({ length: NUM_CASCADES }, () => []),
+    freeCells: Array(NUM_FREE).fill(null),
+    foundations,
+    moveCount,
+  });
+  checkWin();
+}
+
+/** E2E テスト用の公開 API。main.js から再 export される。 */
+export function getTestApi() {
+  return { startGame, snapshot, maxMovable, setBoard, setWinBoard };
+}
