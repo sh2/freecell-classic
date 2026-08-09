@@ -6,3 +6,15 @@ Thumbs.db
 # ログ・一時ファイル
 *.log
 *.tmp
+
+# Node.js
+node_modules/
+
+# Vitest カバレッジ
+coverage/
+
+# Playwright 成果物
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/

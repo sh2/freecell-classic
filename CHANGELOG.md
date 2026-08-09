@@ -1,5 +1,25 @@
 # 変更履歴
 
+## 2026-08-09
+
+### 改善
+
+- ローカルテスト基盤を導入した(`docs/refactoring-and-testing-plan.md` の Phase 1)。
+  - `package.json`(type: module)、Vitest、Playwright Test を追加。`npm test` で
+    単体テストと E2E テストをまとめて実行できる。
+  - `tests/unit/smoke.test.js`: Vitest 環境の動作確認用スモークテスト。
+  - `tests/e2e/helpers.js`: カード座標探索(`elementFromPoint` 走査)、内部状態への
+    直接アクセス、盤面 fixture(`setBoard` / `setWinBoard`)を集約。ESM 移行後の
+    公開テスト API へ差し替えやすい構成にした。
+  - `tests/e2e/freecell.spec.js`: ディール互換(Game #1 全配置)、クリック・ドラッグ
+    移動、複数枚移動(Game #12)、移動枚数上限、ダブルクリック自動移動、自動移動の
+    安全性と 1 枚単位 Undo、ドラッグの 6px 閾値、勝利オーバーレイ、指定ホームの
+    誘導、ゲーム番号入力補正、タイマーの開始・停止を検証(計 41 件)。
+  - `playwright.config.js`: `node:net` でランダムな空きポートを選び webServer /
+    baseURL へ埋め込む。config はメインプロセスとワーカーで別々に評価されるため、
+    最初に決めたポートを環境変数へ書き戻して共有する(環境変数
+    `FREECELL_E2E_PORT` で固定ポートにも変更可能)。
+
 ## 2026-08-08
 
 ### 修正
