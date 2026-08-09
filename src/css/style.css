@@ -414,24 +414,47 @@ body {
     --card-radius: 8px;
   }
 
+  /* 基本デザインと同じカード幅比で縮小し、801px→800px で逆に大きくなるのを防ぐ。
+     コーナーは 600px 以下で中央マークが非表示になるため唯一の識別手段。
+     clamp() の下限で狭幅でも読めるサイズを保証する */
   .card .corner .rank {
-    font-size: 3.4vw;
+    font-size: clamp(0.9rem, 2.1vw, 1.1rem);
   }
 
   .card .corner .suit {
-    font-size: 3.1vw;
+    font-size: clamp(0.85rem, 2vw, 1.05rem);
   }
 
+  /* 基本サイズ(2.1rem/1.35rem)と同じカード幅比で縮小(10.5vw × 0.382 ≈ 4vw、
+     × 0.245 ≈ 2.6vw)。600px 以下では非表示にする */
   .card .center-mark .center-rank {
-    font-size: 6vw;
+    font-size: 4vw;
   }
 
   .card .center-mark .center-suit {
-    font-size: 4vw;
+    font-size: 2.6vw;
   }
 }
 
 @media (max-width: 600px) {
+  #game {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  .top-area {
+    gap: 8px;
+  }
+
+  .free-cells,
+  .home-cells {
+    gap: 5px;
+  }
+
+  .cascade-area {
+    gap: 5px;
+  }
+
   .card .center-mark {
     display: none;
   }
