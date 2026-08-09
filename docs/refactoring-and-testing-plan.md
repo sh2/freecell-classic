@@ -213,6 +213,14 @@ Phase 5 で暫定 API を正式な app API へ置き換える。テスト API �
 `rules.js` を追加し、暗黙のグローバル参照を `state` 引数へ置き換える。色交互降順、
 ホーム、カスケード、最大移動枚数、安全な自動移動、カード探索を単体テストする。
 
+> 実施メモ(2026-08-09): `rules.js` の各関数は必要なゾーン配列を引数に取る設計にした
+> (`findCardLocation` のみ `{ cascades, freeCells, foundations }` の状態オブジェクト)。
+> 依存がシグネチャから明らかになり、Phase 4 で `game-state.js` が state の各配列を
+> 渡すだけで済む。`isGrabbable` も配列判定の一部として `rules.js` へ含めた。
+> `game.js` は `import * as rules` で委譲し、テスト API の `maxMovable` は従来と
+> 同じ 1 引数のラッパーを残したため、E2E の枚数上限テストはそのまま通る。
+> 単体テストは `tests/unit/rules.test.js` に 29 件追加した。
+
 ### Phase 4: 状態遷移の抽出
 
 `game-state.js` を追加する。`attemptMove` は状態と移動先を受け取り、状態遷移結果だけを
@@ -378,7 +386,7 @@ Markdown を追加・変更した後は、VS Code の markdownlint 診断を確�
 - [x] Phase 0: 実装計画書の作成
 - [x] Phase 1: 現行 E2E テストの追加
 - [x] Phase 2: 定数とディールの抽出
-- [ ] Phase 3: ルール判定の抽出
+- [x] Phase 3: ルール判定の抽出
 - [ ] Phase 4: 状態遷移の抽出
 - [ ] Phase 5: View、入力、アプリケーション制御の抽出
 - [ ] Phase 6: AGENTS、スキル、README、CHANGELOG の更新

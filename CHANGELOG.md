@@ -21,6 +21,18 @@
 
 ### リファクタリング
 
+- ルール判定を `src/js/rules.js` へ抽出した(`docs/refactoring-and-testing-plan.md`
+  の Phase 3)。
+  - `src/js/rules.js` を新設。`isRed`、`isValidSequence`(色交互降順)、
+    `foundationRank`、`foundationTargetFor`、`canDropOnHome`、`canDropOnCascade`、
+    `maxMovable`、`canAutoHome`、`findCardLocation`、`isGrabbable` を純粋関数として
+    移動し、暗黙のグローバル参照を引数へ置き換えた。DOM・時刻には触れない。
+  - `src/js/game.js` は `import * as rules` で委譲する形にし、ルール判定の
+    実装を削除。テスト API の `maxMovable` は従来と同じ 1 引数を受け取る
+    ラッパーを残した。
+  - `tests/unit/rules.test.js` を追加(29 件)。色・配列判定、ホーム、カスケード、
+    最大移動枚数、安全な自動移動、カード探索、つかみ判定を検証。
+
 - ES Modules への切り替えと定数・ディールの抽出(`docs/refactoring-and-testing-plan.md`
   の Phase 2)。
   - `index.html` を `<script type="module" src="src/js/main.js">` へ切り替え。
