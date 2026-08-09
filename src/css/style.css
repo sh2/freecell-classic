@@ -430,3 +430,9 @@ body {
     font-size: 4vw;
   }
 }
+
+@media (max-width: 600px) {
+  .card .center-mark {
+    display: none;
+  }
+}
