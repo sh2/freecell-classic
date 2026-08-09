@@ -2,26 +2,20 @@
  * フリーセル (FreeCell) - 依存ライブラリなしの vanilla JS
  * ゲーム番号 1〜32000 は Microsoft 版 FreeCell と同じ配置になります
  *
- * 責務分離の移行中モジュール。定数・ディール・ルール判定は抽出済みで、
- * 残りの状態・描画・入力・アプリ制御はこのファイルに集約している
- * (Phase 4〜5 で順に抽出する)。
+ * 責務分離の移行中モジュール。定数・ディール・ルール判定・状態遷移は抽出済みで、
+ * 残りの描画・入力・アプリ制御はこのファイルに集約している
+ * (Phase 5 で順に抽出する)。
  * ========================================================= */
 
 import { SUITS, RANKS, NUM_CASCADES, NUM_FREE, NUM_HOME, MAX_GAME_NUMBER } from "./constants.js";
 import { dealGame } from "./deal.js";
 import * as rules from "./rules.js";
+import * as gameState from "./game-state.js";
 
 /* ---------------- 状態 ---------------- */
 
-let gameNumber = 1 + Math.floor(Math.random() * MAX_GAME_NUMBER);
-let cascades = [];   // 8 個の配列 (カードの山)
-let freeCells = [];  // 4 セル (カード or null)
-let foundations = []; // 4 個の配列 (ホーム)
-let moveCount = 0;
-let historyStack = [];
-let selected = null; // { zone: 'cascade'|'free', index, cardIndex? }
-let won = false;
-let timerStart = null;
+let state = null; // ゲーム状態(状態遷移層 game-state.js が所有・更新する)
+let timerStart = null; // タイマー状態(ゲーム状態には含めない)
 let timerHandle = null;
 
 /* ---------------- DOM 参照 ---------------- */
@@ -32,123 +26,32 @@ const cascadeEls = [];
 let dragLayer = null;
 
 /* =========================================================
- * 位置・グループ取得
+ * 移動の実行 (状態遷移は game-state.js へ委譲)
  * ========================================================= */
 
-function groupFrom(loc) {
-  if (loc.zone === "free") {
-    const c = freeCells[loc.index];
-    return c ? [c] : [];
-  }
-  if (loc.zone === "cascade") {
-    return cascades[loc.index].slice(loc.cardIndex);
-  }
-  return [];
-}
-
-function selectedGroup() {
-  return selected ? groupFrom(selected) : [];
-}
-
-/* =========================================================
- * 移動の実行
- * ========================================================= */
-
-/** 履歴保存用に現在の盤面を複製する(カードオブジェクト自体は共有) */
-function captureHistoryState() {
-  return {
-    cascades: cascades.map((p) => p.slice()),
-    freeCells: freeCells.slice(),
-    foundations: foundations.map((p) => p.slice()),
-    moveCount,
-  };
-}
-
-function restore(snap) {
-  cascades = snap.cascades.map((p) => p.slice());
-  freeCells = snap.freeCells.slice();
-  foundations = snap.foundations.map((p) => p.slice());
-  moveCount = snap.moveCount;
-}
-
-function takeGroup(loc) {
-  if (loc.zone === "free") {
-    const c = freeCells[loc.index];
-    freeCells[loc.index] = null;
-    return [c];
-  }
-  return cascades[loc.index].splice(loc.cardIndex);
-}
-
-function placeGroup(group, dest) {
-  if (dest.zone === "free") {
-    freeCells[dest.index] = group[0];
-  } else if (dest.zone === "home") {
-    foundations[dest.index].push(group[0]);
-  } else {
-    cascades[dest.index].push(...group);
-  }
+/** 成功手の共通副作用: 連続クリック判定のリセット → タイマー開始 → 描画 → 勝利処理 */
+function onMoveSucceeded() {
+  lastClick = { time: 0, cardId: -1 };
+  startTimerIfNeeded();
+  render();
+  checkWin();
 }
 
 /**
  * 移動を試みる。成功時は {ok:true}、失敗時は {ok:false, reason}
  */
 function attemptMove(from, destZone, destIndex) {
-  if (won) {
-    return { ok: false, reason: "finished" };
+  const res = gameState.attemptMove(state, from, destZone, destIndex);
+  if (res.ok) {
+    onMoveSucceeded();
   }
-  const group = groupFrom(from);
-  if (group.length === 0) {
-    return { ok: false, reason: "invalid" };
-  }
-
-  if (destZone === "free") {
-    if (group.length !== 1) {
-      return { ok: false, reason: "invalid" };
-    }
-    if (freeCells[destIndex] !== null) {
-      return { ok: false, reason: "occupied" };
-    }
-  } else if (destZone === "home") {
-    if (group.length !== 1) {
-      return { ok: false, reason: "invalid" };
-    }
-    if (!rules.canDropOnHome(foundations, group[0], destIndex)) {
-      // 正しいホームが別にある場合はそちらへ誘導
-      const alt = rules.foundationTargetFor(foundations, group[0]);
-      if (alt < 0) {
-        return { ok: false, reason: "invalid" };
-      }
-      destIndex = alt;
-    }
-  } else {
-    if (!rules.canDropOnCascade(cascades, group, destIndex)) {
-      return { ok: false, reason: "invalid" };
-    }
-    const limit = rules.maxMovable(freeCells, cascades, destIndex);
-    if (group.length > limit) {
-      return { ok: false, reason: "too-many", limit };
-    }
-  }
-
-  historyStack.push(captureHistoryState());
-  placeGroup(takeGroup(from), { zone: destZone, index: destIndex });
-  moveCount++;
-  selected = null;
-  lastClick = { time: 0, cardId: -1 }; // 連続クリック判定をリセット
-  startTimerIfNeeded();
-  render();
-  checkWin();
-  return { ok: true };
+  return res;
 }
 
 function undo() {
-  if (historyStack.length === 0) {
-    return;
+  if (gameState.undo(state)) {
+    render();
   }
-  restore(historyStack.pop());
-  selected = null;
-  render();
 }
 
 /* =========================================================
@@ -156,38 +59,12 @@ function undo() {
  * ========================================================= */
 
 function autoMoveHome() {
-  let movedAny = false;
-  let progress = true;
-  while (progress && !won) {
-    progress = false;
-    // フリーセルとカスケードの先頭から、安全にホームへ送れるカードを探す
-    const candidates = [];
-    for (let i = 0; i < NUM_FREE; i++) {
-      if (freeCells[i]) {
-        candidates.push({ loc: { zone: "free", index: i }, card: freeCells[i] });
-      }
-    }
-    for (let i = 0; i < NUM_CASCADES; i++) {
-      const pile = cascades[i];
-      if (pile.length > 0) {
-        candidates.push({ loc: { zone: "cascade", index: i, cardIndex: pile.length - 1 }, card: pile[pile.length - 1] });
-      }
-    }
-    for (const { loc, card } of candidates) {
-      const target = rules.foundationTargetFor(foundations, card);
-      if (target >= 0 && rules.canAutoHome(foundations, card)) {
-        const res = attemptMove(loc, "home", target);
-        if (res.ok) {
-          movedAny = true;
-          progress = true;
-          break;
-        }
-      }
-    }
-  }
+  const movedAny = gameState.autoMoveHome(state);
   if (!movedAny) {
     showToast("ホームへ移動できるカードはありません");
+    return;
   }
+  onMoveSucceeded();
 }
 
 /* =========================================================
@@ -224,9 +101,9 @@ function render() {
   for (let i = 0; i < NUM_FREE; i++) {
     const slot = freeSlotEls[i];
     slot.querySelectorAll(".card").forEach((el) => el.remove());
-    if (freeCells[i]) {
-      const el = makeCardEl(freeCells[i]);
-      cardElMap.set(freeCells[i].id, el);
+    if (state.freeCells[i]) {
+      const el = makeCardEl(state.freeCells[i]);
+      cardElMap.set(state.freeCells[i].id, el);
       slot.appendChild(el);
     }
   }
@@ -234,7 +111,7 @@ function render() {
   for (let i = 0; i < NUM_HOME; i++) {
     const slot = homeSlotEls[i];
     slot.querySelectorAll(".card").forEach((el) => el.remove());
-    const pile = foundations[i];
+    const pile = state.foundations[i];
     slot.dataset.label = pile.length > 0 ? SUITS[pile[pile.length - 1].suit] : "A";
     if (pile.length > 0) {
       const el = makeCardEl(pile[pile.length - 1]);
@@ -249,7 +126,7 @@ function render() {
   for (let i = 0; i < NUM_CASCADES; i++) {
     const wrap = cascadeEls[i];
     wrap.querySelectorAll(".card").forEach((el) => el.remove());
-    const pile = cascades[i];
+    const pile = state.cascades[i];
     const overlap =
       pile.length > 1
         ? Math.min(34, Math.max(20, (budget - cardH) / (pile.length - 1)))
@@ -270,7 +147,7 @@ function updateHighlights() {
   // つかめるカードに hover 効果を付ける
   document.querySelectorAll("#game .card.movable").forEach((el) => el.classList.remove("movable"));
   for (let i = 0; i < NUM_CASCADES; i++) {
-    const pile = cascades[i];
+    const pile = state.cascades[i];
     for (let pos = 0; pos < pile.length; pos++) {
       if (rules.isValidSequence(pile.slice(pos))) {
         const el = cardElById(pile[pos].id);
@@ -281,16 +158,16 @@ function updateHighlights() {
     }
   }
   for (let i = 0; i < NUM_FREE; i++) {
-    if (freeCells[i]) {
-      const el = cardElById(freeCells[i].id);
+    if (state.freeCells[i]) {
+      const el = cardElById(state.freeCells[i].id);
       if (el) {
         el.classList.add("movable");
       }
     }
   }
   // 選択中カードのハイライト
-  if (selected) {
-    for (const card of selectedGroup()) {
+  if (state.selected) {
+    for (const card of gameState.selectedGroup(state)) {
       const el = cardElById(card.id);
       if (el) {
         el.classList.add("selected");
@@ -300,8 +177,8 @@ function updateHighlights() {
 }
 
 function updateStatus() {
-  document.getElementById("move-counter").textContent = `手数: ${moveCount}`;
-  document.getElementById("undo-btn").disabled = historyStack.length === 0;
+  document.getElementById("move-counter").textContent = `手数: ${state.moveCount}`;
+  document.getElementById("undo-btn").disabled = state.historyStack.length === 0;
 }
 
 function updateTimerLabel() {
@@ -315,7 +192,7 @@ function updateTimerLabel() {
 }
 
 function startTimerIfNeeded() {
-  if (!timerStart && !won) {
+  if (!timerStart && !state.won) {
     timerStart = Date.now();
     timerHandle = setInterval(updateTimerLabel, 500);
   }
@@ -326,11 +203,9 @@ function startTimerIfNeeded() {
  * ========================================================= */
 
 function checkWin() {
-  const done = foundations.reduce((n, p) => n + p.length, 0);
-  if (done < 52) {
+  if (!gameState.checkWin(state)) {
     return;
   }
-  won = true;
   if (timerHandle) {
     clearInterval(timerHandle);
   }
@@ -338,15 +213,11 @@ function checkWin() {
   const time = document.getElementById("timer").textContent;
   document.getElementById("overlay-title").textContent = "🎉 クリア！";
   document.getElementById("overlay-message").textContent =
-    `No.${gameNumber} を ${moveCount} 手・ ${time} でクリアしました！`;
+    `No.${state.gameNumber} を ${state.moveCount} 手・ ${time} でクリアしました！`;
   document.getElementById("overlay").classList.remove("hidden");
 }
 
-function resetCommon() {
-  historyStack = [];
-  moveCount = 0;
-  selected = null;
-  won = false;
+function resetTimerAndOverlay() {
   if (timerHandle) {
     clearInterval(timerHandle);
   }
@@ -357,26 +228,19 @@ function resetCommon() {
 }
 
 function startGame(num) {
-  gameNumber = num;
+  state = gameState.createState(num, dealGame(num));
   const seedInput = document.getElementById("seed-input");
   if (seedInput) {
     seedInput.value = num;
   }
-  const board = dealGame(num);
-  cascades = board.cascades;
-  freeCells = board.freeCells;
-  foundations = board.foundations;
-  resetCommon();
+  resetTimerAndOverlay();
   render();
 }
 
 function newGameFromInput() {
   const input = document.getElementById("seed-input");
-  let num = Math.floor(Number(input.value));
-  if (!Number.isFinite(num) || num < 1 || num > MAX_GAME_NUMBER) {
-    num = 1 + Math.floor(Math.random() * MAX_GAME_NUMBER);
-  }
-  startGame(num); // startGame が seedInput.value を設定する
+  const num = gameState.normalizeGameNumber(input.value);
+  startGame(num ?? randomGameNumber()); // 無効な入力はランダム番号で開始
 }
 
 /* =========================================================
@@ -442,7 +306,7 @@ function zoneOfEl(el) {
 let lastClick = { time: 0, cardId: -1 };
 
 function handleClick(targetEl) {
-  if (won) {
+  if (state.won) {
     return;
   }
   const cardEl = targetEl.closest ? targetEl.closest(".card") : null;
@@ -450,8 +314,8 @@ function handleClick(targetEl) {
   // 枠(空きマス)をクリックした場合
   if (!cardEl) {
     const zone = zoneOfEl(targetEl);
-    if (zone && selected) {
-      const res = attemptMove(selected, zone.zone, zone.index);
+    if (zone && state.selected) {
+      const res = attemptMove(state.selected, zone.zone, zone.index);
       if (!res.ok) {
         failFeedback(res, zone.zone, zone.index);
       }
@@ -459,7 +323,7 @@ function handleClick(targetEl) {
     return;
   }
 
-  const loc = rules.findCardLocation({ cascades, freeCells, foundations }, Number(cardEl.dataset.cardId));
+  const loc = rules.findCardLocation(state, Number(cardEl.dataset.cardId));
   if (!loc) {
     return;
   }
@@ -469,26 +333,26 @@ function handleClick(targetEl) {
   const isDblClick = lastClick.cardId === cardEl.dataset.cardId && now - lastClick.time < 400;
   lastClick = { time: now, cardId: cardEl.dataset.cardId };
   if (isDblClick) {
-    selected = null;
+    state.selected = null;
     if (!dblClickAutoMove(loc)) {
       render(); // 移動できなければ選択解除だけ反映
     }
     return;
   }
 
-  if (selected) {
+  if (state.selected) {
     // 同じカードを再クリック → 選択解除
     const sameCard =
-      selected.zone === loc.zone &&
-      selected.index === loc.index &&
-      (selected.zone !== "cascade" || selected.cardIndex === loc.cardIndex);
+      state.selected.zone === loc.zone &&
+      state.selected.index === loc.index &&
+      (state.selected.zone !== "cascade" || state.selected.cardIndex === loc.cardIndex);
     if (sameCard) {
-      selected = null;
+      state.selected = null;
       render();
       return;
     }
     // 選択中のカードを対象の場所へ移動してみる
-    const res = attemptMove(selected, loc.zone, loc.index);
+    const res = attemptMove(state.selected, loc.zone, loc.index);
     if (res.ok) {
       return;
     }
@@ -497,11 +361,11 @@ function handleClick(targetEl) {
       return;
     }
     // 移動できない → つかめるなら選択を切り替える
-    if (rules.isGrabbable(cascades, loc)) {
-      selected = loc;
+    if (rules.isGrabbable(state.cascades, loc)) {
+      state.selected = loc;
       render();
     } else {
-      selected = null;
+      state.selected = null;
       render();
       shakeEl(cardEl);
     }
@@ -509,8 +373,8 @@ function handleClick(targetEl) {
   }
 
   // 未選択 → つかめるカードなら選択
-  if (rules.isGrabbable(cascades, loc)) {
-    selected = loc;
+  if (rules.isGrabbable(state.cascades, loc)) {
+    state.selected = loc;
     render();
   } else {
     shakeEl(cardEl);
@@ -527,7 +391,7 @@ function onPointerDown(e) {
   if (e.button !== 0 && e.pointerType === "mouse") {
     return;
   }
-  if (won) {
+  if (state.won) {
     return;
   }
   const cardEl = e.target.closest ? e.target.closest("#game .card") : null;
@@ -541,12 +405,12 @@ function onPointerDown(e) {
   if (!cardEl) {
     return;
   }
-  const loc = rules.findCardLocation({ cascades, freeCells, foundations }, Number(cardEl.dataset.cardId));
-  if (!loc || !rules.isGrabbable(cascades, loc)) {
+  const loc = rules.findCardLocation(state, Number(cardEl.dataset.cardId));
+  if (!loc || !rules.isGrabbable(state.cascades, loc)) {
     return;
   }
   dragState.from = loc;
-  dragState.group = groupFrom(loc);
+  dragState.group = gameState.groupFrom(state, loc);
   const rect = cardEl.getBoundingClientRect();
   dragState.offsetX = e.clientX - rect.left;
   dragState.offsetY = e.clientY - rect.top;
@@ -578,7 +442,7 @@ function positionDragLayer(x, y) {
 
 function startDrag() {
   dragState.active = true;
-  selected = null;
+  state.selected = null;
   updateHighlights();
   buildDragLayer();
   // 移動元のカードを隠す
@@ -594,12 +458,12 @@ function getValidDropTargets() {
   const targets = [];
   if (group.length === 1) {
     freeSlotEls.forEach((el, i) => {
-      if (freeCells[i] === null) {
+      if (state.freeCells[i] === null) {
         targets.push({ zone: "free", index: i, hitEl: el, hintEl: el });
       }
     });
     homeSlotEls.forEach((el, i) => {
-      if (rules.canDropOnHome(foundations, group[0], i)) {
+      if (rules.canDropOnHome(state.foundations, group[0], i)) {
         targets.push({ zone: "home", index: i, hitEl: el, hintEl: el });
       }
     });
@@ -608,8 +472,8 @@ function getValidDropTargets() {
     if (dragState.from.zone === "cascade" && dragState.from.index === i) {
       return;
     }
-    if (rules.canDropOnCascade(cascades, group, i) && group.length <= rules.maxMovable(freeCells, cascades, i)) {
-      const pile = cascades[i];
+    if (rules.canDropOnCascade(state.cascades, group, i) && group.length <= rules.maxMovable(state.freeCells, state.cascades, i)) {
+      const pile = state.cascades[i];
       let hintEl, hitEl;
       if (pile.length > 0) {
         hintEl = cardElById(pile[pile.length - 1].id);
@@ -695,10 +559,10 @@ function tooManyLimitAt(x, y) {
   if (from.zone === "cascade" && from.index === i) {
     return null; // 移動元の列
   }
-  if (!rules.canDropOnCascade(cascades, dragState.group, i)) {
+  if (!rules.canDropOnCascade(state.cascades, dragState.group, i)) {
     return null; // ランク/色の不一致など、枚数以外の理由
   }
-  const limit = rules.maxMovable(freeCells, cascades, i);
+  const limit = rules.maxMovable(state.freeCells, state.cascades, i);
   if (dragState.group.length <= limit) {
     return null;
   }
@@ -776,27 +640,11 @@ function onPointerCancel() {
 
 /** ダブルクリック時の自動移動。移動できたら true を返す */
 function dblClickAutoMove(loc) {
-  if (loc.zone === "home") {
-    return false;
+  const moved = gameState.dblClickAutoMove(state, loc);
+  if (moved) {
+    onMoveSucceeded();
   }
-  const group = groupFrom(loc);
-  if (group.length !== 1) {
-    return false; // 先頭 1 枚のみ対象
-  }
-
-  const card = group[0];
-  const target = rules.foundationTargetFor(foundations, card);
-  if (target >= 0) {
-    return attemptMove(loc, "home", target).ok;
-  }
-  if (loc.zone === "free") {
-    return false; // フリーセル同士の移動はしない
-  }
-  const emptyFree = freeCells.findIndex((c) => c === null);
-  if (emptyFree >= 0) {
-    return attemptMove(loc, "free", emptyFree).ok;
-  }
-  return false;
+  return moved;
 }
 
 /* =========================================================
@@ -851,7 +699,7 @@ export function init() {
   document.getElementById("random-game-btn").addEventListener("click", newRandomGame);
   document.getElementById("overlay-new-game").addEventListener("click", newRandomGame);
   // やり直し: 同じ gameNumber で再スタート(startGame が won フラグも降ろす)
-  document.getElementById("restart-btn").addEventListener("click", () => startGame(gameNumber));
+  document.getElementById("restart-btn").addEventListener("click", () => startGame(state.gameNumber));
   document.getElementById("undo-btn").addEventListener("click", undo);
   document.getElementById("auto-move-btn").addEventListener("click", autoMoveHome);
 
@@ -880,7 +728,7 @@ export function init() {
       e.preventDefault();
       undo();
     } else if (e.key === "Escape") {
-      selected = null;
+      state.selected = null;
       render();
     }
   });
@@ -893,8 +741,8 @@ export function init() {
     resizeHandle = setTimeout(() => render(), 100);
   });
 
-  seedInput.value = gameNumber;
-  startGame(gameNumber);
+  // 最初のゲームはランダム番号で開始する(startGame が seedInput.value を設定する)
+  startGame(randomGameNumber());
 }
 
 /** 1〜MAX_GAME_NUMBER の範囲でランダムなゲーム番号を生成 */
@@ -1006,17 +854,17 @@ function validateBoard(board) {
  */
 export function snapshot() {
   return {
-    gameNumber,
-    cascades: cascades.map((pile) => pile.map((card) => card.id)),
-    freeCells: freeCells.map((card) => (card ? card.id : null)),
-    foundations: foundations.map((pile) => pile.map((card) => card.id)),
-    moveCount,
-    historyLength: historyStack.length,
-    selected: selected
-      ? { zone: selected.zone, index: selected.index, cardIndex: selected.cardIndex ?? null }
+    gameNumber: state.gameNumber,
+    cascades: state.cascades.map((pile) => pile.map((card) => card.id)),
+    freeCells: state.freeCells.map((card) => (card ? card.id : null)),
+    foundations: state.foundations.map((pile) => pile.map((card) => card.id)),
+    moveCount: state.moveCount,
+    historyLength: state.historyStack.length,
+    selected: state.selected
+      ? { zone: state.selected.zone, index: state.selected.index, cardIndex: state.selected.cardIndex ?? null }
       : null,
-    won,
-    timerRunning: timerStart !== null && timerHandle !== null && !won,
+    won: state.won,
+    timerRunning: timerStart !== null && timerHandle !== null && !state.won,
   };
 }
 
@@ -1032,16 +880,16 @@ export function setBoard(board) {
     throw new Error(`setBoard: ${err}`);
   }
   const card = (id) => ({ suit: id % 4, rank: Math.floor(id / 4) + 1, id });
-  cascades = Array.from({ length: NUM_CASCADES }, (_, i) => (board.cascades?.[i] ?? []).map(card));
-  freeCells = Array.from({ length: NUM_FREE }, (_, i) => {
+  state.cascades = Array.from({ length: NUM_CASCADES }, (_, i) => (board.cascades?.[i] ?? []).map(card));
+  state.freeCells = Array.from({ length: NUM_FREE }, (_, i) => {
     const id = board.freeCells?.[i] ?? null;
     return id === null ? null : card(id);
   });
-  foundations = Array.from({ length: NUM_HOME }, (_, i) => (board.foundations?.[i] ?? []).map(card));
-  moveCount = board.moveCount ?? 0;
-  historyStack = [];
-  selected = null;
-  won = false;
+  state.foundations = Array.from({ length: NUM_HOME }, (_, i) => (board.foundations?.[i] ?? []).map(card));
+  state.moveCount = board.moveCount ?? 0;
+  state.historyStack = [];
+  state.selected = null;
+  state.won = false;
   render();
 }
 
@@ -1066,7 +914,7 @@ export function setWinBoard(moveCount = 52) {
 
 /** テスト API 用: 現在の状態から移動可能枚数を求める(引数は従来互換) */
 function maxMovable(destCascadeIndex) {
-  return rules.maxMovable(freeCells, cascades, destCascadeIndex);
+  return rules.maxMovable(state.freeCells, state.cascades, destCascadeIndex);
 }
 
 /** E2E テスト用の公開 API。main.js から再 export される。 */

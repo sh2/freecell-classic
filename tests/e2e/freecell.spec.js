@@ -278,6 +278,51 @@ test.describe("ダブルクリック自動移動", () => {
     expect(s.moveCount).toBe(1);
     expect(s.selected).toEqual({ zone: "free", index: s.freeCells.indexOf(23), cardIndex: 0 });
   });
+
+  test("クリック移動の直後に同じカードをクリックしても自動移動が連鎖しない", async ({ page }) => {
+    await h.openGame(page, 1);
+    // クリックで 6S をフリーセルへ移動
+    await h.clickCard(page, 23); // 6S を選択
+    await h.clickSlot(page, "free", 0); // 空きフリーセルへ移動
+    expect((await h.state(page)).moveCount).toBe(1);
+    // 直後に同じカード(今はフリーセル)をクリック → 選択されるだけで自動移動しない
+    await h.clickCard(page, 23);
+    const s = await h.state(page);
+    expect(s.moveCount).toBe(1);
+    expect(s.selected).toEqual({ zone: "free", index: 0, cardIndex: 0 });
+  });
+
+  test("ドラッグ移動の直後に同じカードをクリックしても自動移動が連鎖しない", async ({ page }) => {
+    await h.openGame(page, 1);
+    const to = await h.slotPoint(page, "free", 0);
+    await h.dragCard(page, 23, to); // 6S をフリーセルへドラッグ
+    expect((await h.state(page)).moveCount).toBe(1);
+    // 直後に同じカード(今はフリーセル)をクリック → 選択されるだけで自動移動しない
+    await h.clickCard(page, 23);
+    const s = await h.state(page);
+    expect(s.moveCount).toBe(1);
+    expect(s.selected).toEqual({ zone: "free", index: 0, cardIndex: 0 });
+  });
+
+  test("自動移動の直後に同じカードをクリックしても自動移動が連鎖しない", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setBoard(page, {
+      cascades: [[4, 0], [], [], [], [], [], [], []], // 2C-AC が ♣ ホームへ送れる
+      freeCells: [23], // 6S
+      foundations: [],
+    });
+    // 6S をクリックして連続クリック判定を立てる
+    await h.clickCard(page, 23);
+    expect((await h.state(page)).selected).toEqual({ zone: "free", index: 0, cardIndex: 0 });
+    // 自動移動で 2C と AC をホームへ送る(成功手で判定がリセットされる)
+    await page.click("#auto-move-btn");
+    expect((await h.state(page)).moveCount).toBe(2);
+    // 直後に同じ 6S をクリック → 選択されるだけで自動移動しない
+    await h.clickCard(page, 23);
+    const s = await h.state(page);
+    expect(s.moveCount).toBe(2);
+    expect(s.selected).toEqual({ zone: "free", index: 0, cardIndex: 0 });
+  });
 });
 
 test.describe("自動移動", () => {

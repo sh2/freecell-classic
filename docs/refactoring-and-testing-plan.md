@@ -235,6 +235,18 @@ Phase 5 で暫定 API を正式な app API へ置き換える。テスト API �
 担う。有効値は小数点以下を切り捨てたゲーム番号を返し、空値、非数値、範囲外は
 `null` を返す。`app.js` は `null` を受け取った場合にランダム番号を生成する。
 
+> 実施メモ(2026-08-09): `game.js` の状態系モジュール変数 8 個(`gameNumber` /
+> `cascades` / `freeCells` / `foundations` / `moveCount` / `historyStack` /
+> `selected` / `won`)を単一の `state` オブジェクトへ統合し、状態遷移を
+> `game-state.js` へ委譲した。`attemptMove` は状態遷移結果だけを返し、成功時の
+> 副作用(連続クリック判定のリセット → タイマー開始 → 描画 → 勝利処理)は
+> `game.js` の `onMoveSucceeded()` に集約した。`lastClick` のリセットが
+> `attemptMove` 内から消えたため、クリック・ドラッグ・自動移動・ダブルクリック
+> の 4 経路すべてでリセットを呼び、「連続クリックで自動移動が連鎖しないこと」を
+> E2E 4 件(ダブルクリック / クリック移動 / ドラッグ移動 / 自動移動)で検証した。
+> `undo` が `won` を変更しない既存挙動と、`attemptMove` が勝利判定を呼ばない
+> 契約も単体テストで固定した。Phase 4 完了時点で単体 80 件・E2E 44 件が全て成功。
+
 ### Phase 5: View、入力、アプリケーション制御の抽出
 
 `view.js`、`interactions.js`、`app.js` を追加し、Phase 2 で用意した `main.js` を
@@ -387,7 +399,7 @@ Markdown を追加・変更した後は、VS Code の markdownlint 診断を確�
 - [x] Phase 1: 現行 E2E テストの追加
 - [x] Phase 2: 定数とディールの抽出
 - [x] Phase 3: ルール判定の抽出
-- [ ] Phase 4: 状態遷移の抽出
+- [x] Phase 4: 状態遷移の抽出
 - [ ] Phase 5: View、入力、アプリケーション制御の抽出
 - [ ] Phase 6: AGENTS、スキル、README、CHANGELOG の更新
 - [ ] Vitest 全件成功

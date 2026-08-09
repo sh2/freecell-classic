@@ -21,6 +21,33 @@
 
 ### リファクタリング
 
+- 状態遷移を `src/js/game-state.js` へ抽出した(`docs/refactoring-and-testing-plan.md`
+  の Phase 4)。
+  - `src/js/game-state.js` を新設。`createState`(状態生成)、`groupFrom` /
+    `selectedGroup`(グループ取得)、`attemptMove`(移動)、`undo`(履歴巻き戻し)、
+    `autoMoveHome`(自動移動)、`dblClickAutoMove`(ダブルクリック移動)、
+    `isWon` / `checkWin`(勝利判定)、`normalizeGameNumber`(番号補正)を純粋関数として
+    移動。DOM・時刻・表示には触れず、state オブジェクトをその場で更新する。
+    失敗手では状態・履歴・手数を変更せず、成功手では履歴と手数を 1 増やして
+    選択を解除する。描画・タイマー・トースト・勝利オーバーレイ・勝利判定は
+    呼び出し側(アプリ層)の責務とした。
+  - `src/js/game.js` はモジュール変数(`gameNumber` / `cascades` / `freeCells` /
+    `foundations` / `moveCount` / `historyStack` / `selected` / `won`)を単一の
+    `state` オブジェクトへ統合し、状態遷移を `game-state.js` へ委譲する形に変更。
+    成功手の副作用(`lastClick` リセット → タイマー開始 → 描画 → 勝利処理)を
+    `onMoveSucceeded()` に集約し、クリック移動・ドラッグ移動・自動移動・
+    ダブルクリック移動の 4 経路すべてで連続クリック判定がリセットされるようにした
+    (リセットは従来 `attemptMove` 内にあったが、入力状態 `lastClick` の所有責務に
+    合わせて入力・アプリ層へ移動)。`newGameFromInput` は `normalizeGameNumber` を
+    使い、無効な入力はランダム番号で開始する。
+  - `tests/unit/game-state.test.js` を追加(38 件)。移動の合法・不正・枚数上限、
+    複数枚移動、既知の 1 枚移動(Game #1 / #12)、Undo(盤面・手数・履歴・won 不変)、
+    自動移動(安全判定・カード 1 枚単位の履歴)、ダブルクリック(ホーム優先・次に
+    フリーセル)、勝利判定、`normalizeGameNumber`(整数・小数・空値・非数値・範囲外)
+    を検証。
+  - `tests/e2e/freecell.spec.js` に、クリック移動・ドラッグ移動・自動移動の直後に
+    同じカードをクリックしても自動移動が連鎖しないことを検証するテストを 3 件追加。
+
 - ルール判定を `src/js/rules.js` へ抽出した(`docs/refactoring-and-testing-plan.md`
   の Phase 3)。
   - `src/js/rules.js` を新設。`isRed`、`isValidSequence`(色交互降順)、
