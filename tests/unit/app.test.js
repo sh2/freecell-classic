@@ -226,3 +226,63 @@ describe("createApp: 勝利メッセージ", () => {
     expect(view.calls.some((c) => c === `win:${app.getState().gameNumber}:52:0:00`)).toBe(true);
   });
 });
+
+describe("createApp: 自動でホームへ送る(毎手)", () => {
+  it("成功手の直後に自動移動が発動する(既定オン)", () => {
+    const view = createMockView();
+    const deps = createFakeDeps();
+    const app = createApp({ view, deps });
+    app.startGame(12);
+    // 2 枚セット [9D, 8C] を 10S(col4)の上へ移動(手動 1 手)
+    const res = app.attemptMove({ zone: "cascade", index: 0, cardIndex: 5 }, "cascade", 4);
+    expect(res.ok).toBe(true);
+    const s = app.getState();
+    expect(s.moveCount).toBe(2); // 手動 1 手 + AC の自動移動
+    expect(s.foundations[0].map((c) => c.id)).toEqual([0]);
+  });
+
+  it("setAutoMoveEnabled(false) で成功手の直後でも自動移動しない", () => {
+    const view = createMockView();
+    const deps = createFakeDeps();
+    const app = createApp({ view, deps });
+    app.startGame(12);
+    app.setAutoMoveEnabled(false);
+    app.attemptMove({ zone: "cascade", index: 0, cardIndex: 5 }, "cascade", 4);
+    const s = app.getState();
+    expect(s.moveCount).toBe(1);
+    expect(s.foundations.every((p) => p.length === 0)).toBe(true);
+  });
+
+  it("自動発動で動かせるカードが無いときはトーストを出さない", () => {
+    const view = createMockView();
+    const deps = createFakeDeps();
+    const app = createApp({ view, deps });
+    app.startGame(1); // 自動移動できるカードが無い
+    app.attemptMove({ zone: "cascade", index: 0, cardIndex: 6 }, "free", 0);
+    expect(view.calls).not.toContain("toast");
+  });
+
+  it("手動ボタン(autoMoveHome)は動かせるカードが無いときトーストを出す", () => {
+    const view = createMockView();
+    const deps = createFakeDeps();
+    const app = createApp({ view, deps });
+    app.startGame(1);
+    app.autoMoveHome();
+    expect(view.calls).toContain("toast");
+  });
+
+  it("ダブルクリック自動移動の後も自動発動する", () => {
+    const view = createMockView();
+    const deps = createFakeDeps();
+    const app = createApp({ view, deps });
+    app.startGame(12);
+    // 6S(col2 トップ)をダブルクリック → フリーセルへ。その後、露出した AH と AC が
+    // 自動でホームへ送られる(手動 1 手 + 自動 2 手)
+    const moved = app.dblClickAutoMove({ zone: "cascade", index: 2, cardIndex: 6 });
+    expect(moved).toBe(true);
+    const s = app.getState();
+    expect(s.moveCount).toBe(3);
+    expect(s.foundations[0].map((c) => c.id)).toEqual([2]); // AH
+    expect(s.foundations[1].map((c) => c.id)).toEqual([0]); // AC
+  });
+});

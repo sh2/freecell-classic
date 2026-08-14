@@ -22,6 +22,7 @@ export function createApp({ view, deps = {} }) {
   let timerStart = null; // タイマー状態(ゲーム状態には含めない)
   let timerHandle = null;
   let interactions = null; // mount() で登録される入力層
+  let autoMoveEnabled = true; // 成功手の直後に安全なカードを自動でホームへ送るか
 
   /* ---------------- タイマー ---------------- */
 
@@ -81,6 +82,9 @@ export function createApp({ view, deps = {} }) {
     const res = gameState.attemptMove(state, from, destZone, destIndex);
     if (res.ok) {
       onMoveSucceeded();
+      if (autoMoveEnabled) {
+        runAutoMove({ showToastOnEmpty: false });
+      }
     }
     return res;
   }
@@ -91,13 +95,37 @@ export function createApp({ view, deps = {} }) {
     }
   }
 
-  function autoMoveHome() {
+  /**
+   * 安全にホームへ送れるカードを自動移動する。
+   * 手動ボタンでは送れるカードが無いときにトーストを出し、
+   * 成功手の直後の自動発動では出さない。
+   */
+  function runAutoMove({ showToastOnEmpty }) {
     const movedAny = gameState.autoMoveHome(state);
     if (!movedAny) {
-      view.showToast("ホームへ移動できるカードはありません");
-      return;
+      if (showToastOnEmpty) {
+        view.showToast("ホームへ移動できるカードはありません");
+      }
+      return false;
     }
     onMoveSucceeded();
+    return true;
+  }
+
+  /** 自動移動ボタン(手動)。送れるカードが無ければトーストを出す */
+  function autoMoveHome() {
+    return runAutoMove({ showToastOnEmpty: true });
+  }
+
+  /** 「自動でホームへ送る」のオン/オフを切り替える(トグルとテスト API の両方から使う) */
+  function setAutoMoveEnabled(enabled) {
+    autoMoveEnabled = enabled;
+    if (typeof document !== "undefined") {
+      const toggle = document.getElementById("auto-move-toggle");
+      if (toggle) {
+        toggle.checked = enabled;
+      }
+    }
   }
 
   /** ダブルクリック時の自動移動。移動できたら true を返す */
@@ -105,6 +133,9 @@ export function createApp({ view, deps = {} }) {
     const moved = gameState.dblClickAutoMove(state, loc);
     if (moved) {
       onMoveSucceeded();
+      if (autoMoveEnabled) {
+        runAutoMove({ showToastOnEmpty: false });
+      }
     }
     return moved;
   }
@@ -172,6 +203,14 @@ export function createApp({ view, deps = {} }) {
     document.getElementById("restart-btn").addEventListener("click", () => startGame(state.gameNumber));
     document.getElementById("undo-btn").addEventListener("click", undo);
     document.getElementById("auto-move-btn").addEventListener("click", autoMoveHome);
+
+    const autoMoveToggle = document.getElementById("auto-move-toggle");
+    if (autoMoveToggle) {
+      autoMoveToggle.checked = autoMoveEnabled;
+      autoMoveToggle.addEventListener("change", () => {
+        autoMoveEnabled = autoMoveToggle.checked;
+      });
+    }
 
     const seedInput = view.seedInput();
     seedInput.addEventListener("keydown", (e) => {
@@ -376,6 +415,7 @@ export function createApp({ view, deps = {} }) {
     undo,
     autoMoveHome,
     dblClickAutoMove,
+    setAutoMoveEnabled,
     startGame,
     newGameFromInput,
     newRandomGame,

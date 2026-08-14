@@ -92,6 +92,18 @@ body {
   font-size: 0.9rem;
 }
 
+.auto-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.auto-toggle input {
+  accent-color: var(--gold);
+}
+
 .seed-label input {
   width: 76px;
   padding: 6px 8px;

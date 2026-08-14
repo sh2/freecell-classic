@@ -109,6 +109,11 @@ export function setWinBoard(page, moveCount = 52) {
   return page.evaluate((moves) => window.__testApi.setWinBoard(moves), moveCount);
 }
 
+/** 毎手の自動移動をオン/オフする(トグル状態も同期される) */
+export function setAutoMove(page, enabled) {
+  return page.evaluate((v) => window.__testApi.setAutoMoveEnabled(v), enabled);
+}
+
 /* ---------------- 操作の再現 ---------------- */
 
 /** カードにヒットする座標を返す(完全に隠れていれば例外) */

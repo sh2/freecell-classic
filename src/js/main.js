@@ -32,6 +32,7 @@ export function getTestApi() {
     maxMovable: appInstance.maxMovable,
     setBoard: appInstance.setBoard,
     setWinBoard: appInstance.setWinBoard,
+    setAutoMoveEnabled: appInstance.setAutoMoveEnabled,
   };
 }
 

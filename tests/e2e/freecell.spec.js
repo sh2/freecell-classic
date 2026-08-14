@@ -72,6 +72,7 @@ test.describe("クリック操作", () => {
 
   test("Game #3: クリックで 4♠ を 5♥ の上へ移動できる", async ({ page }) => {
     await h.openGame(page, 3);
+    await h.setAutoMove(page, false); // 自動移動を無効化して手動移動のみを検証
     await h.clickCard(page, 15); // col1 トップ 4S
     await h.clickCard(page, 18); // col7 トップ 5H
     const s = await h.state(page);
@@ -82,6 +83,7 @@ test.describe("クリック操作", () => {
 
   test("Game #20: クリックで 1♦ を 2♠ の上へ移動できる", async ({ page }) => {
     await h.openGame(page, 20);
+    await h.setAutoMove(page, false); // 自動移動を無効化して手動移動のみを検証
     await h.clickCard(page, 1); // col1 トップ AD
     await h.clickCard(page, 7); // col0 トップ 2S
     const s = await h.state(page);
@@ -122,6 +124,7 @@ test.describe("クリック操作", () => {
 test.describe("複数枚移動", () => {
   test("Game #12: クリックで 2 枚セットを選択して移動できる", async ({ page }) => {
     await h.openGame(page, 12);
+    await h.setAutoMove(page, false); // 自動移動を無効化して手動移動のみを検証
     await h.clickCard(page, 33); // 9D(帯が見えている)をクリック → 2 枚選択
     const d = await h.domState(page);
     expect(d.selected).toEqual([33, 28]); // 9D と 8C
@@ -134,6 +137,7 @@ test.describe("複数枚移動", () => {
 
   test("Game #12: ドラッグで 2 枚セットを移動できる", async ({ page }) => {
     await h.openGame(page, 12);
+    await h.setAutoMove(page, false); // 自動移動を無効化して手動移動のみを検証
     const to = await h.clickPoint(page, 39); // 10S の中心へ
     await h.dragCard(page, 33, to); // 起点は帯が見えている 9D
     const s = await h.state(page);
@@ -270,6 +274,7 @@ test.describe("ダブルクリック自動移動", () => {
 
   test("ダブルクリック移動の直後に同じカードをクリックしても自動移動が連鎖しない", async ({ page }) => {
     await h.openGame(page, 12);
+    await h.setAutoMove(page, false); // 毎手の自動移動は無効化し、ダブルクリック判定のみを検証
     await h.dblClickCard(page, 23); // 6S → フリーセルへ
     expect((await h.state(page)).moveCount).toBe(1);
     // 直後に同じカード(今はフリーセル)をクリック → 選択されるだけで自動移動しない
@@ -387,6 +392,61 @@ test.describe("自動移動", () => {
     await page.click("#auto-move-btn");
     expect((await h.state(page)).moveCount).toBe(0);
     await expect(page.locator("#toast")).toHaveText("ホームへ移動できるカードはありません");
+  });
+});
+
+test.describe("自動でホームへ送る(毎手)", () => {
+  test("トグルは既定でオン", async ({ page }) => {
+    await h.openGame(page, 1);
+    expect(await page.locator("#auto-move-toggle").isChecked()).toBe(true);
+  });
+
+  test("成功手の直後に安全なカードが自動でホームへ移動する", async ({ page }) => {
+    await h.openGame(page, 12);
+    // 2 枚セット [9D, 8C] を 10S の上へ移動(手動 1 手)
+    await h.clickCard(page, 33);
+    await h.clickCard(page, 39);
+    const s = await h.state(page);
+    // 手動 1 手 + AC の自動移動で手数 2
+    expect(s.moveCount).toBe(2);
+    expect(s.foundations.flat()).toContain(0);
+    expect(s.cascades[6]).toEqual([21, 37, 30, 26, 24]);
+  });
+
+  test("トグルをオフにすると成功手の直後でも自動移動しない", async ({ page }) => {
+    await h.openGame(page, 12);
+    await page.uncheck("#auto-move-toggle");
+    await h.clickCard(page, 33);
+    await h.clickCard(page, 39);
+    const s = await h.state(page);
+    expect(s.moveCount).toBe(1);
+    expect(s.foundations.every((p) => p.length === 0)).toBe(true);
+    expect(s.cascades[6]).toEqual([21, 37, 30, 26, 24, 0]); // AC は残る
+  });
+
+  test("成功手の直後に動かせるカードがなくてもトーストは表示されない", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.clickCard(page, 23); // 6S を選択
+    await h.clickSlot(page, "free", 0); // フリーセルへ移動(自動移動できるカードは無い)
+    expect((await h.state(page)).moveCount).toBe(1);
+    await expect(page.locator("#toast")).toHaveCount(0);
+  });
+
+  test("自動でホームへ送った後も Undo は 1 手単位で戻る", async ({ page }) => {
+    await h.openGame(page, 12);
+    await h.clickCard(page, 33);
+    await h.clickCard(page, 39);
+    expect((await h.state(page)).moveCount).toBe(2);
+
+    await page.click("#undo-btn");
+    let s = await h.state(page);
+    expect(s.moveCount).toBe(1);
+    expect(s.cascades[6]).toEqual([21, 37, 30, 26, 24, 0]); // AC が列へ戻る
+
+    await page.click("#undo-btn");
+    s = await h.state(page);
+    expect(s.moveCount).toBe(0);
+    expect(s.cascades[0]).toEqual([25, 13, 45, 29, 35, 33, 28]);
   });
 });
 
