@@ -77,14 +77,57 @@ export function createApp({ view, deps = {} }) {
     checkWin();
   }
 
-  /** 移動を試みる。成功時は {ok:true}、失敗時は {ok:false, reason} */
-  function attemptMove(from, destZone, destIndex) {
+  /** 盤面上の動かし得るカード(フリーセル・カスケード全枚)の現在の矩形を集める。
+   *  自動移動の前に取得することで、はしご状アニメーションの移動元になる */
+  function collectAllCardRects() {
+    const ids = [];
+    for (const c of state.freeCells) {
+      if (c) {
+        ids.push(c.id);
+      }
+    }
+    for (const pile of state.cascades) {
+      for (const c of pile) {
+        ids.push(c.id);
+      }
+    }
+    return view.getCardRects(ids);
+  }
+
+  /** 自動ホーム送りを 1 枚ずつ「描画 → 飛行」の連鎖で進める。
+   *  移動元の矩形は前の描画が終わった DOM から毎回収集するため、フリーセル経由の
+   *  2 段階移動(例: ♠2 をフリーセルへ → 露出した ♠1 をホームへ → ♠2 を
+   *  フリーセルからホームへ)でも、2 回目の移動が正しい位置から飛ぶ */
+  function chainAutoNext() {
+    const origins = collectAllCardRects();
+    const card = gameState.autoMoveOne(state);
+    if (!card) {
+      return;
+    }
+    view.setNextRenderAnimation([{ cardIds: [card.id], origins }]);
+    onMoveSucceeded();
+    view.runAfterAnimations(chainAutoNext);
+  }
+
+  /** 手動移動の描画・飛行を開始し、完了後に自動ホーム送りを連鎖させる */
+  function commitMove(manualSteps) {
+    view.setNextRenderAnimation(manualSteps);
+    onMoveSucceeded();
+    if (autoMoveEnabled) {
+      view.runAfterAnimations(chainAutoNext);
+    }
+  }
+
+  /** 移動を試みる。成功時は {ok:true}、失敗時は {ok:false, reason}。
+   *  opts.fromDrag が true のときは移動元をドラッグレイヤーの現在位置とする */
+  function attemptMove(from, destZone, destIndex, opts = {}) {
+    // 移動後の state ではカードが from に残らないため、移動前にカード群を控える
+    const groupIds = gameState.groupFrom(state, from).map((c) => c.id);
     const res = gameState.attemptMove(state, from, destZone, destIndex);
     if (res.ok) {
-      onMoveSucceeded();
-      if (autoMoveEnabled) {
-        runAutoMove({ showToastOnEmpty: false });
-      }
+      // 移動前の DOM はまだ古い位置にあるため、成功が確定してから矩形を取得できる
+      const origins = opts.fromDrag ? view.getDragCardRects() : view.getCardRects(groupIds);
+      commitMove([{ cardIds: groupIds, origins }]);
     }
     return res;
   }
@@ -95,26 +138,14 @@ export function createApp({ view, deps = {} }) {
     }
   }
 
-  /**
-   * 安全にホームへ送れるカードを自動移動する。
-   * 手動ボタンでは送れるカードが無いときにトーストを出し、
-   * 成功手の直後の自動発動では出さない。
-   */
-  function runAutoMove({ showToastOnEmpty }) {
-    const movedAny = gameState.autoMoveHome(state);
-    if (!movedAny) {
-      if (showToastOnEmpty) {
-        view.showToast("ホームへ移動できるカードはありません");
-      }
-      return false;
-    }
-    onMoveSucceeded();
-    return true;
-  }
-
   /** 自動移動ボタン(手動)。送れるカードが無ければトーストを出す */
   function autoMoveHome() {
-    return runAutoMove({ showToastOnEmpty: true });
+    if (!gameState.hasAutoMove(state)) {
+      view.showToast("ホームへ移動できるカードはありません");
+      return false;
+    }
+    chainAutoNext();
+    return true;
   }
 
   /** 「自動でホームへ送る」のオン/オフを切り替える(トグルとテスト API の両方から使う) */
@@ -128,16 +159,22 @@ export function createApp({ view, deps = {} }) {
     }
   }
 
+  /** カード移動アニメーションの有効/無効を切り替える(テスト API 用) */
+  function setAnimationsEnabled(enabled) {
+    view.setAnimationsEnabled(enabled);
+  }
+
   /** ダブルクリック時の自動移動。移動できたら true を返す */
   function dblClickAutoMove(loc) {
+    // 移動前のカード矩形(アニメーションの移動元)。groupFrom は先頭 1 枚のみ返す
+    const dblCardIds = gameState.groupFrom(state, loc).map((c) => c.id);
+    const dblOrigins = view.getCardRects(dblCardIds);
     const moved = gameState.dblClickAutoMove(state, loc);
-    if (moved) {
-      onMoveSucceeded();
-      if (autoMoveEnabled) {
-        runAutoMove({ showToastOnEmpty: false });
-      }
+    if (!moved) {
+      return false;
     }
-    return moved;
+    commitMove([{ cardIds: dblCardIds, origins: dblOrigins }]);
+    return true;
   }
 
   /* ---------------- 勝利判定・ゲーム開始 ---------------- */
@@ -416,6 +453,7 @@ export function createApp({ view, deps = {} }) {
     autoMoveHome,
     dblClickAutoMove,
     setAutoMoveEnabled,
+    setAnimationsEnabled,
     startGame,
     newGameFromInput,
     newRandomGame,

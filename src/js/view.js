@@ -47,6 +47,8 @@ export function createView() {
   /* ---------------- 描画 ---------------- */
 
   function render(state) {
+    // 再描画で DOM が作り直されるため、進行中の飛行アニメーションは即座に確定する
+    cancelActiveFlight();
     cardElMap = new Map();
     // --- フリーセル ---
     for (let i = 0; i < NUM_FREE; i++) {
@@ -59,16 +61,19 @@ export function createView() {
       }
     }
     // --- ホーム ---
+    // ホームの山札を全カード重ねて描画する(見た目は最上位 1 枚と同じ)。
+    // 飛行アニメーションで各カードが個別にホームへ飛べるよう、全カードに
+    // DOM 要素を持たせるため(最上位だけ描画すると下のカードの要素が無い)。
     for (let i = 0; i < NUM_HOME; i++) {
       const slot = homeSlotEls[i];
       slot.querySelectorAll(".card").forEach((el) => el.remove());
       const pile = state.foundations[i];
       slot.dataset.label = pile.length > 0 ? SUITS[pile[pile.length - 1].suit] : "A";
-      if (pile.length > 0) {
-        const el = makeCardEl(pile[pile.length - 1]);
-        cardElMap.set(pile[pile.length - 1].id, el);
+      pile.forEach((card) => {
+        const el = makeCardEl(card);
+        cardElMap.set(card.id, el);
         slot.appendChild(el);
-      }
+      });
     }
     // --- カスケード ---
     const cardH = freeSlotEls[0].getBoundingClientRect().height || 124;
@@ -92,6 +97,218 @@ export function createView() {
     }
     updateHighlights(state);
     updateStatus(state);
+    playArmedAnimations();
+  }
+
+  /* =========================================================
+   * 移動アニメーション(クローンの飛行)
+   * render() は即座に完了した盤面を描画する方式を維持し、アニメーションは
+   * 専用レイヤー(#anim-layer)上のクローン飛行で表現する。
+   * 飛行中、実カードは .anim-hidden で隠す。
+   * ========================================================= */
+
+  let animLayer = null;
+  let armedSteps = []; // 次の render 後に再生するアニメーション手順の予約
+  let activeFlight = null; // 飛行中のアニメーション { animations, hiddenEls }
+  let afterCallbacks = []; // 飛行完了後に呼ぶコールバック(自動移動の連鎖用)
+  let animGen = 0; // 再描画などで古い手順の連鎖を中断するための世代トークン
+  let animationsEnabled =
+    typeof matchMedia === "undefined" || !matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function getAnimLayer() {
+    if (!animLayer) {
+      animLayer = document.createElement("div");
+      animLayer.id = "anim-layer";
+      document.body.appendChild(animLayer);
+    }
+    return animLayer;
+  }
+
+  /** アニメーションの有効/無効を切り替える(E2E テストでは無効化して使う) */
+  function setAnimationsEnabled(enabled) {
+    animationsEnabled = enabled;
+    if (!enabled) {
+      armedSteps = [];
+      cancelActiveFlight();
+    }
+  }
+
+  /** 指定カード群の現在の DOM 矩形と重なり順を返す(cardId -> {left, top, width, height, z}) */
+  function getCardRects(cardIds) {
+    const rects = {};
+    for (const id of cardIds) {
+      const el = cardElById(id);
+      if (el) {
+        const r = el.getBoundingClientRect();
+        const z = el.style.zIndex ? parseInt(el.style.zIndex, 10) : 0;
+        rects[id] = { left: r.left, top: r.top, width: r.width, height: r.height, z };
+      }
+    }
+    return rects;
+  }
+
+  /** ドラッグレイヤー内のカードの現在の DOM 矩形と重なり順を返す(cardId -> {left, top, width, height, z}) */
+  function getDragCardRects() {
+    const rects = {};
+    if (dragLayer) {
+      dragLayer.querySelectorAll(".card").forEach((el) => {
+        const r = el.getBoundingClientRect();
+        const z = el.style.zIndex ? parseInt(el.style.zIndex, 10) : 0;
+        rects[Number(el.dataset.cardId)] = { left: r.left, top: r.top, width: r.width, height: r.height, z };
+      });
+    }
+    return rects;
+  }
+
+  /** 次に render() した直後に再生するアニメーション手順を予約する */
+  function setNextRenderAnimation(steps) {
+    armedSteps = animationsEnabled ? steps : [];
+  }
+
+  /** 飛行時間は距離に比例(近いほど速い、150〜400ms に clamp) */
+  function flightDuration(dist) {
+    return Math.min(400, Math.max(150, Math.round(dist * 0.45)));
+  }
+
+  /** 進行中の飛行アニメーションを即座に確定する(再描画の直前に呼ぶ)。
+   *  連鎖待ちのコールバックも破棄する(新しい描画が優先) */
+  function cancelActiveFlight() {
+    animGen++;
+    afterCallbacks = [];
+    if (activeFlight) {
+      for (const anim of activeFlight.animations) {
+        anim.cancel();
+      }
+      for (const el of activeFlight.hiddenEls) {
+        el.classList.remove("anim-hidden");
+      }
+      activeFlight = null;
+    }
+    if (animLayer) {
+      animLayer.innerHTML = "";
+    }
+  }
+
+  /** 現在の飛行(および連鎖待ち)がすべて完了した後に fn を呼ぶ。
+   *  飛行中でなければ即座に呼ぶ */
+  function runAfterAnimations(fn) {
+    if (!activeFlight) {
+      fn();
+      return;
+    }
+    afterCallbacks.push(fn);
+  }
+
+  /** render 後に予約済みステップを順に再生する(自動移動は 1 枚ずつ梯子状に送る)。
+   *  全ステップの実カードを render と同一タスク内(同期的)で隠し、クローンも
+   *  全ステップ分を「元の位置」に同期的に生成する。これにより:
+   *  - 目的地に一瞬表示されるチラつきを防ぐ(描画前に隠す)
+   *  - 元の位置で一瞬消えてから出現するチラつきも防ぐ(描画前にクローンを置く)
+   *  飛行だけを順番に開始する。 */
+  function playArmedAnimations() {
+    if (armedSteps.length === 0 || !animationsEnabled) {
+      armedSteps = [];
+      return;
+    }
+    const steps = armedSteps;
+    armedSteps = [];
+    const gen = animGen;
+    const layer = getAnimLayer();
+    const flight = { animations: [], hiddenEls: [] };
+    // 飛行対象のクローン(元の位置に配置済み)を全ステップ分まとめて準備する
+    const plans = [];
+    let zCounter = 1;
+    for (const step of steps) {
+      const cards = [];
+      for (const cardId of step.cardIds) {
+        const origin = step.origins ? step.origins[cardId] : null;
+        const el = cardElById(cardId);
+        if (!el || !origin) {
+          continue;
+        }
+        const dest = el.getBoundingClientRect();
+        const dx = dest.left - origin.left;
+        const dy = dest.top - origin.top;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 2) {
+          continue; // ほぼ同じ位置なら飛ばない(隠す必要もない)
+        }
+        el.classList.add("anim-hidden");
+        flight.hiddenEls.push(el);
+        const clone = el.cloneNode(true);
+        clone.classList.remove("selected", "movable", "shake", "anim-hidden");
+        clone.style.left = origin.left + "px";
+        clone.style.top = origin.top + "px";
+        clone.style.width = origin.width + "px";
+        clone.style.height = origin.height + "px";
+        clone.style.zIndex = origin.z > 0 ? origin.z : zCounter;
+        zCounter++;
+        layer.appendChild(clone);
+        cards.push({ el, clone, dx, dy, dist });
+      }
+      plans.push(cards);
+    }
+    if (plans.every((cards) => cards.length === 0)) {
+      return; // 飛行対象が無い
+    }
+    activeFlight = flight;
+    (async () => {
+      for (const cards of plans) {
+        if (gen !== animGen) {
+          return; // 新しい描画に中断された
+        }
+        const finishes = [];
+        for (const c of cards) {
+          const anim = c.clone.animate(
+            [{ transform: "translate(0px, 0px)" }, { transform: `translate(${c.dx}px, ${c.dy}px)` }],
+            { duration: flightDuration(c.dist), easing: "ease-out" }
+          );
+          anim.onfinish = () => {
+            c.el.classList.remove("anim-hidden");
+            c.clone.remove();
+          };
+          flight.animations.push(anim);
+          finishes.push(anim.finished);
+        }
+        try {
+          await Promise.all(finishes);
+        } catch {
+          // cancel() で finished が reject する → 世代チェックで抜ける
+        }
+      }
+      if (gen === animGen) {
+        activeFlight = null;
+        const cbs = afterCallbacks;
+        afterCallbacks = [];
+        for (const cb of cbs) {
+          cb();
+        }
+      }
+    })();
+  }
+
+  /** ドラッグレイヤーを元のカード位置へ飛ばし、完了後に onDone を呼ぶ(無効時は即座に呼ぶ) */
+  function animateDragLayerBack(originRect, onDone) {
+    if (!animationsEnabled || !originRect || !dragLayer || dragLayer.style.display === "none") {
+      onDone();
+      return;
+    }
+    const layerRect = dragLayer.getBoundingClientRect();
+    const dx = originRect.left - layerRect.left;
+    const dy = originRect.top - layerRect.top;
+    const dist = Math.hypot(dx, dy);
+    if (dist < 2) {
+      onDone();
+      return;
+    }
+    const anim = dragLayer.animate(
+      [{ transform: "translate(0px, 0px)" }, { transform: `translate(${dx}px, ${dy}px)` }],
+      { duration: flightDuration(dist), easing: "ease-out", fill: "forwards" }
+    );
+    anim.onfinish = () => {
+      anim.cancel(); // transform を戻す(同じタスク内で隠すためスナップは見えない)
+      onDone();
+    };
   }
 
   function updateHighlights(state) {
@@ -331,6 +548,12 @@ export function createView() {
     hideOverlay,
     makeCardEl,
     cardElById,
+    setAnimationsEnabled,
+    setNextRenderAnimation,
+    runAfterAnimations,
+    getCardRects,
+    getDragCardRects,
+    animateDragLayerBack,
     getDragLayer,
     buildDragLayer,
     positionDragLayer,

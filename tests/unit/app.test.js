@@ -13,6 +13,7 @@ function createMockView() {
   const calls = [];
   const view = {
     calls,
+    animStepsHistory: [],
     timerText: "0:00",
     render() {
       calls.push("render");
@@ -38,6 +39,26 @@ function createMockView() {
     },
     failFeedback() {
       calls.push("failFeedback");
+    },
+    setNextRenderAnimation(steps) {
+      calls.push(`anim:${steps.length}`);
+      view.lastAnimSteps = steps;
+      view.animStepsHistory.push(steps.map((s) => s.cardIds.slice()));
+    },
+    runAfterAnimations(fn) {
+      calls.push("after");
+      fn(); // モックは飛行を待たず即座に連鎖させる
+    },
+    getCardRects(cardIds) {
+      calls.push(`rects:${cardIds.slice().sort((a, b) => a - b).join(",")}`);
+      return Object.fromEntries(cardIds.map((id) => [id, { left: 0, top: 0 }]));
+    },
+    getDragCardRects() {
+      calls.push("dragRects");
+      return {};
+    },
+    setAnimationsEnabled() {
+      calls.push("setAnimationsEnabled");
     },
   };
   return view;
@@ -284,5 +305,89 @@ describe("createApp: 自動でホームへ送る(毎手)", () => {
     expect(s.moveCount).toBe(3);
     expect(s.foundations[0].map((c) => c.id)).toEqual([2]); // AH
     expect(s.foundations[1].map((c) => c.id)).toEqual([0]); // AC
+  });
+});
+
+describe("createApp: 移動アニメーションの予約", () => {
+  it("成功移動で手動分のアニメーションが予約される", () => {
+    const view = createMockView();
+    const deps = createFakeDeps();
+    const app = createApp({ view, deps });
+    app.startGame(1); // Game #1 は自動移動対象カードなし
+    firstMove(app);
+    expect(view.calls).toContain("anim:1");
+    // 移動元の矩形は移動対象カード(6S = id 23)で取得される
+    expect(view.calls).toContain("rects:23");
+  });
+
+  it("fromDrag 指定時はドラッグレイヤーの矩形を移動元にする", () => {
+    const view = createMockView();
+    const deps = createFakeDeps();
+    const app = createApp({ view, deps });
+    app.startGame(1);
+    app.attemptMove({ zone: "cascade", index: 0, cardIndex: 6 }, "free", 0, { fromDrag: true });
+    expect(view.calls).toContain("dragRects");
+    expect(view.calls).toContain("anim:1");
+  });
+
+  it("自動移動と手動移動のステップが連結される", () => {
+    const view = createMockView();
+    const deps = createFakeDeps();
+    const app = createApp({ view, deps });
+    app.startGame(12);
+    // 手動 1 手の描画 + AC の自動移動の描画で、anim:1 が 2 回予約される
+    const res = app.attemptMove({ zone: "cascade", index: 0, cardIndex: 5 }, "cascade", 4);
+    expect(res.ok).toBe(true);
+    expect(view.calls.filter((c) => c === "anim:1").length).toBe(2);
+  });
+
+  it("自動移動が無効なら手動分のみ予約される", () => {
+    const view = createMockView();
+    const deps = createFakeDeps();
+    const app = createApp({ view, deps });
+    app.startGame(12);
+    app.setAutoMoveEnabled(false);
+    app.attemptMove({ zone: "cascade", index: 0, cardIndex: 5 }, "cascade", 4);
+    expect(view.calls).toContain("anim:1");
+  });
+
+  it("ダブルクリック自動移動では対象カード + 連鎖カードのステップが予約される", () => {
+    const view = createMockView();
+    const deps = createFakeDeps();
+    const app = createApp({ view, deps });
+    app.startGame(12);
+    app.dblClickAutoMove({ zone: "cascade", index: 2, cardIndex: 6 });
+    // 6S のフリーセル行き + AH + AC のホーム行きで anim:1 が 3 回予約される
+    expect(view.calls.filter((c) => c === "anim:1").length).toBe(3);
+  });
+
+  it("フリーセル経由の 2 段階移動は手動 → ♠1 → ♠2 の順でステップが組まれる", () => {
+    const view = createMockView();
+    const deps = createFakeDeps();
+    const app = createApp({ view, deps });
+    app.startGame(1);
+    // ♠1(id 3) の上に ♠2(id 7)。♠2 をダブルクリック(フリーセルへ) → ♠1 自動 → ♠2 自動
+    app.setBoard({ cascades: [[3, 7]] });
+    app.dblClickAutoMove({ zone: "cascade", index: 0, cardIndex: 1 });
+    // 手動分(♠2) → 自動(♠1) → 自動(♠2) の順で、各ステップのカードが正しい
+    expect(view.animStepsHistory.flat(2)).toEqual([7, 3, 7]);
+  });
+
+  it("自動移動ボタンでは送ったカード分だけのステップが予約される", () => {
+    const view = createMockView();
+    const deps = createFakeDeps();
+    const app = createApp({ view, deps });
+    app.startGame(12);
+    expect(app.autoMoveHome()).toBe(true);
+    expect(view.calls).toContain("anim:1");
+  });
+
+  it("送るカードがなければアニメーションは予約されない", () => {
+    const view = createMockView();
+    const deps = createFakeDeps();
+    const app = createApp({ view, deps });
+    app.startGame(1); // Game #1 は自動移動対象なし
+    expect(app.autoMoveHome()).toBe(false);
+    expect(view.calls.filter((c) => c.startsWith("anim:"))).toEqual([]);
   });
 });

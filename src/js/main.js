@@ -33,6 +33,7 @@ export function getTestApi() {
     setBoard: appInstance.setBoard,
     setWinBoard: appInstance.setWinBoard,
     setAutoMoveEnabled: appInstance.setAutoMoveEnabled,
+    setAnimationsEnabled: appInstance.setAnimationsEnabled,
   };
 }
 

@@ -276,13 +276,6 @@ body {
   box-shadow: 0 0 14px 3px rgba(230, 193, 90, 0.75);
 }
 
-.card.dragging {
-  z-index: 1000 !important;
-  cursor: grabbing;
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.5);
-  transition: none;
-}
-
 .card.drop-hint {
   outline: 2px dashed var(--gold);
   outline-offset: 2px;
@@ -332,6 +325,27 @@ body {
 #drag-layer .card {
   position: absolute;
   left: 0;
+}
+
+/* ---------- 移動アニメーション(クローンの飛行) ---------- */
+
+/* 飛行中に実カードを隠す(クローンが代わりに動く) */
+.card.anim-hidden {
+  visibility: hidden;
+}
+
+#anim-layer {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1500;
+  pointer-events: none;
+}
+
+#anim-layer .card {
+  position: absolute;
+  margin: 0;
+  cursor: default;
 }
 
 /* ---------- トースト ---------- */

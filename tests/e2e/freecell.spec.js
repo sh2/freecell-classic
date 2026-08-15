@@ -622,3 +622,139 @@ test.describe("タイマー", () => {
     expect(await page.textContent("#timer")).toBe(label);
   });
 });
+
+test.describe("移動アニメーション", () => {
+  test("クリック移動で飛行クローンが現れ、完了後に実カードへ置き換わる", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setAnimations(page, true);
+    await h.setBoard(page, {
+      cascades: [[23], [6], [], [], [], [], [], []],
+    });
+    await h.setAutoMove(page, false);
+    await h.clickCard(page, 23);
+    await h.clickSlot(page, "free", 0);
+    // 飛行中: クローンが現れ、実カードは隠れている
+    await expect(page.locator("#anim-layer .card")).toHaveCount(1);
+    await expect(page.locator("#game .card.anim-hidden")).toHaveCount(1);
+    await h.waitForAnimationsDone(page);
+    await expect(page.locator("#anim-layer .card")).toHaveCount(0);
+    // 実カードがフリーセルに表示されている
+    const d = await h.domState(page);
+    expect(d.free[0]).toBe(23);
+  });
+
+  test("クリック移動直後、実カードは目的地で隠れ、クローンは移動元に置かれる", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setAnimations(page, true);
+    await h.setAutoMove(page, false);
+    await h.setBoard(page, { cascades: [[23], [], [], [], [], [], [], []] });
+    await h.clickCard(page, 23);
+    await h.clickSlot(page, "free", 0);
+    // 操作直後(飛行完了前)の DOM を同期的に検証する
+    const snap = await page.evaluate(() => {
+      const real = document.querySelector('#game .card[data-card-id="23"]');
+      const clone = document.querySelector('#anim-layer .card[data-card-id="23"]');
+      const cr = clone ? clone.getBoundingClientRect() : null;
+      const freeSlot = document.querySelectorAll("#free-cells .slot")[0].getBoundingClientRect();
+      const cascadeSlot = document.querySelectorAll("#game .cascade")[0].querySelector(".slot").getBoundingClientRect();
+      return {
+        realHidden: real ? real.classList.contains("anim-hidden") : false,
+        realInFree: real ? !!real.closest("#free-cells") : false,
+        hasClone: !!clone,
+        cloneTop: cr ? cr.top : null,
+        freeTop: freeSlot.top,
+        cascadeTop: cascadeSlot.top,
+      };
+    });
+    expect(snap.realHidden).toBe(true); // 実カードは隠れている(目的地に露出しない)
+    expect(snap.realInFree).toBe(true); // 実カードは目的地(フリーセル)に置かれている
+    expect(snap.hasClone).toBe(true); // クローンが存在する
+    // クローンは移動元(カスケード)にあり、目的地(フリーセル)には無い
+    expect(Math.abs(snap.cloneTop - snap.cascadeTop)).toBeLessThan(12);
+    expect(Math.abs(snap.cloneTop - snap.freeTop)).toBeGreaterThan(40);
+    await h.waitForAnimationsDone(page);
+    expect((await h.domState(page)).free[0]).toBe(23);
+  });
+
+  test("フリーセル経由の 2 段階移動は正しい順序・移動元で飛ぶ", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setAnimations(page, true);
+    // ♠1(id 3) の上に ♠2(id 7) が積まれた列のみ
+    await h.setBoard(page, { cascades: [[3, 7]] });
+    await h.startFlightTimeline(page);
+    await h.dblClickCard(page, 7); // ♠2 をダブルクリック
+    await h.waitForAnimationsDone(page);
+    const events = await h.stopFlightTimeline(page);
+
+    // クローンの出現順: ♠2(山札→フリーセル) → ♠1(山札→ホーム) → ♠2(フリーセル→ホーム)
+    const clones = events.filter((e) => e.kind === "clone").map((e) => e.card);
+    expect(clones).toEqual([7, 3, 7]);
+
+    // 3 枚目のクローン(♠2)はフリーセルから飛ぶ(山札の位置ではない)
+    const third = events.filter((e) => e.kind === "clone")[2];
+    const pos = await page.evaluate(() => {
+      const f = document.querySelectorAll("#free-cells .slot")[0].getBoundingClientRect();
+      const c = document.querySelectorAll("#game .cascade")[0].querySelector(".slot").getBoundingClientRect();
+      return { freeTop: f.top, cascadeTop: c.top };
+    });
+    expect(Math.abs(third.top - pos.freeTop)).toBeLessThan(12);
+    expect(Math.abs(third.top - pos.cascadeTop)).toBeGreaterThan(40);
+
+    // 最終状態: ホームに ♠1 と ♠2、フリーセルは空
+    const s = await h.state(page);
+    expect(s.moveCount).toBe(3);
+    expect(s.foundations[0]).toEqual([3, 7]);
+    expect(s.freeCells.every((c) => c === null)).toBe(true);
+  });
+
+  test("ドラッグドロップ成功後は指を離した位置から目的地へ飛ぶ", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setAnimations(page, true);
+    await h.setAutoMove(page, false);
+    await h.dragCardToSlot(page, 23, "free", 0);
+    await expect(page.locator("#anim-layer .card")).toHaveCount(1);
+    await h.waitForAnimationsDone(page);
+    expect((await h.state(page)).freeCells[0]).toBe(23);
+    const d = await h.domState(page);
+    expect(d.free[0]).toBe(23);
+  });
+
+  test("ダブルクリック + 毎手自動移動は 1 枚ずつ順に飛ぶ", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setAnimations(page, true);
+    // 3H-2H の列。2H をダブルクリック → ホームへ。露出した 3H が自動でホームへ
+    // (黒スートが 2 まで進んでいるため canAutoHome の安全条件を満たす)
+    await h.setBoard(page, {
+      cascades: [[10, 6], [], [], [], [], [], [], []],
+      foundations: [[4], [], [2], [7]],
+    });
+    await h.dblClickCard(page, 6);
+    // 2H が先に飛び、完了後に 3H が飛ぶ(1 枚ずつ順番に)
+    await expect(page.locator("#anim-layer .card")).toHaveCount(1);
+    await h.waitForAnimationsDone(page);
+    const s = await h.state(page);
+    expect(s.moveCount).toBe(2);
+    expect(s.foundations[2]).toEqual([2, 6, 10]); // A♥, 2H(ダブルクリック), 3H(自動)
+  });
+
+  test("不正ドロップではドラッグレイヤーが元の位置へ戻ってから消える", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setAnimations(page, true);
+    const to = await h.clickPoint(page, 6); // col2 トップ 2H の上へ
+    await h.dragCard(page, 23, to);
+    // 戻りアニメ中: ドラッグレイヤーは表示されたまま
+    expect(await page.evaluate(() => document.getElementById("drag-layer").style.display)).toBe("block");
+    await page.waitForFunction(() => document.getElementById("drag-layer").style.display === "none", undefined, {
+      timeout: 3000,
+    });
+    expect((await h.state(page)).moveCount).toBe(0);
+  });
+
+  test("アニメーション無効時は飛行クローンが一切現れない", async ({ page }) => {
+    await h.openGame(page, 1); // ヘルパー注入で無効化済み
+    await h.clickCard(page, 23);
+    await h.clickSlot(page, "free", 0);
+    await expect(page.locator("#anim-layer .card")).toHaveCount(0);
+    expect((await h.domState(page)).free[0]).toBe(23);
+  });
+});

@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   attemptMove,
   autoMoveHome,
+  autoMoveOne,
   checkWin,
   createState,
   dblClickAutoMove,
+  hasAutoMove,
   isWon,
   normalizeGameNumber,
   undo,
@@ -247,7 +249,7 @@ describe("undo", () => {
 describe("autoMoveHome", () => {
   it("Game #12 の AC をホームへ送る", () => {
     const state = createState(12, dealGame(12));
-    expect(autoMoveHome(state)).toBe(true);
+    expect(autoMoveHome(state).map((c) => c.id)).toEqual([0]);
     expect(idsOf(state).foundations.flat()).toContain(0);
     expect(idsOf(state).cascades[6]).toEqual([21, 37, 30, 26, 24]);
     expect(state.moveCount).toBe(1);
@@ -259,7 +261,8 @@ describe("autoMoveHome", () => {
       cascades: [[8, 4, 0]],
       foundations: [[], [1, 5], [2, 6], [3, 7]],
     });
-    expect(autoMoveHome(state)).toBe(true);
+    // 積み上げの下から順番に送られる
+    expect(autoMoveHome(state).map((c) => c.id)).toEqual([0, 4, 8]);
     expect(idsOf(state).foundations[0]).toEqual([0, 4, 8]);
     expect(idsOf(state).cascades[0]).toEqual([]);
     expect(state.moveCount).toBe(3);
@@ -283,18 +286,51 @@ describe("autoMoveHome", () => {
     expect(state.moveCount).toBe(0);
   });
 
-  it("送れるカードがなければ false で何も変わらない", () => {
+  it("送れるカードがなければ空配列で何も変わらない", () => {
     const state = createState(1, dealGame(1));
     const before = idsOf(state);
-    expect(autoMoveHome(state)).toBe(false);
+    expect(autoMoveHome(state)).toEqual([]);
     expect(idsOf(state)).toEqual(before);
     expect(state.moveCount).toBe(0);
   });
 
-  it("won の状態では移動せず false", () => {
+  it("won の状態では移動せず空配列", () => {
     const state = createState(12, dealGame(12));
     state.won = true;
-    expect(autoMoveHome(state)).toBe(false);
+    expect(autoMoveHome(state)).toEqual([]);
+    expect(state.moveCount).toBe(0);
+  });
+});
+
+describe("autoMoveOne", () => {
+  it("フリーセル経由の 2 段階移動を正しい順序で 1 枚ずつ動かす", () => {
+    // ♠1(id 3) の上に ♠2(id 7) が積まれた列で、♠2 をフリーセルへ退避済みの盤面。
+    // ♠2 はまだホームへ行けない(♠A が無い)ため、先に ♠1 がホームへ行く。
+    const state = stateWith({
+      cascades: [[3]],
+      freeCells: [7, null, null, null],
+    });
+    // 1 枚目: ♠1 がホームへ(最初の空きホーム index 0 に置かれる)
+    expect(hasAutoMove(state)).toBe(true);
+    expect(autoMoveOne(state).id).toBe(3);
+    expect(idsOf(state).foundations[0]).toEqual([3]);
+    // 2 枚目: 露出した ♠2 がフリーセルからホームへ
+    expect(autoMoveOne(state).id).toBe(7);
+    expect(idsOf(state).foundations[0]).toEqual([3, 7]);
+    expect(idsOf(state).freeCells[0]).toBe(null);
+    // 3 枚目以降は無い
+    expect(hasAutoMove(state)).toBe(false);
+    expect(autoMoveOne(state)).toBe(null);
+  });
+
+  it("won の状態では移動しない", () => {
+    const state = stateWith({
+      cascades: [[3]],
+      freeCells: [7, null, null, null],
+    });
+    state.won = true;
+    expect(hasAutoMove(state)).toBe(false);
+    expect(autoMoveOne(state)).toBe(null);
     expect(state.moveCount).toBe(0);
   });
 });

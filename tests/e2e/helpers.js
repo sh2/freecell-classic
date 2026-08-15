@@ -24,6 +24,9 @@ export async function injectPageHelpers(page) {
   await page.evaluate(async () => {
     const main = await import("./src/js/main.js");
     window.__testApi = main.getTestApi();
+    // E2E は「操作直後に DOM が完成している」前提の検証が多いので、
+    // カード移動アニメーションは無効化しておく(必要なテストは個別に有効化する)
+    window.__testApi.setAnimationsEnabled(false);
     window.__clickPoint = function (cardId) {
       const el = document.querySelector(`#game .card[data-card-id="${cardId}"]`);
       if (!el) {
@@ -112,6 +115,98 @@ export function setWinBoard(page, moveCount = 52) {
 /** 毎手の自動移動をオン/オフする(トグル状態も同期される) */
 export function setAutoMove(page, enabled) {
   return page.evaluate((v) => window.__testApi.setAutoMoveEnabled(v), enabled);
+}
+
+/** カード移動アニメーションをオン/オフする(既定ではヘルパー注入時に無効化済み) */
+export function setAnimations(page, enabled) {
+  return page.evaluate((v) => window.__testApi.setAnimationsEnabled(v), enabled);
+}
+
+/** 移動アニメーションの完了を待つ(飛行クローン・隠しカードがなくなったら解決) */
+export function waitForAnimationsDone(page, timeout = 3000) {
+  return page.waitForFunction(
+    () =>
+      document.querySelectorAll("#anim-layer .card").length === 0 &&
+      document.querySelectorAll("#game .card.anim-hidden").length === 0,
+    undefined,
+    { timeout }
+  );
+}
+
+/* ---------------- 飛行タイムライン(アニメーション検証用) ---------------- */
+
+/**
+ * 移動アニメーションの飛行タイムライン記録を開始する。
+ * - `#anim-layer` へのカード追加(クローンの出現)を座標つきで記録する
+ * - 実カードの `.anim-hidden` 遷移(隠蔽/再表示)を記録する
+ * 記録内容は stopFlightTimeline() で取得する。各イベントの形:
+ *   { kind: "clone" | "hidden" | "shown", card: number, left?: number, top?: number }
+ */
+export async function startFlightTimeline(page) {
+  await page.evaluate(() => {
+    window.__flightEvents = [];
+    const mo = new MutationObserver((muts) => {
+      for (const m of muts) {
+        if (m.type === "childList") {
+          for (const n of m.addedNodes) {
+            const isClone =
+              n.nodeType === 1 &&
+              n.classList &&
+              n.classList.contains("card") &&
+              n.parentElement &&
+              n.parentElement.id === "anim-layer";
+            if (isClone) {
+              const r = n.getBoundingClientRect();
+              window.__flightEvents.push({
+                kind: "clone",
+                card: Number(n.dataset.cardId),
+                left: Math.round(r.left),
+                top: Math.round(r.top),
+              });
+            }
+          }
+        }
+        if (m.type === "attributes" && m.attributeName === "class") {
+          const el = m.target;
+          const isGameCard =
+            el.nodeType === 1 &&
+            el.classList &&
+            el.classList.contains("card") &&
+            el.closest &&
+            el.closest("#game");
+          if (isGameCard) {
+            const wasHidden = String(m.oldValue || "").split(/\s+/).includes("anim-hidden");
+            const isHidden = el.classList.contains("anim-hidden");
+            if (wasHidden !== isHidden) {
+              window.__flightEvents.push({
+                kind: isHidden ? "hidden" : "shown",
+                card: Number(el.dataset.cardId),
+              });
+            }
+          }
+        }
+      }
+    });
+    mo.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["class"],
+      attributeOldValue: true,
+      subtree: true,
+      childList: true,
+    });
+    window.__flightMo = mo;
+  });
+}
+
+/** 飛行タイムラインの記録を停止し、イベント列を返す */
+export function stopFlightTimeline(page) {
+  return page.evaluate(() => {
+    if (window.__flightMo) {
+      window.__flightMo.disconnect();
+      window.__flightMo = null;
+    }
+    return window.__flightEvents || [];
+  });
 }
 
 /* ---------------- 操作の再現 ---------------- */

@@ -158,41 +158,66 @@ export function checkWin(state) {
   return false;
 }
 
-/** 安全にホームへ送れるカードを自動移動する。1 枚以上動かせたら true */
-export function autoMoveHome(state) {
-  let movedAny = false;
-  let progress = true;
-  // 状態層はループ中に checkWin を呼ばないため won は更新されない。
-  // ここでの !state.won は「呼び出し時点で勝利済みなら何もしない」ガードで、
-  // 勝利処理(オーバーレイ表示など)は呼び出し側の責務。
-  while (progress && !state.won) {
-    progress = false;
-    // フリーセルとカスケードの先頭から、安全にホームへ送れるカードを探す
-    const candidates = [];
-    for (let i = 0; i < NUM_FREE; i++) {
-      if (state.freeCells[i]) {
-        candidates.push({ loc: { zone: "free", index: i }, card: state.freeCells[i] });
-      }
-    }
-    for (let i = 0; i < NUM_CASCADES; i++) {
-      const pile = state.cascades[i];
-      if (pile.length > 0) {
-        candidates.push({ loc: { zone: "cascade", index: i, cardIndex: pile.length - 1 }, card: pile[pile.length - 1] });
-      }
-    }
-    for (const { loc, card } of candidates) {
-      const target = rules.foundationTargetFor(state.foundations, card);
-      if (target >= 0 && rules.canAutoHome(state.foundations, card)) {
-        const res = attemptMove(state, loc, "home", target);
-        if (res.ok) {
-          movedAny = true;
-          progress = true;
-          break;
-        }
-      }
+/**
+ * 安全にホームへ送れるカードを 1 枚だけ探す(状態は変更しない)。
+ * 見つからなければ null を返す。
+ */
+export function findAutoMoveCard(state) {
+  if (state.won) {
+    return null;
+  }
+  // フリーセルとカスケードの先頭から、安全にホームへ送れるカードを探す
+  const candidates = [];
+  for (let i = 0; i < NUM_FREE; i++) {
+    if (state.freeCells[i]) {
+      candidates.push({ loc: { zone: "free", index: i }, card: state.freeCells[i] });
     }
   }
-  return movedAny;
+  for (let i = 0; i < NUM_CASCADES; i++) {
+    const pile = state.cascades[i];
+    if (pile.length > 0) {
+      candidates.push({ loc: { zone: "cascade", index: i, cardIndex: pile.length - 1 }, card: pile[pile.length - 1] });
+    }
+  }
+  for (const { loc, card } of candidates) {
+    const target = rules.foundationTargetFor(state.foundations, card);
+    if (target >= 0 && rules.canAutoHome(state.foundations, card)) {
+      return { loc, card };
+    }
+  }
+  return null;
+}
+
+/**
+ * 安全にホームへ送れるカードを 1 枚だけ自動移動する。
+ * 移動したカードを返す。送れるカードがなければ null を返す。
+ */
+export function autoMoveOne(state) {
+  const found = findAutoMoveCard(state);
+  if (!found) {
+    return null;
+  }
+  const target = rules.foundationTargetFor(state.foundations, found.card);
+  return attemptMove(state, found.loc, "home", target).ok ? found.card : null;
+}
+
+/** 安全にホームへ送れるカードが 1 枚でもあれば true(状態は変更しない) */
+export function hasAutoMove(state) {
+  return findAutoMoveCard(state) !== null;
+}
+
+/**
+ * 安全にホームへ送れるカードを自動移動する。
+ * 移動したカードの配列(移動順)を返す。1 枚も動かなければ空配列を返す。
+ */
+export function autoMoveHome(state) {
+  const movedCards = [];
+  let card = autoMoveOne(state);
+  while (card) {
+    movedCards.push(card);
+    card = autoMoveOne(state);
+  }
+  return movedCards;
 }
 
 /**

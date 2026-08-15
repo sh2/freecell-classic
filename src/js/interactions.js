@@ -297,7 +297,7 @@ export function createInteractions({ view, app }) {
       view.clearDropTargets();
       let handled = false;
       if (target) {
-        const res = app.attemptMove(st.from, target.zone, target.index);
+        const res = app.attemptMove(st.from, target.zone, target.index, { fromDrag: true });
         if (res.ok) {
           handled = true;
         } else if (res.reason === "too-many") {
@@ -306,10 +306,18 @@ export function createInteractions({ view, app }) {
       } else if (tooManyLimit !== null) {
         view.showToast(view.tooManyMessage(tooManyLimit));
       }
-      view.hideDragLayer();
-      if (!handled) {
-        view.render(app.getState()); // 元に戻す
+      if (handled) {
+        view.hideDragLayer();
+        return;
       }
+      // 戻す: ドラッグレイヤーを元のカード位置へ飛ばしてから再描画する。
+      // 元のカードは drag-hidden のままなので、飛行中は見えない。
+      const firstEl = st.group.length > 0 ? view.cardElById(st.group[0].id) : null;
+      const originRect = firstEl ? firstEl.getBoundingClientRect() : null;
+      view.animateDragLayerBack(originRect, () => {
+        view.hideDragLayer();
+        view.render(app.getState());
+      });
       return;
     }
     // クリック扱い
