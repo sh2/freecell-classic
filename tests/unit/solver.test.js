@@ -155,9 +155,10 @@ describe("solve: 実ゲーム", () => {
 });
 
 describe("solve: 解けない盤面と上限", () => {
-  it("必要な下位カードが無い盤面は探索を打ち切って node-limit になる", () => {
+  it("必要な下位カードが無い盤面は解けない(unsolvable)と判定される", () => {
     // col0 [♦2, ♠A]: ♠A はホームへ送られるが ♦2 は ♦A が無く詰む。
-    // 解けないことの完全な証明は探索打ち切りとして報告される。
+    // 列正規化により状態空間が小さく、全状態を探索し尽くして「解けない」と
+    // 完全に証明できる(unsolvable を返す)。
     const board = {
       cascades: [[5, 3]],
       freeCells: [],
@@ -165,7 +166,7 @@ describe("solve: 解けない盤面と上限", () => {
     };
     const res = solve(board, { maxNodes: 20000, maxTimeMs: 60000 });
     expect(res.solved).toBe(false);
-    expect(res.status).toBe("node-limit");
+    expect(res.status).toBe("unsolvable");
     expect(res.moves).toEqual([]);
   });
 

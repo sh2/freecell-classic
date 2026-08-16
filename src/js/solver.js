@@ -28,12 +28,15 @@ const INF = 0x7fffffff;
  * Zobrist ハッシュ (64bit = 32bit × 2)
  * ========================================================= */
 
-const COL_SIZE = NUM_CASCADES * MAX_COL_LEN * 52;
+// 列のハッシュは「列内の位置 (pos)」だけで決め、全列の寄与を XOR で合成する。
+// XOR は可換・結合的なので、列の並び順が違うだけの同一局面が同じハッシュに
+// 帰着する(列の対称性の正規化)。空列はカード 0 枚でハッシュに寄与しない。
+const COL_SIZE = MAX_COL_LEN * 52;
 const FOUND_BASE = COL_SIZE;
 const FREE_BASE = FOUND_BASE + NUM_HOME * 14;
 const TOTAL_KEYS = FREE_BASE + 52;
 
-const zColIndex = (col, pos, card) => col * (MAX_COL_LEN * 52) + pos * 52 + card;
+const zColIndex = (pos, card) => pos * 52 + card;
 const zFoundIndex = (suit, rank) => FOUND_BASE + suit * 14 + rank;
 const zFreeIndex = (card) => FREE_BASE + card;
 
@@ -66,7 +69,7 @@ function buildZobristTables() {
  * 置換表 (オープンアドレス法 + 線形探索)
  * ========================================================= */
 
-function createTranspositionTable(capacityBits = 21) {
+function createTranspositionTable(capacityBits = 22) {
   const size = 1 << capacityBits;
   const h1 = new Uint32Array(size);
   const h2 = new Uint32Array(size);
@@ -205,8 +208,8 @@ export function solve(board, options = {}) {
   const { z1, z2 } = buildZobristTables();
   let h1 = 0;
   let h2 = 0;
-  const xorCol = (col, pos, card) => {
-    const k = zColIndex(col, pos, card);
+  const xorCol = (pos, card) => {
+    const k = zColIndex(pos, card);
     h1 ^= z1[k];
     h2 ^= z2[k];
   };
@@ -234,7 +237,7 @@ export function solve(board, options = {}) {
   }
   for (let i = 0; i < NUM_CASCADES; i++) {
     for (let p = 0; p < cols[i].length; p++) {
-      xorCol(i, p, cols[i][p]);
+      xorCol(p, cols[i][p]);
     }
   }
 
@@ -250,7 +253,7 @@ export function solve(board, options = {}) {
         xorFree(cardId);
       } else {
         cols[mv.fromIndex].pop();
-        xorCol(mv.fromIndex, cols[mv.fromIndex].length, cardId);
+        xorCol(cols[mv.fromIndex].length, cardId);
       }
       xorFound(suit, found[suit]);
       found[suit] = rank;
@@ -258,7 +261,7 @@ export function solve(board, options = {}) {
       totalHome++;
     } else if (mv.destZone === "free") {
       cols[mv.fromIndex].pop();
-      xorCol(mv.fromIndex, cols[mv.fromIndex].length, cardId);
+      xorCol(cols[mv.fromIndex].length, cardId);
       free[mv.destIndex] = cardId;
       xorFree(cardId);
     } else {
@@ -268,18 +271,18 @@ export function solve(board, options = {}) {
         xorFree(cardId);
         const base = cols[mv.destIndex].length;
         cols[mv.destIndex].push(cardId);
-        xorCol(mv.destIndex, base, cardId);
+        xorCol(base, cardId);
       } else {
         const src = cols[mv.fromIndex];
         const p = src.length - mv.count;
         const tail = src.splice(p);
         for (let t = 0; t < mv.count; t++) {
-          xorCol(mv.fromIndex, p + t, tail[t]);
+          xorCol(p + t, tail[t]);
         }
         const base = cols[mv.destIndex].length;
         for (let t = 0; t < mv.count; t++) {
           cols[mv.destIndex].push(tail[t]);
-          xorCol(mv.destIndex, base + t, tail[t]);
+          xorCol(base + t, tail[t]);
         }
       }
     }
@@ -299,29 +302,29 @@ export function solve(board, options = {}) {
         xorFree(cardId);
       } else {
         cols[mv.fromIndex].push(cardId);
-        xorCol(mv.fromIndex, cols[mv.fromIndex].length - 1, cardId);
+        xorCol(cols[mv.fromIndex].length - 1, cardId);
       }
     } else if (mv.destZone === "free") {
       free[mv.destIndex] = -1;
       xorFree(cardId);
       cols[mv.fromIndex].push(cardId);
-      xorCol(mv.fromIndex, cols[mv.fromIndex].length - 1, cardId);
+      xorCol(cols[mv.fromIndex].length - 1, cardId);
     } else {
       if (mv.fromZone === "free") {
         cols[mv.destIndex].pop();
-        xorCol(mv.destIndex, cols[mv.destIndex].length, cardId);
+        xorCol(cols[mv.destIndex].length, cardId);
         free[mv.fromIndex] = cardId;
         xorFree(cardId);
       } else {
         const base = cols[mv.destIndex].length - mv.count;
         const tail = cols[mv.destIndex].splice(base);
         for (let t = 0; t < mv.count; t++) {
-          xorCol(mv.destIndex, base + t, tail[t]);
+          xorCol(base + t, tail[t]);
         }
         const p = cols[mv.fromIndex].length;
         for (let t = 0; t < mv.count; t++) {
           cols[mv.fromIndex].push(tail[t]);
-          xorCol(mv.fromIndex, p + t, tail[t]);
+          xorCol(p + t, tail[t]);
         }
       }
     }
@@ -371,15 +374,31 @@ export function solve(board, options = {}) {
       if (cols[mv.destIndex].length > 0) {
         s += 5000; // 空き列より既存列への積み重ねを優先
       }
-      if (mv.fromZone === "cascade" && mv.count === cols[mv.fromIndex].length) {
-        s += 3000; // 移動元が空になる
+      if (mv.fromZone === "cascade") {
+        const srcLen = cols[mv.fromIndex].length;
+        if (mv.count === srcLen) {
+          s += 20000; // 移動元が空になる(空き列の価値が高い)
+        } else {
+          const revealed = cols[mv.fromIndex][srcLen - mv.count - 1];
+          if (found[suitOf(revealed)] === rankOf(revealed) - 1) {
+            s += 15000; // 露出したカードが自動ホーム対象になる
+          }
+        }
       }
       return s;
     }
     if (mv.destZone === "free") {
       let s = 2000;
-      if (mv.fromZone === "cascade" && cols[mv.fromIndex].length === 1) {
-        s += 3000; // 移動元の列が空になる
+      if (mv.fromZone === "cascade") {
+        const srcLen = cols[mv.fromIndex].length;
+        if (srcLen === 1) {
+          s += 20000; // 移動元の列が空になる
+        } else {
+          const revealed = cols[mv.fromIndex][srcLen - 2];
+          if (found[suitOf(revealed)] === rankOf(revealed) - 1) {
+            s += 15000; // 露出したカードが自動ホーム対象になる
+          }
+        }
       }
       return s;
     }
@@ -425,6 +444,16 @@ export function solve(board, options = {}) {
   function generateMoves() {
     const moves = [];
 
+    // 空列の移動先は 1 つ(先頭の空列)に正規化する。列正規化によりどの空列へ
+    // 動かしても同一状態になるため、複数の空列へ同じ手を生成する必要はない。
+    let firstEmptyCol = -1;
+    for (let j = 0; j < NUM_CASCADES; j++) {
+      if (cols[j].length === 0) {
+        firstEmptyCol = j;
+        break;
+      }
+    }
+
     // 列 → 列(スーパームーブ含む)。列の上から順に有効な連続列の末尾を試す
     for (let i = 0; i < NUM_CASCADES; i++) {
       const len = cols[i].length;
@@ -441,6 +470,9 @@ export function solve(board, options = {}) {
         for (let j = 0; j < NUM_CASCADES; j++) {
           if (j === i) {
             continue;
+          }
+          if (cols[j].length === 0 && j !== firstEmptyCol) {
+            continue; // 空列の移動先は先頭の空列に正規化
           }
           if (!canPlace(bottom, count, j)) {
             continue;
@@ -482,6 +514,9 @@ export function solve(board, options = {}) {
         continue;
       }
       for (let j = 0; j < NUM_CASCADES; j++) {
+        if (cols[j].length === 0 && j !== firstEmptyCol) {
+          continue; // 空列の移動先は先頭の空列に正規化
+        }
         if (!canPlace(cardId, 1, j)) {
           continue;
         }
