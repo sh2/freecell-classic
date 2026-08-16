@@ -1,5 +1,27 @@
 # 変更履歴
 
+## 2026-08-17
+
+### 修正
+
+- ソルバーの列正規化キーを修正(`src/js/solver.js` / `tests/unit/solver.test.js`)。
+  - 従来の全列カードを位置ごとに XOR する方式では列の境界を失い、異なる列構成を
+    同一状態として置換表で誤って枝刈りする可能性があった。
+  - 列ごとのハッシュを計算してソート後に結合する方式へ変更し、列の順序だけを
+    正規化しつつ、列境界と列内順序を保持するようにした。
+  - 列順序の同一視、列境界、列内順序を検証する単体テストを追加した。
+
+### 開発ツール
+
+- node-limit ゲームの再検証スクリプトを追加(`scripts/benchmark/verify-node-limit.js`)。
+  - 既存バッチ結果(`batch-XX.json`)で `status` が `node-limit` のゲームだけを、
+    より大きい `maxNodes` で再計測して比較する。バッチ進捗には影響しない。
+  - 結果は `docs/benchmark/data/verify-node-limit-<batch>-<maxNodes>.json` に保存。
+  - バッチ 1 (ゲーム 1〜1000) の node-limit 134 ゲームを `maxNodes=5,000,000` で
+    再検証した結果、**37 ゲームが solved に、97 ゲームは node-limit のまま**だった
+    (time-limit / unsolvable は 0)。結果は
+    `docs/benchmark/data/verify-node-limit-01-5000000.json` に記録。
+
 ## 2026-08-16
 
 ### 機能追加

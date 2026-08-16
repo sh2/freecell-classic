@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { solve, formatMove, cardName } from "../../src/js/solver.js";
+import { solve, formatMove, cardName, canonicalizeColumns } from "../../src/js/solver.js";
 import { dealGame } from "../../src/js/deal.js";
 import { createState, attemptMove } from "../../src/js/game-state.js";
 import { findCardLocation } from "../../src/js/rules.js";
@@ -53,6 +53,26 @@ function countCardsInBoard(board) {
   }
   return n;
 }
+
+describe("列正規化", () => {
+  it("列の順序だけを入れ替えた盤面は同じ正規化結果になる", () => {
+    const a = canonicalizeColumns([[0, 5], [10], [], [20, 25]]);
+    const b = canonicalizeColumns([[20, 25], [], [0, 5], [10]]);
+    expect(b).toEqual(a);
+  });
+
+  it("列の境界が異なる盤面は同じカード集合でも別の結果になる", () => {
+    const a = canonicalizeColumns([[0, 5], [10, 15]]);
+    const b = canonicalizeColumns([[0, 10], [5, 15]]);
+    expect(b).not.toEqual(a);
+  });
+
+  it("列内の順序を保持する", () => {
+    const a = canonicalizeColumns([[0, 5], [10]]);
+    const b = canonicalizeColumns([[5, 0], [10]]);
+    expect(b).not.toEqual(a);
+  });
+});
 
 /** 勝ち手順を state に適用し、実際に全カードがホームへ揃うことを検証する */
 function replayAndVerify(board, moves) {

@@ -28,9 +28,9 @@ const INF = 0x7fffffff;
  * Zobrist ハッシュ (64bit = 32bit × 2)
  * ========================================================= */
 
-// 列のハッシュは「列内の位置 (pos)」だけで決め、全列の寄与を XOR で合成する。
-// XOR は可換・結合的なので、列の並び順が違うだけの同一局面が同じハッシュに
-// 帰着する(列の対称性の正規化)。空列はカード 0 枚でハッシュに寄与しない。
+// 列の順序だけを正規化するため、列ごとのハッシュを計算してからソートして
+// 状態キーへ結合する。全列のカードを位置ごとに XOR するだけでは列の境界を
+// 失い、異なる列構成まで同一状態として扱ってしまうため、この方式を使う。
 const COL_SIZE = MAX_COL_LEN * 52;
 const FOUND_BASE = COL_SIZE;
 const FREE_BASE = FOUND_BASE + NUM_HOME * 14;
@@ -39,6 +39,25 @@ const TOTAL_KEYS = FREE_BASE + 52;
 const zColIndex = (pos, card) => pos * 52 + card;
 const zFoundIndex = (suit, rank) => FOUND_BASE + suit * 14 + rank;
 const zFreeIndex = (card) => FREE_BASE + card;
+
+/** 列の順序だけを無視した正規化結果(テスト用)。列境界と列内順序は保持する。 */
+export function canonicalizeColumns(cascades) {
+  return (cascades ?? [])
+    .map((pile) => [...pile])
+    .sort((a, b) => {
+      const lengthDiff = a.length - b.length;
+      if (lengthDiff !== 0) {
+        return lengthDiff;
+      }
+      for (let i = 0; i < a.length; i++) {
+        const cardDiff = a[i] - b[i];
+        if (cardDiff !== 0) {
+          return cardDiff;
+        }
+      }
+      return 0;
+    });
+}
 
 /** 決定的な 32bit 乱数列を生成する(splitmix32)。ハッシュ値の再現性のため */
 function splitmix32(seed) {
@@ -206,12 +225,14 @@ export function solve(board, options = {}) {
   /* ---------------- Zobrist ハッシュ ---------------- */
 
   const { z1, z2 } = buildZobristTables();
+  const colH1 = new Uint32Array(NUM_CASCADES);
+  const colH2 = new Uint32Array(NUM_CASCADES);
   let h1 = 0;
   let h2 = 0;
-  const xorCol = (pos, card) => {
+  const xorCol = (col, pos, card) => {
     const k = zColIndex(pos, card);
-    h1 ^= z1[k];
-    h2 ^= z2[k];
+    colH1[col] ^= z1[k];
+    colH2[col] ^= z2[k];
   };
   const xorFound = (suit, rank) => {
     const k = zFoundIndex(suit, rank);
@@ -237,8 +258,20 @@ export function solve(board, options = {}) {
   }
   for (let i = 0; i < NUM_CASCADES; i++) {
     for (let p = 0; p < cols[i].length; p++) {
-      xorCol(p, cols[i][p]);
+      xorCol(i, p, cols[i][p]);
     }
+  }
+
+  function getStateHash() {
+    const order = Array.from({ length: NUM_CASCADES }, (_, i) => i);
+    order.sort((a, b) => colH1[a] - colH1[b] || colH2[a] - colH2[b]);
+    let k1 = h1 >>> 0;
+    let k2 = h2 >>> 0;
+    for (const col of order) {
+      k1 = (Math.imul(k1 ^ colH1[col], 0x9e3779b1) + 0x85ebca6b) >>> 0;
+      k2 = (Math.imul(k2 ^ colH2[col], 0xc2b2ae35) + 0x27d4eb2f) >>> 0;
+    }
+    return [k1, k2];
   }
 
   /* ---------------- 手の適用 / 取り消し ---------------- */
@@ -253,7 +286,7 @@ export function solve(board, options = {}) {
         xorFree(cardId);
       } else {
         cols[mv.fromIndex].pop();
-        xorCol(cols[mv.fromIndex].length, cardId);
+        xorCol(mv.fromIndex, cols[mv.fromIndex].length, cardId);
       }
       xorFound(suit, found[suit]);
       found[suit] = rank;
@@ -261,7 +294,7 @@ export function solve(board, options = {}) {
       totalHome++;
     } else if (mv.destZone === "free") {
       cols[mv.fromIndex].pop();
-      xorCol(cols[mv.fromIndex].length, cardId);
+      xorCol(mv.fromIndex, cols[mv.fromIndex].length, cardId);
       free[mv.destIndex] = cardId;
       xorFree(cardId);
     } else {
@@ -271,18 +304,18 @@ export function solve(board, options = {}) {
         xorFree(cardId);
         const base = cols[mv.destIndex].length;
         cols[mv.destIndex].push(cardId);
-        xorCol(base, cardId);
+        xorCol(mv.destIndex, base, cardId);
       } else {
         const src = cols[mv.fromIndex];
         const p = src.length - mv.count;
         const tail = src.splice(p);
         for (let t = 0; t < mv.count; t++) {
-          xorCol(p + t, tail[t]);
+          xorCol(mv.fromIndex, p + t, tail[t]);
         }
         const base = cols[mv.destIndex].length;
         for (let t = 0; t < mv.count; t++) {
           cols[mv.destIndex].push(tail[t]);
-          xorCol(base + t, tail[t]);
+          xorCol(mv.destIndex, base + t, tail[t]);
         }
       }
     }
@@ -302,29 +335,29 @@ export function solve(board, options = {}) {
         xorFree(cardId);
       } else {
         cols[mv.fromIndex].push(cardId);
-        xorCol(cols[mv.fromIndex].length - 1, cardId);
+        xorCol(mv.fromIndex, cols[mv.fromIndex].length - 1, cardId);
       }
     } else if (mv.destZone === "free") {
       free[mv.destIndex] = -1;
       xorFree(cardId);
       cols[mv.fromIndex].push(cardId);
-      xorCol(cols[mv.fromIndex].length - 1, cardId);
+      xorCol(mv.fromIndex, cols[mv.fromIndex].length - 1, cardId);
     } else {
       if (mv.fromZone === "free") {
         cols[mv.destIndex].pop();
-        xorCol(cols[mv.destIndex].length, cardId);
+        xorCol(mv.destIndex, cols[mv.destIndex].length, cardId);
         free[mv.fromIndex] = cardId;
         xorFree(cardId);
       } else {
         const base = cols[mv.destIndex].length - mv.count;
         const tail = cols[mv.destIndex].splice(base);
         for (let t = 0; t < mv.count; t++) {
-          xorCol(base + t, tail[t]);
+          xorCol(mv.destIndex, base + t, tail[t]);
         }
         const p = cols[mv.fromIndex].length;
         for (let t = 0; t < mv.count; t++) {
           cols[mv.fromIndex].push(tail[t]);
-          xorCol(p + t, tail[t]);
+          xorCol(mv.fromIndex, p + t, tail[t]);
         }
       }
     }
@@ -618,11 +651,12 @@ export function solve(board, options = {}) {
       return FOUND;
     }
 
-    const stored = tt.lookup(h1, h2);
+    const [stateH1, stateH2] = getStateHash();
+    const stored = tt.lookup(stateH1, stateH2);
     if (stored !== -1 && stored <= g) {
       return INF; // 同等か浅い経路で既知の状態は刈る
     }
-    tt.store(h1, h2, g);
+    tt.store(stateH1, stateH2, g);
 
     const moves = generateMoves();
     if (moves.length === 0) {
