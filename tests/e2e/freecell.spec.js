@@ -578,6 +578,15 @@ test.describe("ゲーム番号入力", () => {
     expect(await page.inputValue("#seed-input")).toBe("5");
   });
 
+  test("「開始」ボタンでも入力した番号のゲームが開始される", async ({ page }) => {
+    await h.openGame(page, 1);
+    await page.fill("#seed-input", "5");
+    await page.click("#start-game-btn");
+    const s = await h.state(page);
+    expect(s.gameNumber).toBe(5);
+    expect(await page.inputValue("#seed-input")).toBe("5");
+  });
+
   test("小数は切り捨てられる", async ({ page }) => {
     await h.openGame(page, 1);
     await page.fill("#seed-input", "12.9");

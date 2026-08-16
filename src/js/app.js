@@ -242,8 +242,8 @@ export function createApp({ view, deps = {} }) {
   function mount(input) {
     interactions = input;
 
-    document.getElementById("new-game-btn").addEventListener("click", newGameFromInput);
-    document.getElementById("random-game-btn").addEventListener("click", newRandomGame);
+    document.getElementById("new-game-btn").addEventListener("click", newRandomGame);
+    document.getElementById("start-game-btn").addEventListener("click", newGameFromInput);
     document.getElementById("overlay-new-game").addEventListener("click", newRandomGame);
     document.getElementById("overlay-undo").addEventListener("click", undo);
     // やり直し: 同じ gameNumber で再スタート(startGame が won フラグも降ろす)
