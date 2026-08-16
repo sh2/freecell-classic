@@ -24,6 +24,7 @@ export function createState(gameNumber, board) {
     historyStack: [],
     selected: null,
     won: false,
+    stuck: false,
   };
 }
 
@@ -141,6 +142,7 @@ export function undo(state) {
   }
   restore(state, state.historyStack.pop());
   state.selected = null;
+  state.stuck = false; // 1手戻すと必ず手が残るため詰みは解除される
   return true;
 }
 
@@ -158,7 +160,75 @@ export function checkWin(state) {
   return false;
 }
 
+/**合法手が 1 つでも残っているか(詰み判定用の純粋関数)。
+ * 複数枚グループの移動は「空きフリーセルまたは空きカスケード」が必須で、
+ * その場合は必ず単独カードの移動も成立するため、単独カードの移動だけを
+ * 確認すれば十分(maxMovable 判定は不要)。
+ * フリーセル→フリーセルの移動は無意味なシャッフルのため合法手に数えない。
+ */
+export function hasAnyMove(state) {
+  if (state.won) {
+    return false;
+  }
+
+  const freeEmpty = state.freeCells.some((c) => c === null);
+
+  // カスケードの先頭カード(単独で動かせるのは先頭のみ)
+  for (let i = 0; i < NUM_CASCADES; i++) {
+    const pile = state.cascades[i];
+    if (pile.length === 0) {
+      continue;
+    }
+    const top = pile[pile.length - 1];
+
+    if (rules.foundationTargetFor(state.foundations, top) >= 0) {
+      return true; // ホームへ
+    }
+    if (freeEmpty) {
+      return true; // 空きフリーセルへ
+    }
+    for (let j = 0; j < NUM_CASCADES; j++) {
+      if (j === i) {
+        continue;
+      }
+      if (rules.canDropOnCascade(state.cascades, [top], j)) {
+        return true; // 別カスケードへ
+      }
+    }
+  }
+
+  // フリーセルのカード
+  for (let i = 0; i < NUM_FREE; i++) {
+    const c = state.freeCells[i];
+    if (!c) {
+      continue;
+    }
+    if (rules.foundationTargetFor(state.foundations, c) >= 0) {
+      return true; // ホームへ
+    }
+    for (let j = 0; j < NUM_CASCADES; j++) {
+      if (rules.canDropOnCascade(state.cascades, [c], j)) {
+        return true; // カスケードへ
+      }
+    }
+  }
+
+  return false;
+}
+
+/** 詰み判定。詰んでいれば stuck を true にして true を返す。
+ *  勝利済みの場合は詰み扱いにしない(stuck は false のまま)。 */
+export function checkStuck(state) {
+  if (state.won) {
+    state.stuck = false;
+    return false;
+  }
+  state.stuck = !hasAnyMove(state);
+  return state.stuck;
+}
+
 /**
+ * 
  * 安全にホームへ送れるカードを 1 枚だけ探す(状態は変更しない)。
  * 見つからなければ null を返す。
  */

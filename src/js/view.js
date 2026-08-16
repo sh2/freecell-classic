@@ -399,12 +399,21 @@ export function createView() {
     shakeEl(el);
   }
 
-  /* ---------------- 勝利画面 ---------------- */
+  /* ---------------- 勝利・詰み画面 ---------------- */
 
   function showWin(gameNumber, moveCount, time) {
     document.getElementById("overlay-title").textContent = "🎉 クリア！";
     document.getElementById("overlay-message").textContent =
       `No.${gameNumber} を ${moveCount} 手・ ${time} でクリアしました！`;
+    document.getElementById("overlay-undo").classList.add("hidden");
+    document.getElementById("overlay").classList.remove("hidden");
+  }
+
+  function showStuck() {
+    document.getElementById("overlay-title").textContent = "詰みました";
+    document.getElementById("overlay-message").textContent =
+      "これ以上動かせるカードがありません。1手戻すか、新しいゲームを始めてください。";
+    document.getElementById("overlay-undo").classList.remove("hidden");
     document.getElementById("overlay").classList.remove("hidden");
   }
 
@@ -545,6 +554,7 @@ export function createView() {
     tooManyMessage,
     failFeedback,
     showWin,
+    showStuck,
     hideOverlay,
     makeCardEl,
     cardElById,

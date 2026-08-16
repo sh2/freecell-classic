@@ -420,6 +420,10 @@ body {
   background: #24855b;
 }
 
+.overlay-card button.hidden {
+  display: none;
+}
+
 @keyframes pop {
   from {
     transform: scale(0.7);

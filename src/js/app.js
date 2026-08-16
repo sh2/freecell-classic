@@ -67,7 +67,7 @@ export function createApp({ view, deps = {} }) {
 
   /* ---------------- モデル操作後の副作用 ---------------- */
 
-  /** 成功手の共通副作用: lastClick リセット → タイマー開始 → 描画 → 勝利処理 */
+  /** 成功手の共通副作用: lastClick リセット → タイマー開始 → 描画 → 勝利・詰み処理 */
   function onMoveSucceeded() {
     if (interactions) {
       interactions.resetLastClick();
@@ -75,6 +75,7 @@ export function createApp({ view, deps = {} }) {
     startTimerIfNeeded();
     view.render(state);
     checkWin();
+    checkStuck();
   }
 
   /** 盤面上の動かし得るカード(フリーセル・カスケード全枚)の現在の矩形を集める。
@@ -134,6 +135,7 @@ export function createApp({ view, deps = {} }) {
 
   function undo() {
     if (gameState.undo(state)) {
+      view.hideOverlay();
       view.render(state);
     }
   }
@@ -193,6 +195,13 @@ export function createApp({ view, deps = {} }) {
     view.showWin(state.gameNumber, state.moveCount, formatElapsedTime());
   }
 
+  /** 詰み判定。詰んでいれば詰みオーバーレイを表示する(タイマーは止めない) */
+  function checkStuck() {
+    if (gameState.checkStuck(state)) {
+      view.showStuck();
+    }
+  }
+
   function resetTimerAndOverlay() {
     stopTimer();
     updateTimerLabel();
@@ -236,6 +245,7 @@ export function createApp({ view, deps = {} }) {
     document.getElementById("new-game-btn").addEventListener("click", newGameFromInput);
     document.getElementById("random-game-btn").addEventListener("click", newRandomGame);
     document.getElementById("overlay-new-game").addEventListener("click", newRandomGame);
+    document.getElementById("overlay-undo").addEventListener("click", undo);
     // やり直し: 同じ gameNumber で再スタート(startGame が won フラグも降ろす)
     document.getElementById("restart-btn").addEventListener("click", () => startGame(state.gameNumber));
     document.getElementById("undo-btn").addEventListener("click", undo);
@@ -397,6 +407,7 @@ export function createApp({ view, deps = {} }) {
         ? { zone: state.selected.zone, index: state.selected.index, cardIndex: state.selected.cardIndex ?? null }
         : null,
       won: state.won,
+      stuck: state.stuck,
       timerRunning: timerStart !== null && timerHandle !== null && !state.won,
     };
   }
@@ -418,6 +429,7 @@ export function createApp({ view, deps = {} }) {
     state.historyStack = [];
     state.selected = null;
     state.won = false;
+    state.stuck = false;
     view.render(state);
   }
 

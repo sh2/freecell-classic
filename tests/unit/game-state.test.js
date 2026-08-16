@@ -3,9 +3,11 @@ import {
   attemptMove,
   autoMoveHome,
   autoMoveOne,
+  checkStuck,
   checkWin,
   createState,
   dblClickAutoMove,
+  hasAnyMove,
   hasAutoMove,
   isWon,
   normalizeGameNumber,
@@ -400,6 +402,82 @@ describe("勝利判定", () => {
     expect(isWon(state)).toBe(false);
     expect(checkWin(state)).toBe(false);
     expect(state.won).toBe(false);
+  });
+});
+
+describe("詰み判定", () => {
+  /** 合法手が 1 つもない詰み盤面(全カード黒・非エース、ホームは A♣ のみ) */
+  function stuckState() {
+    return stateWith({
+      freeCells: [36, 43, 44, 51], // 10♣ J♠ Q♣ K♠
+      cascades: [[11], [12], [19], [20], [27], [28], [35], [7]], // 3♠ 4♣ 5♠ 6♣ 7♠ 8♣ 9♠ 2♠
+      foundations: [[0], [], [], []], // A♣(2♣ が無いため先へ進めない)
+    });
+  }
+
+  it("hasAnyMove は詰み盤面で false を返す", () => {
+    expect(hasAnyMove(stuckState())).toBe(false);
+  });
+
+  it("hasAnyMove はホームへ置けるカードがあれば true を返す", () => {
+    const state = stateWith({ cascades: [[0]] }); // A♣
+    expect(hasAnyMove(state)).toBe(true);
+  });
+
+  it("hasAnyMove は空きフリーセルがあれば true を返す", () => {
+    const state = stateWith({ cascades: [[7]] }); // 2♠
+    expect(hasAnyMove(state)).toBe(true);
+  });
+
+  it("hasAnyMove はカスケード間の移動があれば true を返す", () => {
+    // 2♠(黒)を 3♦(赤)の上へ置ける
+    const state = stateWith({
+      freeCells: [36, 43, 44, 51],
+      cascades: [[7], [9], [11], [19], [20], [27], [28], [35]],
+    });
+    expect(hasAnyMove(state)).toBe(true);
+  });
+
+  it("hasAnyMove はフリーセルからカスケードへ置ければ true を返す", () => {
+    // フリーセルの 2♠ を 3♦ の上へ置ける(他の手は無い)
+    const state = stateWith({
+      freeCells: [7, 36, 43, 44], // 2♠ 10♣ J♠ Q♣
+      cascades: [[9], [11], [19], [20], [27], [28], [35], [51]], // 3♦ 3♠ 5♠ 6♣ 7♠ 8♣ 9♠ K♠
+    });
+    expect(hasAnyMove(state)).toBe(true);
+  });
+
+  it("hasAnyMove は勝利済みなら false を返す", () => {
+    const state = stateWith({ foundations: [fullPile(0), fullPile(1), fullPile(2), fullPile(3)] });
+    state.won = true;
+    expect(hasAnyMove(state)).toBe(false);
+  });
+
+  it("checkStuck は詰み盤面で true を返し stuck を立てる", () => {
+    const state = stuckState();
+    expect(state.stuck).toBe(false);
+    expect(checkStuck(state)).toBe(true);
+    expect(state.stuck).toBe(true);
+  });
+
+  it("checkStuck は勝利済みなら false を返し stuck を立てない", () => {
+    const state = stateWith({ foundations: [fullPile(0), fullPile(1), fullPile(2), fullPile(3)] });
+    state.won = true;
+    expect(checkStuck(state)).toBe(false);
+    expect(state.stuck).toBe(false);
+  });
+
+  it("createState は stuck を false で初期化する", () => {
+    const state = createState(1, dealGame(1));
+    expect(state.stuck).toBe(false);
+  });
+
+  it("undo は詰みフラグを解除する", () => {
+    const state = createState(1, dealGame(1));
+    attemptMove(state, { zone: "cascade", index: 0, cardIndex: 6 }, "free", 0);
+    state.stuck = true; // 仮に詰み扱いになっている状態を再現
+    expect(undo(state)).toBe(true);
+    expect(state.stuck).toBe(false);
   });
 });
 

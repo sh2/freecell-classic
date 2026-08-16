@@ -28,6 +28,9 @@ function createMockView() {
     showWin(gameNumber, moveCount, time) {
       calls.push(`win:${gameNumber}:${moveCount}:${time}`);
     },
+    showStuck() {
+      calls.push("stuck");
+    },
     hideOverlay() {
       calls.push("hideOverlay");
     },

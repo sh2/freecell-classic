@@ -353,6 +353,10 @@ test.describe("自動移動", () => {
     expect(s.moveCount).toBe(3);
     expect(s.foundations[0]).toEqual([0, 4, 8]); // AC, 2C, 3C
     expect(s.cascades[0]).toEqual([]);
+    // この fixture は全 52 枚を置いていないため、自動移動後は盤面に動かせる
+    // カードが無く詰みオーバーレイが表示される。背景クリックで閉じてから
+    // Undo を検証する(実ゲームでは 52 枚すべてが盤面にある)。
+    await page.click("#overlay", { position: { x: 10, y: 10 } });
     // 1 枚ずつ戻せる
     await page.click("#undo-btn");
     s = await h.state(page);
@@ -506,6 +510,41 @@ test.describe("勝利", () => {
     const s = await h.state(page);
     expect(s.won).toBe(false);
     expect(s.moveCount).toBe(0);
+    await expect(page.locator("#overlay")).toHaveClass(/hidden/);
+  });
+});
+
+test.describe("詰み", () => {
+  test("合法手が尽きるとオーバーレイが表示され、1手戻すで解除できる", async ({ page }) => {
+    await h.openGame(page, 1);
+    // A♣ をホームへ動かすと詰む 1 手前の盤面(全カード黒・非エース)
+    await h.setBoard(page, {
+      cascades: [[11], [12], [19], [20], [27], [28], [35], [7, 0]], // col7 の先頭が A♣
+      freeCells: [36, 43, 44, 51],
+      foundations: [],
+    });
+    await h.clickCard(page, 0); // A♣ を選択
+    await h.clickSlot(page, "home", 0); // ホームへ移動 → 詰み
+    let s = await h.state(page);
+    expect(s.stuck).toBe(true);
+    await expect(page.locator("#overlay")).not.toHaveClass(/hidden/);
+    await expect(page.locator("#overlay-title")).toHaveText("詰みました");
+
+    // 1手戻すで解除
+    await page.click("#overlay-undo");
+    s = await h.state(page);
+    expect(s.stuck).toBe(false);
+    expect(s.moveCount).toBe(0);
+    expect(s.cascades[7]).toEqual([7, 0]);
+    await expect(page.locator("#overlay")).toHaveClass(/hidden/);
+  });
+
+  test("通常の手では詰みオーバーレイは表示されない", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.clickCard(page, 23); // 6S を選択
+    await h.clickSlot(page, "free", 0); // フリーセルへ移動
+    const s = await h.state(page);
+    expect(s.stuck).toBe(false);
     await expect(page.locator("#overlay")).toHaveClass(/hidden/);
   });
 });
