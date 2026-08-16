@@ -806,3 +806,49 @@ test.describe("移動アニメーション", () => {
     expect((await h.domState(page)).free[0]).toBe(23);
   });
 });
+
+test.describe("ソルバー", () => {
+  /** あと 1 手で勝利する盤面(♠K がフリーセル、♠ は A〜Q までホーム) */
+  function nearWinBoard() {
+    const pile = (suit) => Array.from({ length: 13 }, (_, r) => r * 4 + suit);
+    return {
+      cascades: Array.from({ length: 8 }, () => []),
+      freeCells: [null, null, null, 51],
+      foundations: [pile(0), pile(1), pile(2), pile(3).slice(0, 12)],
+    };
+  }
+
+  test("ヒント: 解答手順パネルが表示され、盤面は変わらない", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setBoard(page, nearWinBoard());
+    await page.click("#hint-btn");
+    await expect(page.locator("#solution-panel")).toBeVisible({ timeout: 10000 });
+    await expect(page.locator("#solution-list li")).toHaveCount(1);
+    await expect(page.locator("#solution-summary")).toHaveText("全 1 手");
+    // ヒントは手を進めない(♠K はフリーセルのまま)
+    const s = await h.state(page);
+    expect(s.moveCount).toBe(0);
+    expect(s.freeCells[3]).toBe(51);
+    expect(s.won).toBe(false);
+  });
+
+  test("自動解答: 盤面を解いて勝利オーバーレイを表示する", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setBoard(page, nearWinBoard());
+    await page.click("#solve-btn");
+    await expect(page.locator("#overlay")).toBeVisible({ timeout: 10000 });
+    await expect(page.locator("#overlay-title")).toHaveText("🎉 クリア！");
+    const s = await h.state(page);
+    expect(s.won).toBe(true);
+    expect(s.foundations[3]).toHaveLength(13);
+  });
+
+  test("解答パネルは閉じるボタンで閉じられる", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setBoard(page, nearWinBoard());
+    await page.click("#hint-btn");
+    await expect(page.locator("#solution-panel")).toBeVisible({ timeout: 10000 });
+    await page.click("#solution-close-btn");
+    await expect(page.locator("#solution-panel")).toBeHidden();
+  });
+});

@@ -489,3 +489,74 @@ body {
     display: none;
   }
 }
+
+/* ---------- 解答手順パネル ---------- */
+
+.solution-panel {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2500;
+}
+
+.solution-panel.hidden {
+  display: none;
+}
+
+.solution-card {
+  background: #fdfaf1;
+  color: #234;
+  border-radius: 16px;
+  padding: 22px 28px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  width: min(420px, 92vw);
+  max-height: 78vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.solution-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.solution-head h2 {
+  margin: 0;
+  color: #b8860b;
+  font-size: 1.3rem;
+}
+
+.solution-head button {
+  border: none;
+  background: transparent;
+  color: #678;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.solution-head button:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+#solution-summary {
+  margin: 8px 0;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+#solution-list {
+  margin: 0;
+  padding-left: 22px;
+  overflow-y: auto;
+  font-size: 0.92rem;
+  line-height: 1.7;
+  user-select: text;
+  -webkit-user-select: text;
+}
+

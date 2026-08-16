@@ -10,8 +10,10 @@
 import { createView } from "./view.js";
 import { createApp } from "./app.js";
 import { createInteractions } from "./interactions.js";
+import { createSolverClient } from "./solver-client.js";
 
 let appInstance = null;
+let solverClient = null;
 
 export function init() {
   const view = createView();
@@ -19,6 +21,27 @@ export function init() {
   const interactions = createInteractions({ view, app });
   app.mount(interactions);
   appInstance = app;
+
+  solverClient = createSolverClient({ app, view });
+  document.getElementById("hint-btn").addEventListener("click", () => {
+    solverClient.requestSolution({ autoPlay: false });
+  });
+  document.getElementById("solve-btn").addEventListener("click", () => {
+    solverClient.requestSolution({ autoPlay: true });
+  });
+  document.getElementById("solution-close-btn").addEventListener("click", () => {
+    view.hideSolution();
+  });
+
+  // 新しいゲームを開始したら古い解答パネルを閉じる
+  const clearSolutionOnNewGame = () => {
+    solverClient.clearSolution();
+    view.hideSolution();
+  };
+  document.getElementById("new-game-btn").addEventListener("click", clearSolutionOnNewGame);
+  document.getElementById("restart-btn").addEventListener("click", clearSolutionOnNewGame);
+  document.getElementById("start-game-btn").addEventListener("click", clearSolutionOnNewGame);
+  document.getElementById("overlay-new-game").addEventListener("click", clearSolutionOnNewGame);
 }
 
 /** E2E テスト用の公開 API。init() 後にのみ利用できる */
@@ -34,6 +57,9 @@ export function getTestApi() {
     setWinBoard: appInstance.setWinBoard,
     setAutoMoveEnabled: appInstance.setAutoMoveEnabled,
     setAnimationsEnabled: appInstance.setAnimationsEnabled,
+    requestSolution: (autoPlay) => solverClient.requestSolution({ autoPlay: Boolean(autoPlay) }),
+    replaySolution: () => solverClient.replaySolution(),
+    hasSolverSolution: () => solverClient.hasSolution(),
   };
 }
 

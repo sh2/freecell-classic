@@ -545,6 +545,52 @@ export function createView() {
     return document.getElementById("overlay");
   }
 
+  /* ---------------- ソルバー UI ---------------- */
+
+  /** ソルバー計算中はヒント/自動解答ボタンを無効化する */
+  function setSolverBusy(busy) {
+    const hintBtn = document.getElementById("hint-btn");
+    const solveBtn = document.getElementById("solve-btn");
+    if (hintBtn) {
+      hintBtn.disabled = busy;
+    }
+    if (solveBtn) {
+      solveBtn.disabled = busy;
+      solveBtn.textContent = busy ? "計算中…" : "自動解答";
+    }
+  }
+
+  /** 解答手順パネルを表示する(lines は表示用文字列の配列) */
+  function showSolution(lines) {
+    const panel = document.getElementById("solution-panel");
+    const summary = document.getElementById("solution-summary");
+    const list = document.getElementById("solution-list");
+    if (!panel || !list) {
+      return;
+    }
+    if (summary) {
+      summary.textContent = `全 ${lines.length} 手`;
+    }
+    list.innerHTML = "";
+    for (const line of lines) {
+      const li = document.createElement("li");
+      li.textContent = line;
+      list.appendChild(li);
+    }
+    panel.classList.remove("hidden");
+  }
+
+  function hideSolution() {
+    const panel = document.getElementById("solution-panel");
+    if (panel) {
+      panel.classList.add("hidden");
+    }
+  }
+
+  function solutionPanelEl() {
+    return document.getElementById("solution-panel");
+  }
+
   return {
     render,
     buildBoard,
@@ -578,5 +624,9 @@ export function createView() {
     cascades,
     seedInput,
     overlayEl,
+    setSolverBusy,
+    showSolution,
+    hideSolution,
+    solutionPanelEl,
   };
 }

@@ -133,6 +133,17 @@ export function createApp({ view, deps = {} }) {
     return res;
   }
 
+  /** アニメーション・自動ホーム送りを挟まずに移動を適用する(解答再生用)。
+   *  成功時は通常の成功手と同じ副作用(タイマー開始→描画→勝利/詰み判定)を
+   *  実行するが、飛行アニメーションは予約しない。 */
+  function applyMoveInstant(from, destZone, destIndex) {
+    const res = gameState.attemptMove(state, from, destZone, destIndex);
+    if (res.ok) {
+      onMoveSucceeded();
+    }
+    return res;
+  }
+
   function undo() {
     if (gameState.undo(state)) {
       view.hideOverlay();
@@ -461,6 +472,7 @@ export function createApp({ view, deps = {} }) {
     mount,
     getState,
     attemptMove,
+    applyMoveInstant,
     undo,
     autoMoveHome,
     dblClickAutoMove,
