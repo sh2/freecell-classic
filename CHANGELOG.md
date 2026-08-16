@@ -53,6 +53,22 @@
   - No.入力欄の横に「開始」ボタン(`#start-game-btn`)を追加。番号指定開始は
     Enter でも従来どおり可能。
 
+### 開発ツール
+
+- ソルバーベンチマークの測定ハーネスを追加(`scripts/benchmark/run.js` /
+  `scripts/benchmark/report.js` / `docs/benchmark/` / `package.json`)。
+  - ゲーム番号 1〜32,000 を 1,000 ゲームずつバッチで**シリアル**計測する。
+    `dealGame()` で盤面を生成し、`solve()` を直接呼んで `status` / `nodes` /
+    `timeMs` / `moves` 数を記録する。
+  - 結果は `docs/benchmark/data/batch-XX.json` に保存。途中経過は
+    `batch-XX.partial.json` に毎ゲーム書き出し、中断・再開に対応。
+  - `--start` / `--count` で指定範囲も計測可能 (`range-*.json`。バッチ進捗に
+    影響しない)。
+  - `npm run benchmark:report` で、計測結果を自己完結型 HTML
+    (`docs/benchmark/report.html`) にまとめる。サマリ / 状態別内訳 /
+    バッチ進捗 / 応答時間・ノード数のヒストグラム(対数ビン)/ ゲーム別結果
+    (状態フィルタ・列ソート・ページング)を表示。
+
 ## 2026-08-15
 
 ### 機能追加

@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>フリーセル ソルバー ベンチマーク</title>
+<style>
+:root {
+  --bg: #0b1120;
+  --panel: #111a2e;
+  --panel2: #16223a;
+  --border: #24324f;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --accent: #38bdf8;
+  --green: #34d399;
+  --amber: #fbbf24;
+  --red: #f87171;
+  --violet: #a78bfa;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+}
+header {
+  padding: 28px 32px 20px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(56,189,248,.08), transparent);
+}
+header h1 { margin: 0 0 6px; font-size: 22px; letter-spacing: .02em; }
+header .sub { color: var(--muted); margin-bottom: 12px; }
+header .sub b { color: var(--text); font-size: 16px; }
+.progress-track {
+  height: 8px; border-radius: 999px; background: var(--panel2);
+  border: 1px solid var(--border); overflow: hidden; max-width: 640px;
+}
+.progress-bar { height: 100%; background: linear-gradient(90deg, #0ea5e9, #38bdf8); border-radius: 999px; }
+.meta { color: var(--muted); font-size: 12px; margin-top: 10px; }
+main { padding: 24px 32px 48px; max-width: 1180px; margin: 0 auto; }
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 20px;
+}
+.panel h2 { margin: 0 0 12px; font-size: 15px; }
+.small { font-size: 12px; font-weight: normal; }
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.card-label { color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+.card-value { font-size: 18px; font-weight: 700; }
+.card-sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1.4fr; gap: 20px; }
+.charts { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 900px) { .grid2, .charts { grid-template-columns: 1fr; } }
+table { width: 100%; border-collapse: collapse; }
+.mini th, .mini td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border); font-size: 13px; }
+.mini th { color: var(--muted); font-weight: 600; }
+.mini td.num, .data td.num, .data th.num { text-align: right; }
+.muted { color: var(--muted); }
+.row-dim td { opacity: .45; }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 8px; }
+.bar-cell { width: 38%; }
+.bar-track { background: var(--panel2); border-radius: 999px; height: 8px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 999px; }
+.badge {
+  display: inline-block; padding: 1px 8px; border-radius: 999px;
+  font-size: 11px; font-weight: 600; white-space: nowrap;
+}
+.muted-badge { color: var(--muted); background: rgba(148,163,184,.12); }
+.hist { width: 100%; height: auto; }
+.axis { font-size: 11px; fill: #94a3b8; }
+.note { font-size: 12px; margin: 8px 0 0; }
+.table-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+.toolbar { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; font-size: 13px; }
+.toolbar select {
+  background: var(--panel2); color: var(--text);
+  border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px;
+}
+.table-scroll { overflow-x: auto; margin-top: 10px; }
+table.data { min-width: 560px; }
+.data thead th {
+  position: sticky; top: 0; background: var(--panel2);
+  padding: 8px 12px; text-align: left; cursor: pointer;
+  border-bottom: 2px solid var(--border); user-select: none;
+  white-space: nowrap;
+}
+.data thead th.sortable:hover { color: var(--accent); }
+.data thead th.active { color: var(--accent); }
+.data thead th .arrow { margin-left: 6px; font-size: 10px; color: var(--accent); }
+.data tbody td { padding: 6px 12px; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; }
+.data tbody tr:hover { background: var(--panel2); }
+.row-warn td { background: rgba(251,191,36,.04); }
+.pager {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  margin-top: 14px; justify-content: center;
+}
+.pager button {
+  background: var(--panel2); color: var(--text);
+  border: 1px solid var(--border); border-radius: 6px;
+  min-width: 32px; height: 30px; padding: 0 8px; cursor: pointer;
+}
+.pager button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.pager button.current { background: var(--accent); border-color: var(--accent); color: #0b1120; font-weight: 700; }
+.pager button:disabled { opacity: .35; cursor: default; }
+.pager .ellipsis { color: var(--muted); padding: 0 2px; }
+.empty pre {
+  background: var(--panel2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 14px; overflow-x: auto;
+}
+.empty code { color: var(--accent); }
+footer { color: var(--muted); font-size: 12px; text-align: center; padding: 12px 32px 32px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>フリーセル ソルバー ベンチマーク</h1>
+  <div class="sub">計測済み <b>1,000</b> / 32,000 ゲーム</div>
+  <div class="progress-track"><div class="progress-bar" style="width:3.13%"></div></div>
+  <div class="meta">計測設定: maxNodes=2,000,000 / maxTimeMs=60,000 ms ／ 生成時刻: 2026-08-17 00:15</div>
+</header>
+<main>
+
+  <section class="cards">
+<div class="card"><div class="card-label">計測済み</div><div class="card-value">1,000 ゲーム</div><div class="card-sub">1,000 / 32,000</div></div>
+<div class="card"><div class="card-label">解決済み (solved)</div><div class="card-value">866</div><div class="card-sub">成功率 86.60%</div></div>
+<div class="card"><div class="card-label">未解決</div><div class="card-value">134</div><div class="card-sub">node/time/unsolvable 含む</div></div>
+<div class="card"><div class="card-label">応答時間 中央値</div><div class="card-value">29 ms</div><div class="card-sub">平均 318 ms</div></div>
+<div class="card"><div class="card-label">応答時間 最大</div><div class="card-value">57,345 ms</div><div class="card-sub">p99 1,898 ms</div></div>
+<div class="card"><div class="card-label">探索ノード 中央値</div><div class="card-value">25,215</div><div class="card-sub">平均 391,492</div></div>
+<div class="card"><div class="card-label">探索ノード 最大</div><div class="card-value">2,000,000</div><div class="card-sub">p99 2,000,000</div></div>
+<div class="card"><div class="card-label">ヒストグラム</div><div class="card-value">応答時間 / ノード数</div><div class="card-sub">対数ビンで表示</div></div>
+  </section>
+
+  <section class="grid2">
+    <div class="panel">
+      <h2>状態別内訳</h2>
+<table class="mini"><thead><tr><th>状態</th><th>件数</th><th>割合</th><th></th></tr></thead><tbody><tr>
+      <td><span class="dot" style="background:#34d399"></span>solved (解けた)</td>
+      <td class="num">866</td>
+      <td class="num muted">86.60%</td>
+      <td class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:86.60%;background:#34d399"></div></div></td>
+    </tr>
+<tr>
+      <td><span class="dot" style="background:#fbbf24"></span>node-limit (ノード上限)</td>
+      <td class="num">134</td>
+      <td class="num muted">13.40%</td>
+      <td class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:13.40%;background:#fbbf24"></div></div></td>
+    </tr>
+<tr>
+      <td><span class="dot" style="background:#f87171"></span>time-limit (時間上限)</td>
+      <td class="num">0</td>
+      <td class="num muted">0.00%</td>
+      <td class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:0.00%;background:#f87171"></div></div></td>
+    </tr>
+<tr>
+      <td><span class="dot" style="background:#a78bfa"></span>unsolvable (解けない証明)</td>
+      <td class="num">0</td>
+      <td class="num muted">0.00%</td>
+      <td class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:0.00%;background:#a78bfa"></div></div></td>
+    </tr></tbody></table>
+    </div>
+    <div class="panel">
+      <h2>バッチ進捗 (32 バッチ)</h2>
+<table class="mini"><thead><tr><th>バッチ</th><th>ゲーム範囲</th><th>状態</th><th>内容</th><th>計測日時</th></tr></thead><tbody><tr class="">
+      <td class="num">1</td>
+      <td class="num">1〜1000</td>
+      <td><span class="badge" style="color:var(--green);background:rgba(52,211,153,.12)">完了</span></td>
+      <td class="muted">1000 ゲーム / solved 866 / 中央値 29 ms</td>
+      <td class="muted">2026-08-17 00:13</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">2</td>
+      <td class="num">1001〜2000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">3</td>
+      <td class="num">2001〜3000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">4</td>
+      <td class="num">3001〜4000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">5</td>
+      <td class="num">4001〜5000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">6</td>
+      <td class="num">5001〜6000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">7</td>
+      <td class="num">6001〜7000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">8</td>
+      <td class="num">7001〜8000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">9</td>
+      <td class="num">8001〜9000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">10</td>
+      <td class="num">9001〜10000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">11</td>
+      <td class="num">10001〜11000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">12</td>
+      <td class="num">11001〜12000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">13</td>
+      <td class="num">12001〜13000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">14</td>
+      <td class="num">13001〜14000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">15</td>
+      <td class="num">14001〜15000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">16</td>
+      <td class="num">15001〜16000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">17</td>
+      <td class="num">16001〜17000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">18</td>
+      <td class="num">17001〜18000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">19</td>
+      <td class="num">18001〜19000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">20</td>
+      <td class="num">19001〜20000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">21</td>
+      <td class="num">20001〜21000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">22</td>
+      <td class="num">21001〜22000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">23</td>
+      <td class="num">22001〜23000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">24</td>
+      <td class="num">23001〜24000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">25</td>
+      <td class="num">24001〜25000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">26</td>
+      <td class="num">25001〜26000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">27</td>
+      <td class="num">26001〜27000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">28</td>
+      <td class="num">27001〜28000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">29</td>
+      <td class="num">28001〜29000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">30</td>
+      <td class="num">29001〜30000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">31</td>
+      <td class="num">30001〜31000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr>
+<tr class="row-dim">
+      <td class="num">32</td>
+      <td class="num">31001〜32000</td>
+      <td><span class="badge muted-badge">未計測</span></td>
+      <td class="muted">-</td>
+      <td class="muted">-</td>
+    </tr></tbody></table>
+    </div>
+  </section>
+
+  <section class="charts">
+    <div class="panel">
+      <h2>応答時間ヒストグラム <span class="muted small">(ms, 対数軸)</span></h2>
+<svg viewBox="0 0 660 300" role="img" aria-label="ヒストグラム" class="hist"><line x1="56" y1="258.0" x2="646" y2="258.0" stroke="#24324f" stroke-width="1" /><text x="48" y="262.0" text-anchor="end" class="axis">0</text><line x1="56" y1="198.0" x2="646" y2="198.0" stroke="#24324f" stroke-width="1" /><text x="48" y="202.0" text-anchor="end" class="axis">35</text><line x1="56" y1="138.0" x2="646" y2="138.0" stroke="#24324f" stroke-width="1" /><text x="48" y="142.0" text-anchor="end" class="axis">69</text><line x1="56" y1="78.0" x2="646" y2="78.0" stroke="#24324f" stroke-width="1" /><text x="48" y="82.0" text-anchor="end" class="axis">104</text><line x1="56" y1="18.0" x2="646" y2="18.0" stroke="#24324f" stroke-width="1" /><text x="48" y="22.0" text-anchor="end" class="axis">138</text><rect x="56.0" y="118.9" width="14.8" height="139.1" fill="#38bdf8" fill-opacity="0.73" rx="1.5"><title>6ms 〜 8ms: 80 ゲーム</title></rect><rect x="74.4" y="139.7" width="14.8" height="118.3" fill="#38bdf8" fill-opacity="0.67" rx="1.5"><title>8ms 〜 11ms: 68 ゲーム</title></rect><rect x="92.9" y="18.0" width="14.8" height="240.0" fill="#38bdf8" fill-opacity="1.00" rx="1.5"><title>11ms 〜 14ms: 138 ゲーム</title></rect><rect x="111.3" y="103.2" width="14.8" height="154.8" fill="#38bdf8" fill-opacity="0.77" rx="1.5"><title>14ms 〜 19ms: 89 ゲーム</title></rect><rect x="129.8" y="122.3" width="14.8" height="135.7" fill="#38bdf8" fill-opacity="0.72" rx="1.5"><title>19ms 〜 25ms: 78 ゲーム</title></rect><rect x="148.2" y="157.1" width="14.8" height="100.9" fill="#38bdf8" fill-opacity="0.62" rx="1.5"><title>25ms 〜 33ms: 58 ゲーム</title></rect><rect x="166.6" y="155.4" width="14.8" height="102.6" fill="#38bdf8" fill-opacity="0.63" rx="1.5"><title>33ms 〜 45ms: 59 ゲーム</title></rect><rect x="185.1" y="200.6" width="14.8" height="57.4" fill="#38bdf8" fill-opacity="0.51" rx="1.5"><title>45ms 〜 59ms: 33 ゲーム</title></rect><rect x="203.5" y="176.3" width="14.8" height="81.7" fill="#38bdf8" fill-opacity="0.57" rx="1.5"><title>59ms 〜 79ms: 47 ゲーム</title></rect><rect x="221.9" y="209.3" width="14.8" height="48.7" fill="#38bdf8" fill-opacity="0.48" rx="1.5"><title>79ms 〜 105ms: 28 ゲーム</title></rect><rect x="240.4" y="214.5" width="14.8" height="43.5" fill="#38bdf8" fill-opacity="0.47" rx="1.5"><title>105ms 〜 140ms: 25 ゲーム</title></rect><rect x="258.8" y="218.0" width="14.8" height="40.0" fill="#38bdf8" fill-opacity="0.46" rx="1.5"><title>140ms 〜 187ms: 23 ゲーム</title></rect><rect x="277.3" y="218.0" width="14.8" height="40.0" fill="#38bdf8" fill-opacity="0.46" rx="1.5"><title>187ms 〜 248ms: 23 ゲーム</title></rect><rect x="295.7" y="216.3" width="14.8" height="41.7" fill="#38bdf8" fill-opacity="0.46" rx="1.5"><title>248ms 〜 331ms: 24 ゲーム</title></rect><rect x="314.1" y="216.3" width="14.8" height="41.7" fill="#38bdf8" fill-opacity="0.46" rx="1.5"><title>331ms 〜 440ms: 24 ゲーム</title></rect><rect x="332.6" y="240.6" width="14.8" height="17.4" fill="#38bdf8" fill-opacity="0.40" rx="1.5"><title>440ms 〜 587ms: 10 ゲーム</title></rect><rect x="351.0" y="223.2" width="14.8" height="34.8" fill="#38bdf8" fill-opacity="0.44" rx="1.5"><title>587ms 〜 781ms: 20 ゲーム</title></rect><rect x="369.4" y="238.9" width="14.8" height="19.1" fill="#38bdf8" fill-opacity="0.40" rx="1.5"><title>781ms 〜 1.0秒: 11 ゲーム</title></rect><rect x="387.9" y="190.2" width="14.8" height="67.8" fill="#38bdf8" fill-opacity="0.53" rx="1.5"><title>1.0秒 〜 1.4秒: 39 ゲーム</title></rect><rect x="406.3" y="115.4" width="14.8" height="142.6" fill="#38bdf8" fill-opacity="0.74" rx="1.5"><title>1.4秒 〜 1.8秒: 82 ゲーム</title></rect><rect x="424.8" y="237.1" width="14.8" height="20.9" fill="#38bdf8" fill-opacity="0.41" rx="1.5"><title>1.8秒 〜 2.5秒: 12 ゲーム</title></rect><rect x="627.6" y="254.5" width="14.8" height="3.5" fill="#38bdf8" fill-opacity="0.36" rx="1.5"><title>43.1秒 〜 57.3秒: 2 ゲーム</title></rect><line x1="88.9" y1="258" x2="88.9" y2="263" stroke="#64748b" stroke-width="1" /><text x="88.9" y="278" text-anchor="middle" class="axis">10ms</text><line x1="237.1" y1="258" x2="237.1" y2="263" stroke="#64748b" stroke-width="1" /><text x="237.1" y="278" text-anchor="middle" class="axis">100ms</text><line x1="385.3" y1="258" x2="385.3" y2="263" stroke="#64748b" stroke-width="1" /><text x="385.3" y="278" text-anchor="middle" class="axis">1秒</text><line x1="533.6" y1="258" x2="533.6" y2="263" stroke="#64748b" stroke-width="1" /><text x="533.6" y="278" text-anchor="middle" class="axis">10秒</text><line x1="159.6" y1="18" x2="159.6" y2="258" stroke="#f472b6" stroke-width="1.5" stroke-dasharray="4 3" /><text x="159.6" y="14" text-anchor="middle" fill="#f472b6" class="axis">中央値</text><text x="351" y="294" text-anchor="middle" fill="#94a3b8" class="axis">応答時間 (対数軸)</text></svg>
+      <p class="note muted">中央値 29 ms。右端の山は時間上限 (maxTimeMs) による打ち切り分。</p>
+    </div>
+    <div class="panel">
+      <h2>探索ノード数ヒストグラム <span class="muted small">(対数軸)</span></h2>
+<svg viewBox="0 0 660 300" role="img" aria-label="ヒストグラム" class="hist"><line x1="56" y1="258.0" x2="646" y2="258.0" stroke="#24324f" stroke-width="1" /><text x="48" y="262.0" text-anchor="end" class="axis">0</text><line x1="56" y1="198.0" x2="646" y2="198.0" stroke="#24324f" stroke-width="1" /><text x="48" y="202.0" text-anchor="end" class="axis">36</text><line x1="56" y1="138.0" x2="646" y2="138.0" stroke="#24324f" stroke-width="1" /><text x="48" y="142.0" text-anchor="end" class="axis">73</text><line x1="56" y1="78.0" x2="646" y2="78.0" stroke="#24324f" stroke-width="1" /><text x="48" y="82.0" text-anchor="end" class="axis">109</text><line x1="56" y1="18.0" x2="646" y2="18.0" stroke="#24324f" stroke-width="1" /><text x="48" y="22.0" text-anchor="end" class="axis">145</text><rect x="56.0" y="246.4" width="12.8" height="11.6" fill="#a78bfa" fill-opacity="0.38" rx="1.5"><title>43 〜 57: 7 ゲーム</title></rect><rect x="71.9" y="244.8" width="12.8" height="13.2" fill="#a78bfa" fill-opacity="0.39" rx="1.5"><title>57 〜 77: 8 ゲーム</title></rect><rect x="87.9" y="231.5" width="12.8" height="26.5" fill="#a78bfa" fill-opacity="0.42" rx="1.5"><title>77 〜 103: 16 ゲーム</title></rect><rect x="103.8" y="229.9" width="12.8" height="28.1" fill="#a78bfa" fill-opacity="0.43" rx="1.5"><title>103 〜 137: 17 ゲーム</title></rect><rect x="119.8" y="221.6" width="12.8" height="36.4" fill="#a78bfa" fill-opacity="0.45" rx="1.5"><title>137 〜 184: 22 ゲーム</title></rect><rect x="135.7" y="236.5" width="12.8" height="21.5" fill="#a78bfa" fill-opacity="0.41" rx="1.5"><title>184 〜 246: 13 ゲーム</title></rect><rect x="151.7" y="231.5" width="12.8" height="26.5" fill="#a78bfa" fill-opacity="0.42" rx="1.5"><title>246 〜 328: 16 ゲーム</title></rect><rect x="167.6" y="224.9" width="12.8" height="33.1" fill="#a78bfa" fill-opacity="0.44" rx="1.5"><title>328 〜 439: 20 ゲーム</title></rect><rect x="183.6" y="233.2" width="12.8" height="24.8" fill="#a78bfa" fill-opacity="0.42" rx="1.5"><title>439 〜 587: 15 ゲーム</title></rect><rect x="199.5" y="226.6" width="12.8" height="31.4" fill="#a78bfa" fill-opacity="0.44" rx="1.5"><title>587 〜 785: 19 ゲーム</title></rect><rect x="215.5" y="210.0" width="12.8" height="48.0" fill="#a78bfa" fill-opacity="0.48" rx="1.5"><title>785 〜 1.0k: 29 ゲーム</title></rect><rect x="231.4" y="216.6" width="12.8" height="41.4" fill="#a78bfa" fill-opacity="0.46" rx="1.5"><title>1.0k 〜 1.4k: 25 ゲーム</title></rect><rect x="247.4" y="229.9" width="12.8" height="28.1" fill="#a78bfa" fill-opacity="0.43" rx="1.5"><title>1.4k 〜 1.9k: 17 ゲーム</title></rect><rect x="263.3" y="213.3" width="12.8" height="44.7" fill="#a78bfa" fill-opacity="0.47" rx="1.5"><title>1.9k 〜 2.5k: 27 ゲーム</title></rect><rect x="279.2" y="223.2" width="12.8" height="34.8" fill="#a78bfa" fill-opacity="0.44" rx="1.5"><title>2.5k 〜 3.4k: 21 ゲーム</title></rect><rect x="295.2" y="221.6" width="12.8" height="36.4" fill="#a78bfa" fill-opacity="0.45" rx="1.5"><title>3.4k 〜 4.5k: 22 ゲーム</title></rect><rect x="311.1" y="211.7" width="12.8" height="46.3" fill="#a78bfa" fill-opacity="0.48" rx="1.5"><title>4.5k 〜 6.0k: 28 ゲーム</title></rect><rect x="327.1" y="208.3" width="12.8" height="49.7" fill="#a78bfa" fill-opacity="0.48" rx="1.5"><title>6.0k 〜 8.0k: 30 ゲーム</title></rect><rect x="343.0" y="198.4" width="12.8" height="59.6" fill="#a78bfa" fill-opacity="0.51" rx="1.5"><title>8.0k 〜 10.7k: 36 ゲーム</title></rect><rect x="359.0" y="195.1" width="12.8" height="62.9" fill="#a78bfa" fill-opacity="0.52" rx="1.5"><title>10.7k 〜 14.3k: 38 ゲーム</title></rect><rect x="374.9" y="198.4" width="12.8" height="59.6" fill="#a78bfa" fill-opacity="0.51" rx="1.5"><title>14.3k 〜 19.2k: 36 ゲーム</title></rect><rect x="390.9" y="195.1" width="12.8" height="62.9" fill="#a78bfa" fill-opacity="0.52" rx="1.5"><title>19.2k 〜 25.6k: 38 ゲーム</title></rect><rect x="406.8" y="196.8" width="12.8" height="61.2" fill="#a78bfa" fill-opacity="0.52" rx="1.5"><title>25.6k 〜 34.3k: 37 ゲーム</title></rect><rect x="422.8" y="208.3" width="12.8" height="49.7" fill="#a78bfa" fill-opacity="0.48" rx="1.5"><title>34.3k 〜 45.8k: 30 ゲーム</title></rect><rect x="438.7" y="193.4" width="12.8" height="64.6" fill="#a78bfa" fill-opacity="0.52" rx="1.5"><title>45.8k 〜 61.3k: 39 ゲーム</title></rect><rect x="454.6" y="211.7" width="12.8" height="46.3" fill="#a78bfa" fill-opacity="0.48" rx="1.5"><title>61.3k 〜 81.9k: 28 ゲーム</title></rect><rect x="470.6" y="213.3" width="12.8" height="44.7" fill="#a78bfa" fill-opacity="0.47" rx="1.5"><title>81.9k 〜 109.5k: 27 ゲーム</title></rect><rect x="486.5" y="208.3" width="12.8" height="49.7" fill="#a78bfa" fill-opacity="0.48" rx="1.5"><title>109.5k 〜 146.4k: 30 ゲーム</title></rect><rect x="502.5" y="226.6" width="12.8" height="31.4" fill="#a78bfa" fill-opacity="0.44" rx="1.5"><title>146.4k 〜 195.8k: 19 ゲーム</title></rect><rect x="518.4" y="211.7" width="12.8" height="46.3" fill="#a78bfa" fill-opacity="0.48" rx="1.5"><title>195.8k 〜 261.8k: 28 ゲーム</title></rect><rect x="534.4" y="226.6" width="12.8" height="31.4" fill="#a78bfa" fill-opacity="0.44" rx="1.5"><title>261.8k 〜 350.0k: 19 ゲーム</title></rect><rect x="550.3" y="210.0" width="12.8" height="48.0" fill="#a78bfa" fill-opacity="0.48" rx="1.5"><title>350.0k 〜 468.0k: 29 ゲーム</title></rect><rect x="566.3" y="226.6" width="12.8" height="31.4" fill="#a78bfa" fill-opacity="0.44" rx="1.5"><title>468.0k 〜 625.8k: 19 ゲーム</title></rect><rect x="582.2" y="238.1" width="12.8" height="19.9" fill="#a78bfa" fill-opacity="0.40" rx="1.5"><title>625.8k 〜 836.7k: 12 ゲーム</title></rect><rect x="598.2" y="228.2" width="12.8" height="29.8" fill="#a78bfa" fill-opacity="0.43" rx="1.5"><title>836.7k 〜 1.1M: 18 ゲーム</title></rect><rect x="614.1" y="224.9" width="12.8" height="33.1" fill="#a78bfa" fill-opacity="0.44" rx="1.5"><title>1.1M 〜 1.5M: 20 ゲーム</title></rect><rect x="630.1" y="18.0" width="12.8" height="240.0" fill="#a78bfa" fill-opacity="1.00" rx="1.5"><title>1.5M 〜 2.0M: 145 ゲーム</title></rect><line x1="102.3" y1="258" x2="102.3" y2="263" stroke="#64748b" stroke-width="1" /><text x="102.3" y="278" text-anchor="middle" class="axis">100</text><line x1="228.7" y1="258" x2="228.7" y2="263" stroke="#64748b" stroke-width="1" /><text x="228.7" y="278" text-anchor="middle" class="axis">1k</text><line x1="355.1" y1="258" x2="355.1" y2="263" stroke="#64748b" stroke-width="1" /><text x="355.1" y="278" text-anchor="middle" class="axis">10k</text><line x1="481.5" y1="258" x2="481.5" y2="263" stroke="#64748b" stroke-width="1" /><text x="481.5" y="278" text-anchor="middle" class="axis">100k</text><line x1="607.9" y1="258" x2="607.9" y2="263" stroke="#64748b" stroke-width="1" /><text x="607.9" y="278" text-anchor="middle" class="axis">1M</text><line x1="407.9" y1="18" x2="407.9" y2="258" stroke="#f472b6" stroke-width="1.5" stroke-dasharray="4 3" /><text x="407.9" y="14" text-anchor="middle" fill="#f472b6" class="axis">中央値</text><text x="351" y="294" text-anchor="middle" fill="#94a3b8" class="axis">探索ノード数 (対数軸)</text></svg>
+      <p class="note muted">中央値 25,215 ノード。右端の山はノード上限 (maxNodes) による打ち切り分。</p>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="table-head">
+      <h2>ゲーム別結果</h2>
+      <div class="toolbar">
+        <label>状態: <select id="filter-status"></select></label>
+        <label>表示件数: <select id="page-size">
+          <option value="50">50</option>
+          <option value="100" selected>100</option>
+          <option value="200">200</option>
+          <option value="500">500</option>
+        </select></label>
+        <span id="table-info" class="muted"></span>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table class="data">
+        <thead><tr>
+          <th data-key="game" class="sortable">No.<span class="arrow"></span></th>
+          <th data-key="status" class="sortable">状態<span class="arrow"></span></th>
+          <th data-key="nodes" class="sortable num">ノード数<span class="arrow"></span></th>
+          <th data-key="timeMs" class="sortable num">応答時間 (ms)<span class="arrow"></span></th>
+          <th data-key="moves" class="sortable num">手数<span class="arrow"></span></th>
+        </tr></thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+    <div class="pager" id="pager"></div>
+  </section>
+</main>
+<footer>生成: 2026-08-17 00:15 ／ データ: docs/benchmark/data/batch-*.json ／ 再生成: <code>npm run benchmark:report</code></footer>
+<script id="benchmark-data" type="application/json">{"config":{"maxNodes":2000000,"maxTimeMs":60000},"statuses":["solved","node-limit","time-limit","unsolvable"],"games":[[1,0,13735,58,96],[2,0,1226,24,93],[3,0,297,19,93],[4,0,427027,388,93],[5,0,78385,87,94],[6,0,401612,407,92],[7,0,201740,146,94],[8,0,11463,32,91],[9,0,317988,279,94],[10,0,244788,210,95],[11,0,20353,37,93],[12,0,71698,63,94],[13,0,270,7,93],[14,0,5204,13,90],[15,0,11653,31,94],[16,0,2335,9,93],[17,0,426,17,92],[18,0,48500,43,95],[19,0,3581,11,96],[20,0,212,11,92],[21,0,9881,25,93],[22,0,833,7,96],[23,0,18371,38,96],[24,1,2000000,1805,0],[25,1,2000000,1409,0],[26,1,2000000,1824,0],[27,0,24545,26,94],[28,0,6215,19,90],[29,0,459797,330,93],[30,0,191536,180,94],[31,0,1278,8,92],[32,0,849489,767,96],[33,0,63,7,94],[34,0,19005,31,94],[35,0,57286,53,95],[36,0,388256,330,95],[37,0,627,7,95],[38,0,8681,21,91],[39,1,2000000,1565,0],[40,0,8405,19,96],[41,1,2000000,-885,0],[42,0,16564,29,89],[43,0,7174,13,90],[44,0,68502,78,93],[45,0,230,7,92],[46,0,67,12,94],[47,0,4843,10,94],[48,0,12588,18,93],[49,1,2000000,1611,0],[50,0,1386,16,95],[51,0,2895,9,96],[52,0,105787,87,93],[53,0,15023,18,89],[54,0,211194,228,92],[55,0,3719,9,95],[56,0,15321,23,94],[57,0,201211,172,94],[58,0,252,13,90],[59,0,548,7,91],[60,0,3775,16,93],[61,0,34526,42,95],[62,0,37660,37,95],[63,0,131451,154,94],[64,0,51655,43,91],[65,0,5262,17,94],[66,0,100669,85,94],[67,0,10043,22,89],[68,0,84109,69,94],[69,0,54466,52,92],[70,0,112881,105,96],[71,0,18571,34,94],[72,0,407833,301,94],[73,0,59512,56,93],[74,0,18798,20,92],[75,0,4834,15,92],[76,0,9583,15,93],[77,0,11382,17,92],[78,0,25148,29,87],[79,0,8627,18,93],[80,0,212830,150,91],[81,0,1053,11,93],[82,0,469,7,95],[83,1,2000000,1278,0],[84,0,27286,24,95],[85,0,897,12,94],[86,1,2000000,1566,0],[87,0,803,14,95],[88,0,434410,294,94],[89,0,10093,14,95],[90,0,923309,646,94],[91,0,127,13,93],[92,0,141002,115,95],[93,0,28010,34,93],[94,0,31309,29,96],[95,0,25215,42,95],[96,0,32705,29,94],[97,0,12220,14,94],[98,0,293,7,93],[99,0,92540,77,96],[100,0,17669,32,93],[101,0,1696,8,96],[102,0,7156,16,95],[103,0,579,6,95],[104,0,20620,23,96],[105,0,21009,19,96],[106,1,2000000,-3061,0],[107,0,53155,49,92],[108,0,664,14,94],[109,0,361212,296,93],[110,1,2000000,1481,0],[111,0,353452,238,96],[112,0,57840,57,94],[113,0,2251,8,94],[114,0,934601,672,94],[115,0,46884,37,93],[116,0,1243,19,96],[117,0,44001,38,93],[118,1,2000000,1567,0],[119,0,4009,10,92],[120,1,2000000,1248,0],[121,0,1187,10,94],[122,1,2000000,1398,0],[123,0,1860,16,95],[124,0,206539,162,95],[125,0,498682,371,94],[126,1,2000000,1481,0],[127,0,765334,-4897,90],[128,0,126,7,95],[129,0,465064,348,92],[130,0,257,13,94],[131,0,773,15,95],[132,0,426372,354,96],[133,0,395491,260,96],[134,0,46010,40,88],[135,0,88479,110,94],[136,0,430,7,95],[137,0,56740,53,94],[138,0,7241,16,92],[139,0,717816,547,94],[140,0,60179,48,94],[141,0,21277,37,94],[142,0,53943,55,90],[143,0,5061,17,94],[144,0,158479,143,95],[145,0,22115,24,92],[146,0,9222,14,95],[147,0,849641,644,95],[148,0,295,7,93],[149,0,937,9,95],[150,0,570,14,92],[151,0,125448,111,93],[152,0,7461,12,92],[153,1,2000000,1913,0],[154,0,1395,14,94],[155,0,540,15,90],[156,0,183,7,94],[157,0,22027,30,96],[158,0,1268,13,94],[159,0,1933,16,90],[160,0,76396,69,95],[161,0,17007,24,94],[162,0,669771,483,93],[163,0,7712,19,93],[164,0,57244,44,94],[165,0,51587,42,94],[166,0,374,14,92],[167,0,1117,14,92],[168,0,145,8,96],[169,0,1213990,805,94],[170,0,274334,180,94],[171,0,39888,39,89],[172,0,3631,17,94],[173,0,6274,11,91],[174,0,157698,117,94],[175,0,1129136,710,95],[176,0,13076,26,95],[177,0,6527,10,93],[178,1,2000000,1474,0],[179,0,12281,19,95],[180,0,32026,40,91],[181,0,8031,13,94],[182,0,168877,113,90],[183,0,96794,-3473,95],[184,0,59195,72,90],[185,0,17864,21,93],[186,0,1151,12,95],[187,1,2000000,1593,0],[188,0,4999,17,95],[189,1,2000000,1261,0],[190,0,159748,102,95],[191,0,2052,8,93],[192,0,1088,15,93],[193,0,254446,214,95],[194,0,327358,273,95],[195,0,8569,12,91],[196,0,6980,20,95],[197,1,2000000,1393,0],[198,0,1954,12,94],[199,0,395,7,95],[200,0,104886,77,94],[201,0,22607,26,96],[202,0,10877,17,94],[203,1,2000000,1345,0],[204,0,1827170,1432,93],[205,0,1848,7,95],[206,0,95297,75,95],[207,1,2000000,1619,0],[208,0,1177,16,93],[209,0,647380,-5140,94],[210,0,56742,49,90],[211,0,57,7,94],[212,0,381,13,96],[213,0,1134432,1089,93],[214,0,13832,18,94],[215,0,261,7,88],[216,0,95083,94,94],[217,0,88721,68,94],[218,0,3850,12,93],[219,0,71,7,94],[220,0,158,14,95],[221,0,157,7,93],[222,0,5987,16,94],[223,0,14360,25,94],[224,0,100,13,91],[225,0,15427,18,95],[226,0,1083,11,94],[227,0,8472,18,92],[228,0,269,15,96],[229,1,2000000,1276,0],[230,0,145,10,93],[231,1,2000000,1454,0],[232,0,4008,19,93],[233,0,2140,8,96],[234,0,1256,13,95],[235,0,216555,173,93],[236,0,49660,72,92],[237,0,5767,11,96],[238,0,3939,12,93],[239,0,92770,75,93],[240,0,8523,17,93],[241,0,118993,122,90],[242,0,184590,131,91],[243,0,24820,37,92],[244,0,127,7,95],[245,0,154278,100,96],[246,0,142914,116,94],[247,0,32194,35,95],[248,0,99,6,93],[249,0,578702,415,92],[250,0,16565,26,92],[251,0,8534,21,89],[252,1,2000000,1505,0],[253,0,1225541,1014,93],[254,1,2000000,-2249,0],[255,0,66614,62,92],[256,0,7512,12,94],[257,0,1930,15,92],[258,0,101391,85,94],[259,0,1985,15,91],[260,0,11545,13,96],[261,0,541513,638,92],[262,0,2280,15,94],[263,0,2059,15,95],[264,0,11824,14,94],[265,0,10923,22,95],[266,0,113154,88,96],[267,1,2000000,1845,0],[268,0,2456,8,96],[269,1,2000000,1766,0],[270,0,210766,136,95],[271,0,445470,300,96],[272,0,18184,18,92],[273,0,10224,20,89],[274,0,80265,64,95],[275,0,4251,16,93],[276,0,28317,25,94],[277,0,43340,38,94],[278,0,4003,16,96],[279,1,2000000,1291,0],[280,0,780,7,92],[281,0,3245,11,95],[282,0,873622,534,95],[283,1,2000000,1569,0],[284,0,27308,25,95],[285,0,1285131,887,95],[286,1,2000000,54925,0],[287,0,12958,20,95],[288,0,310516,204,96],[289,0,3367,12,95],[290,0,6282,12,95],[291,0,803,9,86],[292,0,68714,69,94],[293,0,18734,18,92],[294,0,97908,96,87],[295,1,2000000,1476,0],[296,1,2000000,2156,0],[297,0,3044,9,95],[298,0,31294,38,91],[299,1,2000000,1328,0],[300,0,61,6,92],[301,0,90,10,95],[302,0,36587,38,94],[303,0,136852,107,89],[304,0,128275,99,94],[305,0,36362,47,92],[306,0,102,13,88],[307,0,4644,10,90],[308,1,2000000,1579,0],[309,0,221,23,94],[310,0,873,20,94],[311,0,279894,195,93],[312,0,10546,16,94],[313,0,31977,29,92],[314,0,920,13,93],[315,0,74299,69,94],[316,0,1453125,-4497,94],[317,0,65365,49,92],[318,0,14399,25,90],[319,0,426,7,96],[320,0,16788,23,96],[321,0,47,12,94],[322,0,1002067,807,96],[323,0,995,7,91],[324,0,242118,173,90],[325,0,34462,44,94],[326,0,27318,34,93],[327,0,959476,765,96],[328,0,81725,93,95],[329,0,2264,9,91],[330,0,1485,15,91],[331,0,14683,15,92],[332,1,2000000,2151,0],[333,1,2000000,1190,0],[334,0,2736,9,95],[335,0,24116,34,96],[336,1,2000000,1297,0],[337,0,54927,53,91],[338,0,25063,22,90],[339,0,6425,19,95],[340,0,664,7,94],[341,0,51648,57,93],[342,0,1300,13,93],[343,0,20250,36,94],[344,0,86594,71,96],[345,0,19796,30,96],[346,0,68,16,95],[347,0,168341,124,95],[348,0,2313,13,93],[349,0,1285,7,91],[350,1,2000000,1249,0],[351,0,11108,20,91],[352,0,19548,35,95],[353,0,783818,528,94],[354,0,270382,204,94],[355,0,4880,9,93],[356,0,38612,44,95],[357,0,432,7,94],[358,0,227660,-4021,90],[359,0,16770,22,92],[360,0,100,6,96],[361,0,215,12,95],[362,1,2000000,1473,0],[363,0,27709,29,94],[364,0,1154973,917,95],[365,1,2000000,1329,0],[366,0,133287,85,94],[367,0,68,8,95],[368,1,2000000,1147,0],[369,0,119800,100,92],[370,0,5504,10,94],[371,0,1138572,775,93],[372,0,42806,38,95],[373,0,5022,16,95],[374,1,2000000,1363,0],[375,0,140658,126,95],[376,0,108128,72,94],[377,0,69105,63,95],[378,0,110,6,93],[379,0,6751,18,89],[380,1,2000000,1278,0],[381,0,992928,756,93],[382,0,159282,-1568,96],[383,0,203264,156,91],[384,0,91081,67,93],[385,0,225468,193,91],[386,0,9888,13,90],[387,1,2000000,1235,0],[388,0,124,14,93],[389,0,62954,67,95],[390,0,398532,267,95],[391,0,387883,272,93],[392,0,11898,22,91],[393,0,4596,10,95],[394,1,2000000,1426,0],[395,0,723,7,92],[396,0,24224,31,95],[397,1,2000000,1520,0],[398,0,935921,769,95],[399,0,87609,60,94],[400,0,57201,60,94],[401,0,201090,144,94],[402,0,823129,641,96],[403,0,3593,8,93],[404,0,204,13,94],[405,0,54471,57,91],[406,0,66004,68,95],[407,1,2000000,1349,0],[408,0,33502,36,90],[409,0,27394,21,92],[410,0,10801,21,92],[411,0,6673,10,94],[412,0,171,8,94],[413,1,2000000,-3594,0],[414,0,43,6,93],[415,1,2000000,1412,0],[416,0,363115,247,96],[417,0,1007,8,93],[418,0,6180,19,94],[419,0,1931465,1221,96],[420,0,138593,95,95],[421,0,93877,71,90],[422,1,2000000,1585,0],[423,0,398,7,93],[424,0,2840,14,95],[425,0,8635,18,95],[426,0,94,13,93],[427,0,283548,312,91],[428,0,11950,18,90],[429,0,15357,18,94],[430,0,826,16,95],[431,0,35730,31,96],[432,0,5297,14,92],[433,1,2000000,1895,0],[434,0,1925,14,90],[435,0,450217,317,93],[436,0,8361,18,95],[437,0,585,7,92],[438,0,17601,30,95],[439,0,230,7,92],[440,1,2000000,1313,0],[441,0,1636829,-2291,90],[442,0,2601,16,95],[443,0,20956,22,95],[444,0,123,12,94],[445,0,32648,35,86],[446,0,541787,532,94],[447,0,229,7,92],[448,0,56,16,87],[449,0,122,15,94],[450,0,121253,84,92],[451,0,12024,25,96],[452,0,95,7,91],[453,0,65718,58,91],[454,0,377129,277,95],[455,0,66400,76,94],[456,1,2000000,1391,0],[457,0,26995,30,89],[458,0,1883,8,96],[459,0,1122,14,94],[460,0,115052,99,91],[461,0,12648,16,95],[462,0,1606,13,92],[463,0,33817,51,91],[464,0,295,7,96],[465,0,1538587,1197,96],[466,0,311,18,96],[467,0,14098,25,94],[468,0,10865,13,92],[469,0,2559,10,93],[470,1,2000000,1397,0],[471,0,18128,27,95],[472,1,2000000,1546,0],[473,0,533426,426,91],[474,0,393128,292,88],[475,0,578770,427,93],[476,0,1481891,-2074,94],[477,0,843,13,87],[478,0,613,7,96],[479,1,2000000,1580,0],[480,0,134,6,90],[481,0,639,9,90],[482,0,812,13,96],[483,0,9955,25,95],[484,0,1981,8,94],[485,0,7410,17,92],[486,0,829,13,92],[487,0,22233,32,94],[488,0,201532,144,96],[489,0,1881273,1993,90],[490,0,165,13,95],[491,0,3080,17,92],[492,0,479786,345,94],[493,0,186,10,96],[494,0,10865,15,93],[495,0,54333,49,96],[496,0,3500,9,95],[497,0,880841,555,91],[498,0,5577,17,90],[499,0,55690,54,95],[500,1,2000000,1478,0],[501,0,1326550,1066,91],[502,0,7546,11,95],[503,0,206245,194,93],[504,0,21784,25,95],[505,0,1764,10,95],[506,0,8759,19,96],[507,0,157,11,88],[508,0,1481,8,95],[509,0,631,14,92],[510,0,621,15,96],[511,0,269490,170,95],[512,1,2000000,1266,0],[513,0,35339,34,93],[514,0,2877,10,95],[515,0,2611,15,96],[516,0,11785,23,94],[517,0,48328,52,94],[518,1,2000000,-3360,0],[519,0,6447,18,93],[520,0,1346,9,94],[521,0,94,11,94],[522,0,28451,26,94],[523,0,2338,16,95],[524,0,2317,8,95],[525,0,620650,419,95],[526,0,189,13,95],[527,0,1870654,1630,94],[528,1,2000000,1853,0],[529,0,110,12,95],[530,1,2000000,1559,0],[531,0,18624,33,91],[532,0,113775,84,94],[533,0,73406,64,93],[534,1,2000000,1405,0],[535,0,67895,55,96],[536,0,2685,8,91],[537,0,308,7,96],[538,0,13786,39,90],[539,1,2000000,1407,0],[540,0,74149,55,96],[541,0,63933,73,94],[542,0,1177309,-717,95],[543,0,388198,314,96],[544,0,692,6,91],[545,0,815,14,88],[546,0,109,6,93],[547,0,260456,195,93],[548,0,1484698,1287,94],[549,0,21305,35,95],[550,0,13230,15,93],[551,0,1249564,787,93],[552,0,2675,15,95],[553,0,39140,42,94],[554,0,829,7,92],[555,0,12678,21,94],[556,0,135,13,93],[557,0,6684,20,96],[558,0,1275,7,95],[559,0,2021,16,95],[560,0,7088,17,93],[561,1,2000000,1594,0],[562,0,897749,611,96],[563,0,2036,10,90],[564,0,3202,10,94],[565,1,2000000,1454,0],[566,0,196187,160,94],[567,1,2000000,1490,0],[568,0,352533,267,96],[569,0,669,12,90],[570,0,1797,7,93],[571,0,5528,12,95],[572,0,18934,29,95],[573,0,57566,66,94],[574,0,444309,340,93],[575,0,5592,15,93],[576,0,111526,-3345,93],[577,1,2000000,1592,0],[578,0,9166,12,94],[579,1,2000000,1759,0],[580,0,422,13,90],[581,0,50059,60,92],[582,0,942,7,91],[583,1,2000000,1610,0],[584,0,93,19,91],[585,1,2000000,1898,0],[586,0,89,6,93],[587,0,37720,45,95],[588,0,164834,117,92],[589,0,7659,19,95],[590,0,32019,31,96],[591,0,28056,27,93],[592,0,24320,26,91],[593,0,862411,779,92],[594,1,2000000,1733,0],[595,0,553043,-4241,93],[596,0,10318,14,93],[597,0,1975,16,95],[598,1,2000000,1437,0],[599,0,9335,16,89],[600,0,120,7,95],[601,0,229190,196,95],[602,0,5750,10,92],[603,0,643421,412,95],[604,0,13765,23,95],[605,0,100,13,95],[606,0,84143,72,93],[607,0,77409,66,93],[608,1,2000000,1373,0],[609,0,1001,13,93],[610,0,3044,8,94],[611,0,1447770,888,93],[612,1,2000000,1552,0],[613,0,1461,13,95],[614,0,9289,12,95],[615,0,30990,32,96],[616,0,10828,19,94],[617,1,2000000,1671,0],[618,0,39016,36,91],[619,0,16086,29,92],[620,0,10432,21,92],[621,0,3030,15,92],[622,0,54580,42,95],[623,0,27016,28,90],[624,0,1035,13,94],[625,0,948,17,93],[626,0,45008,30,90],[627,1,2000000,-2114,0],[628,0,905,13,96],[629,0,389,13,94],[630,0,881,7,91],[631,0,1036995,696,93],[632,0,7716,14,94],[633,0,10510,14,94],[634,0,5649,17,93],[635,0,48960,43,95],[636,0,24598,33,95],[637,0,3383,17,92],[638,0,28115,25,96],[639,1,2000000,1735,0],[640,0,962,8,95],[641,0,423,13,94],[642,1,2000000,1676,0],[643,0,342,13,95],[644,0,4748,10,94],[645,0,930,13,96],[646,0,450871,283,94],[647,1,2000000,1554,0],[648,0,65895,49,94],[649,0,71458,67,96],[650,0,1222848,905,94],[651,0,89341,80,91],[652,0,9416,14,93],[653,0,1159,14,93],[654,0,5267,18,94],[655,0,75,12,91],[656,0,16135,17,95],[657,1,2000000,2054,0],[658,1,2000000,-961,0],[659,1,2000000,1629,0],[660,0,575,7,94],[661,0,81215,78,92],[662,0,107,13,94],[663,0,12118,24,90],[664,0,51064,40,93],[665,0,100843,78,95],[666,1,2000000,1290,0],[667,0,24085,33,94],[668,0,11988,15,94],[669,0,735084,606,92],[670,0,351900,243,94],[671,0,27981,34,91],[672,1,2000000,1469,0],[673,1,2000000,1540,0],[674,0,448,7,95],[675,0,26744,33,95],[676,0,4018,13,93],[677,0,22622,24,93],[678,0,166,12,93],[679,0,280237,234,94],[680,0,46236,41,93],[681,0,325,7,94],[682,0,576,15,93],[683,0,3713,9,93],[684,0,1605719,-3230,94],[685,0,190321,119,93],[686,0,49,13,91],[687,0,728,7,94],[688,0,686,12,93],[689,0,149,13,95],[690,0,133601,123,94],[691,1,2000000,1806,0],[692,0,1831,12,93],[693,1,2000000,1666,0],[694,0,214936,180,95],[695,0,116266,84,93],[696,0,13328,22,92],[697,0,28434,34,92],[698,0,32519,39,93],[699,1,2000000,1738,0],[700,0,381,12,95],[701,0,1036,8,93],[702,0,1959,14,92],[703,0,78,7,94],[704,0,185656,152,89],[705,0,36451,40,95],[706,0,46761,56,95],[707,0,520762,371,92],[708,0,143,7,92],[709,0,6238,26,93],[710,0,3174,21,96],[711,0,608808,424,95],[712,0,393,14,96],[713,0,699133,425,96],[714,0,174,12,92],[715,0,1959282,1750,90],[716,0,16534,29,96],[717,0,1834,8,96],[718,0,1849554,-2242,93],[719,0,39227,35,94],[720,1,2000000,1502,0],[721,1,2000000,1382,0],[722,0,292,13,95],[723,0,1983231,1317,96],[724,0,505,12,93],[725,1,2000000,1352,0],[726,0,39503,37,95],[727,1,2000000,1471,0],[728,0,19181,28,95],[729,1,2000000,1390,0],[730,1,2000000,-2566,0],[731,0,136,6,94],[732,0,157475,137,92],[733,0,227,6,90],[734,0,813,9,92],[735,0,4040,17,95],[736,0,272694,240,93],[737,0,3755,10,95],[738,0,9962,20,95],[739,0,370612,289,94],[740,0,222174,182,95],[741,0,58733,70,96],[742,0,1024,13,94],[743,0,1471,14,90],[744,1,2000000,1432,0],[745,0,30614,34,95],[746,0,98178,76,90],[747,0,8606,22,94],[748,0,158,14,93],[749,0,55971,49,96],[750,0,83501,70,95],[751,0,125,12,92],[752,0,395,13,94],[753,0,923920,675,94],[754,0,1159307,747,95],[755,0,318005,190,94],[756,0,113684,93,89],[757,0,1843,8,94],[758,0,346217,287,95],[759,0,1369,13,93],[760,0,383332,335,92],[761,0,5119,10,94],[762,0,29148,32,94],[763,0,15605,22,95],[764,0,34422,43,92],[765,0,19293,20,95],[766,0,38853,37,96],[767,0,263192,208,94],[768,0,7651,20,92],[769,0,320503,246,93],[770,1,2000000,1269,0],[771,0,745722,524,91],[772,0,87,12,92],[773,0,1118833,57345,93],[774,0,2532,12,93],[775,0,56102,47,95],[776,0,251247,225,96],[777,0,153,7,94],[778,1,2000000,1367,0],[779,0,439385,422,93],[780,0,29047,26,95],[781,0,5248,18,91],[782,0,236326,212,90],[783,0,572,11,95],[784,0,8540,13,94],[785,0,1235,14,95],[786,1,2000000,1314,0],[787,0,6611,14,93],[788,0,16333,21,93],[789,0,21972,32,86],[790,0,3791,10,94],[791,1,2000000,1506,0],[792,0,34089,40,96],[793,0,183,13,95],[794,0,257526,166,95],[795,0,2396,12,95],[796,0,19325,22,93],[797,0,165,12,94],[798,1,2000000,2382,0],[799,0,10418,16,90],[800,0,6271,12,95],[801,1,2000000,1521,0],[802,0,1400,8,93],[803,0,2125,17,90],[804,0,100824,75,95],[805,0,31503,44,96],[806,0,431,8,92],[807,0,7493,21,95],[808,0,1922,14,94],[809,0,16530,32,92],[810,0,538,7,91],[811,0,566712,410,93],[812,0,328867,230,92],[813,0,12534,20,92],[814,0,3167,8,89],[815,0,332,10,91],[816,1,2000000,1781,0],[817,0,176336,128,96],[818,0,602267,424,92],[819,1,2000000,1340,0],[820,0,9036,13,94],[821,0,36501,47,88],[822,0,226040,151,96],[823,0,11377,14,91],[824,0,162,7,95],[825,0,5278,17,92],[826,0,962972,579,93],[827,1,2000000,1519,0],[828,1,2000000,1354,0],[829,1,2000000,-238,0],[830,0,89,7,88],[831,0,176,7,94],[832,0,760,19,93],[833,1,2000000,1718,0],[834,0,179,6,93],[835,1,2000000,1629,0],[836,0,56,12,93],[837,0,47532,46,95],[838,0,120468,91,95],[839,0,9825,20,96],[840,0,8547,18,93],[841,0,92762,80,94],[842,0,4558,14,94],[843,0,17067,17,94],[844,0,21976,30,93],[845,0,9067,14,95],[846,0,43490,47,95],[847,1,2000000,1225,0],[848,0,240170,244,93],[849,1,2000000,1566,0],[850,1,2000000,1558,0],[851,0,26138,30,95],[852,0,1509,8,87],[853,0,24306,34,93],[854,0,2370,9,93],[855,0,117,7,95],[856,1,2000000,-620,0],[857,1,2000000,1611,0],[858,0,7351,11,93],[859,0,546,14,93],[860,0,975,13,96],[861,0,2842,15,96],[862,0,75,7,93],[863,1,2000000,1210,0],[864,0,36772,44,95],[865,1,2000000,2071,0],[866,0,1173075,839,96],[867,0,3769,10,95],[868,0,505077,383,92],[869,0,12455,23,93],[870,1,2000000,1556,0],[871,0,4892,11,94],[872,0,59501,64,95],[873,0,290,12,95],[874,0,4090,20,93],[875,0,280377,172,92],[876,0,56,10,89],[877,0,677,7,95],[878,0,150989,106,92],[879,0,181,7,93],[880,1,2000000,-489,0],[881,0,89823,65,94],[882,0,144790,109,93],[883,0,149,13,95],[884,0,115623,96,93],[885,0,130191,105,93],[886,0,18879,27,92],[887,0,5963,20,92],[888,1,2000000,1132,0],[889,0,47313,62,88],[890,0,26723,27,93],[891,0,42158,59,94],[892,0,87,6,95],[893,0,341,13,92],[894,1,2000000,1960,0],[895,1,2000000,1753,0],[896,0,39259,31,96],[897,0,1395270,1302,94],[898,0,261717,209,92],[899,0,34298,45,96],[900,0,30243,28,95],[901,0,4419,16,93],[902,1,2000000,1585,0],[903,0,68764,71,94],[904,0,1079,7,94],[905,0,577584,-3733,94],[906,0,419628,295,91],[907,0,6401,12,93],[908,0,6196,21,96],[909,0,23403,27,94],[910,0,522517,371,93],[911,0,158494,135,93],[912,1,2000000,1579,0],[913,0,957,15,92],[914,0,1103178,749,94],[915,1,2000000,1591,0],[916,0,106,7,91],[917,1,2000000,1533,0],[918,1,2000000,1270,0],[919,0,869,8,91],[920,0,170360,151,96],[921,0,67669,65,93],[922,0,133122,88,96],[923,0,1240,8,93],[924,0,395,20,96],[925,1,2000000,1603,0],[926,0,280,6,89],[927,0,70523,75,94],[928,0,13689,22,94],[929,0,269929,-1564,90],[930,0,24267,28,93],[931,0,142352,135,94],[932,1,2000000,1522,0],[933,0,313046,303,95],[934,0,423241,357,93],[935,0,31001,35,92],[936,1,2000000,1643,0],[937,0,509927,376,93],[938,0,1456,7,93],[939,0,34117,38,95],[940,1,2000000,1460,0],[941,0,184,16,96],[942,1,2000000,1538,0],[943,0,1749,9,89],[944,0,132940,116,89],[945,0,24464,35,92],[946,0,733,6,89],[947,0,5995,19,92],[948,0,371414,301,94],[949,0,671729,568,93],[950,0,16949,33,91],[951,0,11844,13,95],[952,0,734318,651,92],[953,0,19739,29,90],[954,0,542,6,89],[955,0,49148,67,96],[956,0,44194,39,93],[957,0,62889,73,90],[958,0,46648,41,95],[959,0,15229,29,92],[960,0,305,7,93],[961,0,534,7,94],[962,1,2000000,1258,0],[963,0,21099,29,93],[964,0,12909,14,95],[965,0,18454,27,92],[966,0,129408,104,94],[967,0,1724807,1421,95],[968,0,226,7,91],[969,0,19024,29,91],[970,0,22115,27,93],[971,0,151,12,95],[972,0,721,7,94],[973,0,609300,457,91],[974,0,494041,340,94],[975,0,2070,15,92],[976,0,43779,38,91],[977,0,329125,323,94],[978,1,2000000,1770,0],[979,0,3153,15,94],[980,0,37842,31,95],[981,0,658,11,95],[982,0,1065266,836,92],[983,0,165673,137,93],[984,0,1155283,821,96],[985,0,127098,96,94],[986,0,71729,53,93],[987,0,1667,15,94],[988,0,91740,77,96],[989,0,393,14,87],[990,0,142030,135,94],[991,0,230121,155,93],[992,1,2000000,-3542,0],[993,1,2000000,1767,0],[994,0,167138,119,93],[995,0,77,7,87],[996,0,211,12,93],[997,0,913021,632,95],[998,0,20924,24,94],[999,0,2664,8,93],[1000,0,9149,20,92]]}</script>
+<script>
+(function () {
+  "use strict";
+  var dataEl = document.getElementById("benchmark-data");
+  if (!dataEl) { return; }
+  var DATA = JSON.parse(dataEl.textContent);
+  var STATUSES = DATA.statuses;
+  var COLORS = { solved: "#34d399", "node-limit": "#fbbf24", "time-limit": "#f87171", unsolvable: "#a78bfa" };
+  var state = { key: "game", dir: 1, page: 1, pageSize: 100, filter: "all" };
+  var body = document.getElementById("table-body");
+  var pagerEl = document.getElementById("pager");
+  var infoEl = document.getElementById("table-info");
+  var filterEl = document.getElementById("filter-status");
+  var sizeEl = document.getElementById("page-size");
+
+  // 空状態 (計測データなし) ではテーブル要素が無いため初期化しない
+  if (!body || !pagerEl || !infoEl || !filterEl || !sizeEl) { return; }
+
+  function fmtNum(n) { return n.toLocaleString("ja-JP"); }
+  function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+
+  function getRows() {
+    var list = DATA.games.filter(function (r) {
+      return state.filter === "all" || STATUSES[r[1]] === state.filter;
+    });
+    var key = state.key;
+    var dir = state.dir;
+    list.sort(function (a, b) {
+      var cmp;
+      if (key === "game") { cmp = a[0] - b[0]; }
+      else if (key === "status") { cmp = a[1] - b[1]; }
+      else if (key === "nodes") { cmp = a[2] - b[2]; }
+      else if (key === "timeMs") { cmp = a[3] - b[3]; }
+      else { cmp = a[4] - b[4]; }
+      return cmp * dir;
+    });
+    return list;
+  }
+
+  function renderTable() {
+    var list = getRows();
+    var total = list.length;
+    var totalPages = Math.max(1, Math.ceil(total / state.pageSize));
+    if (state.page > totalPages) { state.page = totalPages; }
+    if (state.page < 1) { state.page = 1; }
+    var start = (state.page - 1) * state.pageSize;
+    var pageRows = list.slice(start, start + state.pageSize);
+    var html = "";
+    for (var i = 0; i < pageRows.length; i++) {
+      var r = pageRows[i];
+      var st = STATUSES[r[1]];
+      var cls = st === "solved" ? "" : " class=\"row-warn\"";
+      html += "<tr" + cls + ">"
+        + "<td>" + fmtNum(r[0]) + "</td>"
+        + "<td><span class=\"badge\" style=\"color:" + COLORS[st] + ";background:" + COLORS[st] + "22\">" + esc(st) + "</span></td>"
+        + "<td class=\"num\">" + fmtNum(r[2]) + "</td>"
+        + "<td class=\"num\">" + fmtNum(r[3]) + "</td>"
+        + "<td class=\"num\">" + fmtNum(r[4]) + "</td>"
+        + "</tr>";
+    }
+    body.innerHTML = html;
+    renderHeaders();
+    renderPager(total, totalPages);
+    var end = Math.min(start + state.pageSize, total);
+    infoEl.textContent = (total === 0 ? "0" : fmtNum(start + 1) + "〜" + fmtNum(end)) + " / " + fmtNum(total) + " 件";
+  }
+
+  function renderHeaders() {
+    var ths = document.querySelectorAll("thead th[data-key]");
+    for (var i = 0; i < ths.length; i++) {
+      var th = ths[i];
+      var k = th.getAttribute("data-key");
+      var arrow = th.querySelector(".arrow");
+      if (k === state.key) {
+        th.classList.add("active");
+        arrow.textContent = state.dir === 1 ? "▲" : "▼";
+      } else {
+        th.classList.remove("active");
+        arrow.textContent = "";
+      }
+    }
+  }
+
+  function pageItems(cur, total) {
+    var items = [];
+    var add = function (v) {
+      if (items[items.length - 1] !== v) { items.push(v); }
+    };
+    if (total <= 9) {
+      for (var i = 1; i <= total; i++) { add(i); }
+      return items;
+    }
+    add(1);
+    var s = Math.max(2, cur - 2);
+    var e = Math.min(total - 1, cur + 2);
+    if (s > 2) { add("…"); }
+    for (var i = s; i <= e; i++) { add(i); }
+    if (e < total - 1) { add("…"); }
+    add(total);
+    return items;
+  }
+
+  function renderPager(total, totalPages) {
+    var html = "";
+    html += "<button data-page=\"prev\" " + (state.page <= 1 ? "disabled" : "") + ">‹</button>";
+    var items = pageItems(state.page, totalPages);
+    for (var i = 0; i < items.length; i++) {
+      if (items[i] === "…") { html += "<span class=\"ellipsis\">…</span>"; }
+      else { html += "<button data-page=\"" + items[i] + "\" class=\"" + (items[i] === state.page ? "current" : "") + "\">" + items[i] + "</button>"; }
+    }
+    html += "<button data-page=\"next\" " + (state.page >= totalPages ? "disabled" : "") + ">›</button>";
+    pagerEl.innerHTML = html;
+  }
+
+  pagerEl.addEventListener("click", function (e) {
+    var btn = e.target.closest("button");
+    if (!btn || btn.disabled) { return; }
+    var v = btn.getAttribute("data-page");
+    if (v === "prev") { state.page--; }
+    else if (v === "next") { state.page++; }
+    else { state.page = Number(v); }
+    renderTable();
+  });
+
+  document.querySelectorAll("thead th[data-key]").forEach(function (th) {
+    th.addEventListener("click", function () {
+      var k = th.getAttribute("data-key");
+      if (state.key === k) { state.dir = -state.dir; }
+      else { state.key = k; state.dir = 1; }
+      state.page = 1;
+      renderTable();
+    });
+  });
+
+  filterEl.addEventListener("change", function () { state.filter = filterEl.value; state.page = 1; renderTable(); });
+  sizeEl.addEventListener("change", function () { state.pageSize = Number(sizeEl.value); state.page = 1; renderTable(); });
+
+  function initFilter() {
+    var counts = {};
+    for (var i = 0; i < DATA.games.length; i++) {
+      var st = STATUSES[DATA.games[i][1]];
+      counts[st] = (counts[st] || 0) + 1;
+    }
+    var html = "<option value=\"all\">すべて</option>";
+    for (var j = 0; j < STATUSES.length; j++) {
+      var st2 = STATUSES[j];
+      html += "<option value=\"" + st2 + "\">" + st2 + " (" + (counts[st2] || 0) + ")</option>";
+    }
+    filterEl.innerHTML = html;
+  }
+
+  initFilter();
+  renderTable();
+})();
+</script>
+</body>
+</html>

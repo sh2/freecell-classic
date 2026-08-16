@@ -9,7 +9,10 @@
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "benchmark": "node scripts/benchmark/run.js",
+    "benchmark:all": "node scripts/benchmark/run.js --all",
+    "benchmark:report": "node scripts/benchmark/report.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",
