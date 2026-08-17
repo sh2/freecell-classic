@@ -11,6 +11,8 @@ import { formatMove } from "./solver.js";
 export function createSolverClient({ app, view }) {
   let worker = null;
   let solution = null;
+  let nextRequestId = 1;
+  let activeRequest = null;
 
   /** 現在の盤面をカード id の配列へ変換する(solver の入力形式) */
   function boardFromState() {
@@ -27,6 +29,10 @@ export function createSolverClient({ app, view }) {
       worker.terminate();
       worker = null;
     }
+  }
+
+  function boardSnapshot(board) {
+    return JSON.stringify(board);
   }
 
   /** 解答の 1 手を現在の状態に適用する */
@@ -62,37 +68,59 @@ export function createSolverClient({ app, view }) {
       return; // 計算中
     }
     stopWorker();
+    const board = boardFromState();
+    const requestId = nextRequestId++;
+    activeRequest = { requestId, snapshot: boardSnapshot(board), autoPlay };
     view.setSolverBusy(true);
     worker = new Worker(new URL("./solver.worker.js", import.meta.url), { type: "module" });
     worker.onmessage = (e) => {
       const res = e.data;
+      if (!activeRequest || res.requestId !== activeRequest.requestId) {
+        return;
+      }
+      if (res.type === "stage") {
+        view.setSolverStage(res.stage);
+        return;
+      }
+      if (res.type !== "result") {
+        return;
+      }
+      const request = activeRequest;
+      activeRequest = null;
       stopWorker();
       view.setSolverBusy(false);
-      if (res.solved && res.moves.length > 0) {
-        solution = res.moves;
-        view.showSolution(res.moves.map((mv) => formatMove(mv)));
-        if (autoPlay) {
+      if (boardSnapshot(boardFromState()) !== request.snapshot) {
+        return;
+      }
+      const result = res.result;
+      if (result.solved && result.moves.length > 0) {
+        solution = result.moves;
+        view.showSolution(result.moves.map((mv) => formatMove(mv)));
+        if (request.autoPlay) {
           replaySolution();
         }
-      } else if (res.solved) {
+      } else if (result.solved) {
         view.showToast("すでにクリア済みです");
-      } else if (res.status === "time-limit") {
-        view.showToast("時間内に解けませんでした");
-      } else if (res.status === "node-limit") {
-        view.showToast("探索上限に達しました");
       } else {
-        view.showToast("解けませんでした");
+        view.showToast("探索上限内では解答を発見できませんでした");
       }
     };
     worker.onerror = () => {
+      activeRequest = null;
       stopWorker();
       view.setSolverBusy(false);
       view.showToast("ソルバーでエラーが発生しました");
     };
-    worker.postMessage({ board: boardFromState(), maxNodes: 2000000, maxTimeMs: 60000 });
+    worker.postMessage({
+      type: "solve",
+      requestId,
+      board,
+      strategy: "fast-safe",
+    });
   }
 
   function cancel() {
+    activeRequest = null;
     stopWorker();
     view.setSolverBusy(false);
   }

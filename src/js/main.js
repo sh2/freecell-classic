@@ -35,6 +35,7 @@ export function init() {
 
   // 新しいゲームを開始したら古い解答パネルを閉じる
   const clearSolutionOnNewGame = () => {
+    solverClient.cancel();
     solverClient.clearSolution();
     view.hideSolution();
   };

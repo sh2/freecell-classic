@@ -5,10 +5,15 @@
  * 送信メッセージ: solve() の結果 { solved, moves, nodes, timeMs, status }
  * ========================================================= */
 
-import { solve } from "./solver.js";
+import { solveWithFallback } from "./solver.js";
 
 self.onmessage = (e) => {
-  const { board, maxNodes, maxTimeMs } = e.data;
-  const result = solve(board, { maxNodes, maxTimeMs });
-  self.postMessage(result);
+  const { requestId, board, strategy, fastOptions, safeOptions } = e.data;
+  const result = solveWithFallback(board, {
+    strategy,
+    fastOptions,
+    safeOptions,
+    onStageChange: (stage) => self.postMessage({ type: "stage", requestId, stage }),
+  });
+  self.postMessage({ type: "result", requestId, result });
 };

@@ -560,6 +560,14 @@ export function createView() {
     }
   }
 
+  /** ソルバーの現在段階を表示する */
+  function setSolverStage(stage) {
+    const solveBtn = document.getElementById("solve-btn");
+    if (solveBtn) {
+      solveBtn.textContent = stage === "safe" ? "安全探索中…" : "高速探索中…";
+    }
+  }
+
   /** 解答手順パネルを表示する(lines は表示用文字列の配列) */
   function showSolution(lines) {
     const panel = document.getElementById("solution-panel");
@@ -625,6 +633,7 @@ export function createView() {
     seedInput,
     overlayEl,
     setSolverBusy,
+    setSolverStage,
     showSolution,
     hideSolution,
     solutionPanelEl,

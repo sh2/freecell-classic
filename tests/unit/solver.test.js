@@ -5,6 +5,7 @@ import {
   cardName,
   canonicalizeColumns,
   isSafeFoundationMove,
+  solveWithFallback,
 } from "../../src/js/solver.js";
 import { dealGame } from "../../src/js/deal.js";
 import { createState, attemptMove } from "../../src/js/game-state.js";
@@ -129,6 +130,58 @@ describe("solve: 勝利済みの盤面", () => {
     const res = solve({ cascades: [], freeCells: [], foundations: [] });
     expect(res.solved).toBe(true);
     expect(res.moves).toEqual([]);
+  });
+});
+
+describe("solveWithFallback: 二段階探索", () => {
+  const solvedBoard = {
+    cascades: [],
+    freeCells: [],
+    foundations: [fullPile(0), fullPile(1), fullPile(2), fullPile(3)],
+  };
+
+  it("高速モードで解けた場合は安全モードを実行しない", () => {
+    const stages = [];
+    const res = solveWithFallback(solvedBoard, {
+      onStageChange: (stage) => stages.push(stage),
+    });
+    expect(res.solved).toBe(true);
+    expect(res.finalMode).toBe("fast");
+    expect(res.fallbackUsed).toBe(false);
+    expect(stages).toEqual(["fast"]);
+    expect(res.attempts.safe).toBeNull();
+  });
+
+  it("高速モードが未解決なら元盤面で安全モードへフォールバックする", () => {
+    const stages = [];
+    const board = {
+      cascades: [[4]],
+      freeCells: [],
+      foundations: [],
+    };
+    const res = solveWithFallback(board, {
+      fastOptions: { maxNodes: 1, maxTimeMs: 60000 },
+      safeOptions: { maxNodes: 1, maxTimeMs: 60000 },
+      onStageChange: (stage) => stages.push(stage),
+    });
+    expect(stages).toEqual(["fast", "safe"]);
+    expect(res.fallbackUsed).toBe(true);
+    expect(res.finalMode).toBe("safe");
+    expect(res.totalNodes).toBe(res.attempts.fast.nodes + res.attempts.safe.nodes);
+    expect(res.totalTimeMs).toBe(res.attempts.fast.timeMs + res.attempts.safe.timeMs);
+  });
+
+  it("安全モード単独ではフォールバック扱いにしない", () => {
+    const res = solveWithFallback(solvedBoard, { strategy: "safe" });
+    expect(res.finalMode).toBe("safe");
+    expect(res.fallbackUsed).toBe(false);
+    expect(res.attempts.fast).toBeNull();
+  });
+
+  it("未知の戦略を拒否する", () => {
+    expect(() => solveWithFallback(solvedBoard, { strategy: "unknown" })).toThrow(
+      "未知のソルバー戦略",
+    );
   });
 });
 

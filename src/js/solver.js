@@ -15,6 +15,20 @@ const NUM_CASCADES = 8;
 const NUM_HOME = 4;
 const MAX_COL_LEN = 19; // 列の最大長(実際は 13 で十分だが余裕を持つ)
 
+/** UI とベンチマークで共有する探索モード設定。呼び出し側で直接変更しない。 */
+export const SOLVER_PROFILES = Object.freeze({
+  fast: Object.freeze({
+    maxNodes: 2_000_000,
+    maxTimeMs: 30_000,
+    safeFoundationMoves: false,
+  }),
+  safe: Object.freeze({
+    maxNodes: 10_000_000,
+    maxTimeMs: 180_000,
+    safeFoundationMoves: true,
+  }),
+});
+
 /** カード id からランク(1〜13)とスート(0〜3)を得る */
 const rankOf = (id) => (id >> 2) + 1;
 const suitOf = (id) => id & 3;
@@ -820,4 +834,59 @@ export function solve(board, options = {}) {
     }
     throw e;
   }
+}
+
+/**
+ * 高速探索に失敗した場合、同じ初期盤面から安全探索を実行する。
+ * 各 solve は盤面を変更しないため、段階間で探索状態を共有しない。
+ */
+export function solveWithFallback(board, options = {}) {
+  const strategy = options.strategy ?? "fast-safe";
+  if (strategy !== "fast" && strategy !== "safe" && strategy !== "fast-safe") {
+    throw new Error(`未知のソルバー戦略: ${strategy}`);
+  }
+  const fastOptions = { ...SOLVER_PROFILES.fast, ...(options.fastOptions ?? {}) };
+  const safeOptions = { ...SOLVER_PROFILES.safe, ...(options.safeOptions ?? {}) };
+  const attempts = { fast: null, safe: null };
+
+  const run = (mode, solverOptions) => {
+    options.onStageChange?.(mode);
+    const result = solve(board, solverOptions);
+    attempts[mode] = {
+      status: result.status,
+      solved: result.solved,
+      nodes: result.nodes,
+      timeMs: result.timeMs,
+    };
+    return result;
+  };
+
+  let finalMode;
+  let result;
+  if (strategy === "fast") {
+    finalMode = "fast";
+    result = run("fast", fastOptions);
+  } else if (strategy === "safe") {
+    finalMode = "safe";
+    result = run("safe", safeOptions);
+  } else {
+    result = run("fast", fastOptions);
+    finalMode = "fast";
+    if (!result.solved) {
+      result = run("safe", safeOptions);
+      finalMode = "safe";
+    }
+  }
+
+  const totalNodes = Object.values(attempts).reduce((sum, attempt) => sum + (attempt?.nodes ?? 0), 0);
+  const totalTimeMs = Object.values(attempts).reduce((sum, attempt) => sum + (attempt?.timeMs ?? 0), 0);
+  return {
+    ...result,
+    finalMode,
+    strategy,
+    fallbackUsed: strategy === "fast-safe" && attempts.safe !== null,
+    totalNodes,
+    totalTimeMs,
+    attempts,
+  };
 }

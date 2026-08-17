@@ -4,6 +4,17 @@
 
 ### 修正
 
+- ソルバーを二段階探索へ変更(`src/js/solver.js` / `src/js/solver.worker.js` /
+  `src/js/solver-client.js` / `src/js/view.js` / `src/js/main.js`)。高速モード(200万ノード)
+  で解けなかった場合、同じ開始盤面から安全モード(1,000万ノード)へフォールバックする。
+  Workerの段階通知、探索中の表示、リクエストID、盤面スナップショット照合、キャンセルを
+  追加し、古い盤面への解答適用を防止した。
+
+- 二段階探索結果の集計を修正(`src/js/solver.js` / `tests/unit/solver.test.js`)。
+  `totalTimeMs` を各段の探索時間の合計として算出し、安全モード単独実行を
+  `fallbackUsed` と誤認しないようにした。未知の戦略値はエラーとして拒否する。
+
+
 - ソルバーに自動ホーム方式の切替と探索カウンターを追加
   (`src/js/solver.js` / `scripts/benchmark/run.js`)。安全条件付き方式と無条件自動ホーム
   方式を比較できる `safeFoundationMoves` / `--unsafe-home` を追加し、安全でないホーム
