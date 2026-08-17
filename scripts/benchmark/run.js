@@ -4,8 +4,8 @@
  *
  * - ゲーム番号 1〜32000 を 1000 ゲームずつ (バッチ) に分けて、
  *   シリアル (並列化なし) に測定する。
- * - 各ゲームは dealGame() で盤面を生成し、solve() を直接呼ぶ。
- *   記録するのは status / solved / nodes / timeMs / moves 数。
+ * - 各ゲームは dealGame() で盤面を生成し、solveWithFallback() を呼ぶ。
+ *   戦略ごとの段別結果と合計コストを記録する。
  * - 結果は docs/benchmark/data/batch-XX.json に保存する。
  *   途中経過は batch-XX.partial.json に保存し、中断・再開に耐える。
  *
@@ -29,13 +29,12 @@ import {
 } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { solve } from "../../src/js/solver.js";
+import { SOLVER_PROFILES, solveWithFallback } from "../../src/js/solver.js";
 import { dealGame } from "../../src/js/deal.js";
 
 const MAX_GAME = 32000;
 const BATCH_SIZE = 1000;
-const DEFAULT_MAX_NODES = 2000000;
-const DEFAULT_MAX_TIME_MS = 60000;
+const DEFAULT_STRATEGY = "fast-safe";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const DEFAULT_DATA_DIR = resolve(HERE, "../../docs/benchmark/data");
@@ -49,9 +48,12 @@ function parseArgs(argv) {
     count: null, // --start で計測するゲーム数 (--count)
     all: false,
     force: false,
-    maxNodes: DEFAULT_MAX_NODES,
-    maxTimeMs: DEFAULT_MAX_TIME_MS,
-    safeFoundationMoves: true,
+    strategy: DEFAULT_STRATEGY,
+    fastMaxNodes: SOLVER_PROFILES.fast.maxNodes,
+    fastMaxTimeMs: SOLVER_PROFILES.fast.maxTimeMs,
+    safeMaxNodes: SOLVER_PROFILES.safe.maxNodes,
+    safeMaxTimeMs: SOLVER_PROFILES.safe.maxTimeMs,
+    unsafeHome: false,
     dataDir: DEFAULT_DATA_DIR,
     help: false,
   };
@@ -78,13 +80,30 @@ function parseArgs(argv) {
         args.count = Number(argv[++i]);
         break;
       case "--max-nodes":
-        args.maxNodes = Number(argv[++i]);
+        args.fastMaxNodes = Number(argv[++i]);
+        args.safeMaxNodes = args.fastMaxNodes;
         break;
       case "--max-time-ms":
-        args.maxTimeMs = Number(argv[++i]);
+        args.fastMaxTimeMs = Number(argv[++i]);
+        args.safeMaxTimeMs = args.fastMaxTimeMs;
+        break;
+      case "--strategy":
+        args.strategy = argv[++i];
+        break;
+      case "--fast-max-nodes":
+        args.fastMaxNodes = Number(argv[++i]);
+        break;
+      case "--safe-max-nodes":
+        args.safeMaxNodes = Number(argv[++i]);
+        break;
+      case "--fast-max-time-ms":
+        args.fastMaxTimeMs = Number(argv[++i]);
+        break;
+      case "--safe-max-time-ms":
+        args.safeMaxTimeMs = Number(argv[++i]);
         break;
       case "--unsafe-home":
-        args.safeFoundationMoves = false;
+        args.unsafeHome = true;
         break;
       case "--data-dir":
         args.dataDir = resolve(argv[++i]);
@@ -107,8 +126,13 @@ function printHelp() {
   --all              未計測の全バッチを順に計測 (シリアル)
   --start N --count M  ゲーム N から M 件を計測 (range-*.json に保存)
   --force            計測済みでも再計測して上書き
-  --max-nodes N      ノード上限 (既定 ${DEFAULT_MAX_NODES})
-  --max-time-ms N    時間上限 ms (既定 ${DEFAULT_MAX_TIME_MS})
+  --strategy NAME    fast / safe / fast-safe (既定 ${DEFAULT_STRATEGY})
+  --fast-max-nodes N 高速モードのノード上限 (既定 ${SOLVER_PROFILES.fast.maxNodes})
+  --safe-max-nodes N 安全モードのノード上限 (既定 ${SOLVER_PROFILES.safe.maxNodes})
+  --fast-max-time-ms N 高速モードの時間上限 (既定 ${SOLVER_PROFILES.fast.maxTimeMs})
+  --safe-max-time-ms N 安全モードの時間上限 (既定 ${SOLVER_PROFILES.safe.maxTimeMs})
+  --max-nodes N      両モードのノード上限を上書き (互換オプション)
+  --max-time-ms N    両モードの時間上限を上書き (互換オプション)
   --unsafe-home      ホーム移動を安全条件なしで自動適用
   --data-dir DIR     結果出力先 (既定 ${DEFAULT_DATA_DIR})
   -h, --help         このヘルプを表示
@@ -147,22 +171,55 @@ function batchRange(batch) {
   return { start, end };
 }
 
+function expectedConfig(args) {
+  return {
+    strategy: args.strategy,
+    fastMaxNodes: args.fastMaxNodes,
+    fastMaxTimeMs: args.fastMaxTimeMs,
+    safeMaxNodes: args.safeMaxNodes,
+    safeMaxTimeMs: args.safeMaxTimeMs,
+    unsafeHome: args.unsafeHome,
+  };
+}
+
+function configMatches(actual, expected) {
+  return Object.entries(expected).every(([key, value]) => actual?.[key] === value);
+}
+
 /* ---------------- 計測 ---------------- */
 
-function measureGame(game, maxNodes, maxTimeMs, safeFoundationMoves) {
+function measureGame(game, args) {
   const deal = dealGame(game);
   const board = {
     cascades: deal.cascades.map((pile) => pile.map((card) => card.id)),
     freeCells: deal.freeCells.map((card) => (card === null ? null : card.id)),
     foundations: [],
   };
-  const res = solve(board, { maxNodes, maxTimeMs, safeFoundationMoves });
+  const res = solveWithFallback(board, {
+    strategy: args.strategy,
+    fastOptions: {
+      maxNodes: args.fastMaxNodes,
+      maxTimeMs: args.fastMaxTimeMs,
+      safeFoundationMoves: !args.unsafeHome && SOLVER_PROFILES.fast.safeFoundationMoves,
+    },
+    safeOptions: {
+      maxNodes: args.safeMaxNodes,
+      maxTimeMs: args.safeMaxTimeMs,
+      safeFoundationMoves: SOLVER_PROFILES.safe.safeFoundationMoves,
+    },
+  });
   return {
     game,
+    strategy: res.strategy,
     status: res.status,
     solved: res.solved,
     nodes: res.nodes,
     timeMs: res.timeMs,
+    totalNodes: res.totalNodes,
+    totalTimeMs: res.totalTimeMs,
+    finalMode: res.finalMode,
+    fallbackUsed: res.fallbackUsed,
+    attempts: res.attempts,
     moves: res.moves.length,
     stats: res.stats,
   };
@@ -177,8 +234,8 @@ function summarize(results) {
   let totalTimeMs = 0;
   const times = [];
   for (const r of results) {
-    totalTimeMs += r.timeMs;
-    times.push(r.timeMs);
+    totalTimeMs += r.totalTimeMs ?? r.timeMs;
+    times.push(r.totalTimeMs ?? r.timeMs);
     if (r.status === "solved") {
       solved++;
     } else if (r.status === "node-limit") {
@@ -198,11 +255,14 @@ function writeJson(path, data) {
   writeFileSync(path, JSON.stringify(data, null, 2) + "\n");
 }
 
-function loadPartial(partialPath) {
+function loadPartial(partialPath, args) {
   if (!existsSync(partialPath)) {
     return [];
   }
   const data = JSON.parse(readFileSync(partialPath, "utf8"));
+  if (!configMatches(data.config, expectedConfig(args))) {
+    return [];
+  }
   return Array.isArray(data.results) ? data.results : [];
 }
 
@@ -213,19 +273,23 @@ function runBatch(batch, args) {
   const partialPath = batchFile(args.dataDir, batch, true);
 
   if (isBatchComplete(args.dataDir, batch) && !args.force) {
-    console.log(`バッチ ${String(batch).padStart(2, "0")} (${start}〜${end}) は計測済みです。再計測するには --force を指定してください。`);
-    return { skipped: true };
+    const existing = JSON.parse(readFileSync(finalPath, "utf8"));
+    if (configMatches(existing.config, expectedConfig(args))) {
+      console.log(`バッチ ${String(batch).padStart(2, "0")} (${start}〜${end}) は計測済みです。再計測するには --force を指定してください。`);
+      return { skipped: true };
+    }
+    console.log(`バッチ ${String(batch).padStart(2, "0")} は別設定の結果があるため再計測します。`);
   }
 
   mkdirSync(args.dataDir, { recursive: true });
 
   // 途中経過があれば再開
-  const results = loadPartial(partialPath);
+  const results = loadPartial(partialPath, args);
   const done = new Set(results.map((r) => r.game));
 
   const total = end - start + 1;
   console.log(`バッチ ${String(batch).padStart(2, "0")}: ゲーム ${start}〜${end} (${total} ゲーム) を計測開始`
-    + ` [maxNodes=${args.maxNodes}, maxTimeMs=${args.maxTimeMs}ms]`
+    + ` [strategy=${args.strategy}, fast=${args.fastMaxNodes}/${args.fastMaxTimeMs}ms, safe=${args.safeMaxNodes}/${args.safeMaxTimeMs}ms]`
     + (results.length > 0 ? ` / 途中経過 ${results.length} 件から再開` : ""));
 
   const startedAt = Date.now();
@@ -234,7 +298,7 @@ function runBatch(batch, args) {
     if (done.has(game)) {
       continue;
     }
-    const record = measureGame(game, args.maxNodes, args.maxTimeMs, args.safeFoundationMoves);
+    const record = measureGame(game, args);
     results.push(record);
     done.add(game);
     doneCount++;
@@ -242,8 +306,8 @@ function runBatch(batch, args) {
     // 進捗表示 (1 ゲーム 1 行)
     console.log(
       `#${String(game).padStart(6, "0")} ${record.status.padEnd(10)} `
-      + `nodes=${record.nodes.toLocaleString("en-US")} `
-      + `time=${record.timeMs}ms moves=${record.moves}`
+      + `nodes=${record.totalNodes.toLocaleString("en-US")} `
+      + `time=${record.totalTimeMs}ms moves=${record.moves}`
     );
 
     // 途中経過を都度保存 (クラッシュに備える)
@@ -279,11 +343,7 @@ function buildMeta(batch, args, results) {
     batch,
     start: batchRange(batch).start,
     end: batchRange(batch).end,
-    config: {
-      maxNodes: args.maxNodes,
-      maxTimeMs: args.maxTimeMs,
-      safeFoundationMoves: args.safeFoundationMoves,
-    },
+    config: expectedConfig(args),
     measuredAt: new Date().toISOString(),
     summary: summarize(results),
     results,
@@ -295,32 +355,32 @@ function runRange(start, count, args) {
   const end = Math.min(start + count - 1, MAX_GAME);
   const file = resolve(args.dataDir, `range-${start}-${end}.json`);
   if (existsSync(file) && !args.force) {
-    console.log(`範囲 ${start}〜${end} は計測済みです (${file})。再計測するには --force を指定してください。`);
-    return;
+    const existing = JSON.parse(readFileSync(file, "utf8"));
+    if (configMatches(existing.config, expectedConfig(args))) {
+      console.log(`範囲 ${start}〜${end} は計測済みです (${file})。再計測するには --force を指定してください。`);
+      return;
+    }
+    console.log(`範囲 ${start}〜${end} は別設定の結果があるため再計測します。`);
   }
   mkdirSync(args.dataDir, { recursive: true });
   const results = [];
   const startedAt = Date.now();
   console.log(`範囲 ${start}〜${end} (${end - start + 1} ゲーム) を計測開始`
-    + ` [maxNodes=${args.maxNodes}, maxTimeMs=${args.maxTimeMs}ms]`);
+    + ` [strategy=${args.strategy}, fast=${args.fastMaxNodes}/${args.fastMaxTimeMs}ms, safe=${args.safeMaxNodes}/${args.safeMaxTimeMs}ms]`);
   for (let game = start; game <= end; game++) {
-    const record = measureGame(game, args.maxNodes, args.maxTimeMs, args.safeFoundationMoves);
+    const record = measureGame(game, args);
     results.push(record);
     console.log(
       `#${String(game).padStart(6, "0")} ${record.status.padEnd(10)} `
-      + `nodes=${record.nodes.toLocaleString("en-US")} `
-      + `time=${record.timeMs}ms moves=${record.moves}`
+      + `nodes=${record.totalNodes.toLocaleString("en-US")} `
+      + `time=${record.totalTimeMs}ms moves=${record.moves}`
     );
   }
   const meta = {
     kind: "range",
     start,
     end,
-    config: {
-      maxNodes: args.maxNodes,
-      maxTimeMs: args.maxTimeMs,
-      safeFoundationMoves: args.safeFoundationMoves,
-    },
+    config: expectedConfig(args),
     measuredAt: new Date().toISOString(),
     summary: summarize(results),
     results,
@@ -350,8 +410,10 @@ function main() {
     printHelp();
     return;
   }
-  if (args.maxNodes <= 0 || args.maxTimeMs <= 0) {
-    console.error("エラー: --max-nodes / --max-time-ms は正の値を指定してください。");
+  if (!["fast", "safe", "fast-safe"].includes(args.strategy)
+    || args.fastMaxNodes <= 0 || args.fastMaxTimeMs <= 0
+    || args.safeMaxNodes <= 0 || args.safeMaxTimeMs <= 0) {
+    console.error("エラー: strategy と各モードの上限値が不正です。");
     process.exit(1);
   }
 

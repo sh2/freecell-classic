@@ -14,6 +14,12 @@
   `totalTimeMs` を各段の探索時間の合計として算出し、安全モード単独実行を
   `fallbackUsed` と誤認しないようにした。未知の戦略値はエラーとして拒否する。
 
+- フェーズ2のテスト・計測基盤を追加(`tests/unit/solver.test.js` /
+  `tests/e2e/freecell.spec.js` / `scripts/benchmark/` / `docs/benchmark/README.md`)。
+  Workerの段階通知を単体・E2Eで検証し、ベンチマークを `fast` / `safe` /
+  `fast-safe` 戦略、段別設定、フォールバック率、追加解決数、合計ノード・時間の
+  記録とレポート表示に対応した。
+
 
 - ソルバーに自動ホーム方式の切替と探索カウンターを追加
   (`src/js/solver.js` / `scripts/benchmark/run.js`)。安全条件付き方式と無条件自動ホーム

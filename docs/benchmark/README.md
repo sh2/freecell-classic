@@ -10,7 +10,7 @@
 | --- | --- |
 | `scripts/benchmark/run.js` | 計測スクリプト (シリアル実行) |
 | `scripts/benchmark/report.js` | HTML レポート生成スクリプト |
-| `scripts/benchmark/verify-node-limit.js` | node-limit ゲームの再検証スクリプト |
+| `scripts/benchmark/verify-node-limit.js` | node-limit ゲームの再検証スクリプト (戦略指定対応) |
 | `docs/benchmark/data/batch-XX.json` | バッチ (1,000 ゲーム) ごとの計測結果 |
 | `docs/benchmark/data/batch-XX.partial.json` | 途中経過 (中断・再開用) |
 | `docs/benchmark/data/range-S-E.json` | `--start` で指定した範囲の計測結果 |
@@ -32,7 +32,18 @@ npm run benchmark:all
 # 特定ゲーム範囲を追加計測 (バッチ進捗に影響しない)
 node scripts/benchmark/run.js --start 11982 --count 1
 
-# 計測上限の指定 (既定は maxNodes=2,000,000 / maxTimeMs=60,000)
+# 二段階計測 (既定: fast-safe)
+node scripts/benchmark/run.js --strategy fast-safe
+
+# 単独モードの計測
+node scripts/benchmark/run.js --strategy fast
+node scripts/benchmark/run.js --strategy safe
+
+# モード別の計測上限を指定
+node scripts/benchmark/run.js --fast-max-nodes 1000000 --safe-max-nodes 5000000 \
+  --fast-max-time-ms 10000 --safe-max-time-ms 60000
+
+# 両モードへ同じ上限を適用する互換オプション
 node scripts/benchmark/run.js --max-nodes 1000000 --max-time-ms 10000
 
 # 計測済みでも再計測
@@ -54,6 +65,10 @@ node scripts/benchmark/verify-node-limit.js --batch 1 --max-nodes 5000000
 # 入力ファイル・時間上限を明示
 node scripts/benchmark/verify-node-limit.js \
   --input batch-01.json --max-nodes 5000000 --max-time-ms 600000
+
+# 高速未解決ゲームを二段階戦略で再検証
+node scripts/benchmark/verify-node-limit.js \
+  --input batch-01.json --strategy fast-safe --max-nodes 5000000
 ```
 
 結果は `docs/benchmark/data/verify-node-limit-<batch>-<maxNodes>.json` に保存され、
@@ -91,5 +106,7 @@ node scripts/benchmark/verify-node-limit.js \
 - **バッチ進捗**: 32 バッチの完了状況 (計測中・未計測も表示)
 - **ヒストグラム**: 応答時間と探索ノード数の分布 (対数ビン)
 - **ゲーム別結果**: 状態フィルタ・列ソート・ページング対応のテーブル
+- **戦略別・段別集計**: 高速成功、安全追加解決、最終成功、フォールバック率、
+  合計ノード数・時間を表示
 
 レポートは計測のたびに `npm run benchmark:report` で再生成します。

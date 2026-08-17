@@ -818,6 +818,68 @@ test.describe("ソルバー", () => {
     };
   }
 
+  test("高速探索から安全探索への段階表示を行う", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__solverWorkerScenario = "fallback";
+      const NativeWorker = window.Worker;
+      window.Worker = class MockSolverWorker {
+        constructor() {
+          this.onmessage = null;
+          this.onerror = null;
+          this.terminated = false;
+        }
+
+        postMessage(message) {
+          if (window.__solverWorkerScenario !== "fallback") {
+            return;
+          }
+          setTimeout(() => {
+            if (!this.terminated) {
+              this.onmessage?.({ data: { type: "stage", requestId: message.requestId, stage: "fast" } });
+            }
+          }, 0);
+          setTimeout(() => {
+            if (!this.terminated) {
+              this.onmessage?.({ data: { type: "stage", requestId: message.requestId, stage: "safe" } });
+            }
+          }, 10);
+          setTimeout(() => {
+            if (!this.terminated) {
+              this.onmessage?.({
+                data: {
+                  type: "result",
+                  requestId: message.requestId,
+                  result: {
+                    solved: false,
+                    status: "node-limit",
+                    moves: [],
+                    nodes: 20,
+                    timeMs: 30,
+                    totalNodes: 40,
+                    totalTimeMs: 30,
+                    finalMode: "safe",
+                    strategy: "fast-safe",
+                    fallbackUsed: true,
+                    attempts: {},
+                  },
+                },
+              });
+            }
+          }, 50);
+        }
+
+        terminate() {
+          this.terminated = true;
+        }
+      };
+      void NativeWorker;
+    });
+    await h.openGame(page, 1);
+    await page.click("#hint-btn");
+    await expect(page.locator("#solve-btn")).toHaveText("安全探索中…");
+    await expect(page.locator("#toast")).toContainText("探索上限内では解答を発見できませんでした", { timeout: 1000 });
+  });
+
   test("ヒント: 解答手順パネルが表示され、盤面は変わらない", async ({ page }) => {
     await h.openGame(page, 1);
     await h.setBoard(page, nearWinBoard());

@@ -11,6 +11,7 @@ import { dealGame } from "../../src/js/deal.js";
 import { createState, attemptMove } from "../../src/js/game-state.js";
 import { findCardLocation } from "../../src/js/rules.js";
 import { NUM_CASCADES, NUM_FREE, NUM_HOME } from "../../src/js/constants.js";
+import { createSolverWorkerHandler } from "../../src/js/solver.worker.js";
 
 /**
  * フリーセル ソルバー (solver.js) の単体テスト。
@@ -182,6 +183,34 @@ describe("solveWithFallback: 二段階探索", () => {
     expect(() => solveWithFallback(solvedBoard, { strategy: "unknown" })).toThrow(
       "未知のソルバー戦略",
     );
+  });
+
+  it("Workerプロトコルは段階通知と結果通知を requestId 付きで送る", () => {
+    const messages = [];
+    const handler = createSolverWorkerHandler((message) => messages.push(message), () => {
+      return {
+        solved: true,
+        status: "solved",
+        moves: [],
+        nodes: 2,
+        timeMs: 3,
+      };
+    });
+    handler({ data: { requestId: 42, board: solvedBoard, strategy: "fast-safe" } });
+    expect(messages).toEqual([
+      { type: "result", requestId: 42, result: expect.objectContaining({ status: "solved" }) },
+    ]);
+
+    messages.length = 0;
+    const stagedHandler = createSolverWorkerHandler((message) => messages.push(message), (_board, options) => {
+      options.onStageChange("fast");
+      options.onStageChange("safe");
+      return { solved: false, status: "node-limit", moves: [], nodes: 4, timeMs: 5 };
+    });
+    stagedHandler({ data: { requestId: 7, board: solvedBoard, strategy: "fast-safe" } });
+    expect(messages[0]).toEqual({ type: "stage", requestId: 7, stage: "fast" });
+    expect(messages[1]).toEqual({ type: "stage", requestId: 7, stage: "safe" });
+    expect(messages[2].type).toBe("result");
   });
 });
 

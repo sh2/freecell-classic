@@ -7,13 +7,19 @@
 
 import { solveWithFallback } from "./solver.js";
 
-self.onmessage = (e) => {
-  const { requestId, board, strategy, fastOptions, safeOptions } = e.data;
-  const result = solveWithFallback(board, {
-    strategy,
-    fastOptions,
-    safeOptions,
-    onStageChange: (stage) => self.postMessage({ type: "stage", requestId, stage }),
-  });
-  self.postMessage({ type: "result", requestId, result });
-};
+export function createSolverWorkerHandler(postMessage, solve = solveWithFallback) {
+  return (e) => {
+    const { requestId, board, strategy, fastOptions, safeOptions } = e.data;
+    const result = solve(board, {
+      strategy,
+      fastOptions,
+      safeOptions,
+      onStageChange: (stage) => postMessage({ type: "stage", requestId, stage }),
+    });
+    postMessage({ type: "result", requestId, result });
+  };
+}
+
+if (typeof self !== "undefined") {
+  self.onmessage = createSolverWorkerHandler((message) => self.postMessage(message));
+}

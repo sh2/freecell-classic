@@ -99,7 +99,19 @@ function fmtDateTime(iso) {
 function normalizeResult(r) {
   const idx = STATUS_IDS.indexOf(r.status);
   const statusIdx = idx >= 0 ? idx : STATUS_IDS.length - 1;
-  return [r.game, statusIdx, r.nodes, r.timeMs, r.moves];
+  return [
+    r.game,
+    statusIdx,
+    r.nodes,
+    r.timeMs,
+    r.moves,
+    r.strategy || "legacy",
+    r.totalNodes ?? r.nodes,
+    r.totalTimeMs ?? r.timeMs,
+    r.finalMode || r.strategy || "legacy",
+    Boolean(r.fallbackUsed),
+    r.attempts || null,
+  ];
 }
 
 function loadBatches(dataDir) {
@@ -172,8 +184,8 @@ function loadBatches(dataDir) {
 /* ---------------- 集計 ---------------- */
 
 function buildSummary(games) {
-  const times = games.map((g) => g[3]).sort((a, b) => a - b);
-  const nodes = games.map((g) => g[2]).sort((a, b) => a - b);
+  const times = games.map((g) => g[7] ?? g[3]).sort((a, b) => a - b);
+  const nodes = games.map((g) => g[6] ?? g[2]).sort((a, b) => a - b);
   const counts = { solved: 0, "node-limit": 0, "time-limit": 0, unsolvable: 0 };
   for (const g of games) {
     const id = STATUS_IDS[g[1]];
@@ -202,6 +214,43 @@ function buildSummary(games) {
       max: nodes.length ? nodes[nodes.length - 1] : 0,
     },
   };
+}
+
+function buildStrategySummary(games) {
+  const result = {};
+  for (const strategy of ["fast", "safe", "fast-safe", "legacy"]) {
+    const rows = games.filter((g) => g[5] === strategy);
+    if (rows.length === 0) {
+      continue;
+    }
+    const fastSolved = strategy === "fast"
+      ? rows.filter((g) => g[1] === 0).length
+      : rows.filter((g) => g[10]?.fast?.status === "solved").length;
+    const finalSolved = rows.filter((g) => g[1] === 0).length;
+    const safeAdditionalSolved = rows.filter((g) => g[9] && g[1] === 0).length;
+    result[strategy] = {
+      total: rows.length,
+      fastSolved,
+      safeAdditionalSolved,
+      finalSolved,
+      fallback: rows.filter((g) => g[9]).length,
+      totalNodes: rows.reduce((sum, g) => sum + (g[6] ?? g[2]), 0),
+      totalTimeMs: rows.reduce((sum, g) => sum + (g[7] ?? g[3]), 0),
+    };
+  }
+  return result;
+}
+
+function renderStrategyTable(strategySummary) {
+  const labels = { fast: "高速", safe: "安全", "fast-safe": "高速→安全", legacy: "旧形式" };
+  const rows = Object.entries(strategySummary).map(([strategy, s]) => {
+    const fallbackRate = s.total ? (s.fallback / s.total) * 100 : 0;
+    return `<tr><td>${labels[strategy] || strategy}</td><td class="num">${fmtNum(s.total)}</td>`
+      + `<td class="num">${fmtNum(s.fastSolved)}</td><td class="num">${fmtNum(s.safeAdditionalSolved)}</td>`
+      + `<td class="num">${fmtNum(s.finalSolved)}</td><td class="num">${fallbackRate.toFixed(2)}%</td>`
+      + `<td class="num">${fmtNum(s.totalNodes)}</td><td class="num">${fmtNum(s.totalTimeMs)} ms</td></tr>`;
+  }).join("\n");
+  return `<table class="mini"><thead><tr><th>戦略</th><th>件数</th><th>高速成功</th><th>安全追加</th><th>最終成功</th><th>フォールバック率</th><th>合計ノード</th><th>合計時間</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 
 /** 対数ビンのヒストグラムを計算する (ビン数はレンジの桁数に応じて適応) */
@@ -412,11 +461,13 @@ function renderEmptyState() {
 }
 
 function renderReportHtml(data) {
-  const { games, config, summary } = data;
+  const { games, config, summary, strategySummary } = data;
   const generatedAt = new Date().toISOString();
   const progressPct = (summary.total / 32000) * 100;
   const configHtml = config
-    ? `maxNodes=${fmtNum(config.maxNodes)} / maxTimeMs=${fmtNum(config.maxTimeMs)} ms`
+    ? config.strategy
+      ? `strategy=${config.strategy} / fast=${fmtNum(config.fastMaxNodes)} nodes, ${fmtNum(config.fastMaxTimeMs)} ms / safe=${fmtNum(config.safeMaxNodes)} nodes, ${fmtNum(config.safeMaxTimeMs)} ms`
+      : `maxNodes=${fmtNum(config.maxNodes)} / maxTimeMs=${fmtNum(config.maxTimeMs)} ms`
     : "計測データなし";
 
   const embed = {
@@ -443,6 +494,12 @@ ${renderStatusTable(summary)}
       <h2>バッチ進捗 (32 バッチ)</h2>
 ${renderBatchTable(data.batches, data.ranges)}
     </div>
+  </section>
+
+  <section class="panel">
+    <h2>戦略別・段別集計</h2>
+${renderStrategyTable(strategySummary)}
+    <p class="note muted">高速成功・安全追加・最終成功を分離して表示。ノード数・時間は各ゲームの合計値。</p>
   </section>
 
   <section class="charts">
@@ -477,9 +534,10 @@ ${renderHistogramSvg(data.nodesHist, { unit: "探索ノード数", axisTick: fmt
         <thead><tr>
           <th data-key="game" class="sortable">No.<span class="arrow"></span></th>
           <th data-key="status" class="sortable">状態<span class="arrow"></span></th>
-          <th data-key="nodes" class="sortable num">ノード数<span class="arrow"></span></th>
-          <th data-key="timeMs" class="sortable num">応答時間 (ms)<span class="arrow"></span></th>
+          <th data-key="nodes" class="sortable num">合計ノード数<span class="arrow"></span></th>
+          <th data-key="timeMs" class="sortable num">合計時間 (ms)<span class="arrow"></span></th>
           <th data-key="moves" class="sortable num">手数<span class="arrow"></span></th>
+          <th>戦略</th>
         </tr></thead>
         <tbody id="table-body"></tbody>
       </table>
@@ -662,8 +720,8 @@ ${body}
       var cmp;
       if (key === "game") { cmp = a[0] - b[0]; }
       else if (key === "status") { cmp = a[1] - b[1]; }
-      else if (key === "nodes") { cmp = a[2] - b[2]; }
-      else if (key === "timeMs") { cmp = a[3] - b[3]; }
+      else if (key === "nodes") { cmp = (a[6] ?? a[2]) - (b[6] ?? b[2]); }
+      else if (key === "timeMs") { cmp = (a[7] ?? a[3]) - (b[7] ?? b[3]); }
       else { cmp = a[4] - b[4]; }
       return cmp * dir;
     });
@@ -686,9 +744,10 @@ ${body}
       html += "<tr" + cls + ">"
         + "<td>" + fmtNum(r[0]) + "</td>"
         + "<td><span class=\\"badge\\" style=\\"color:" + COLORS[st] + ";background:" + COLORS[st] + "22\\">" + esc(st) + "</span></td>"
-        + "<td class=\\"num\\">" + fmtNum(r[2]) + "</td>"
-        + "<td class=\\"num\\">" + fmtNum(r[3]) + "</td>"
+        + "<td class=\\"num\\">" + fmtNum(r[6] ?? r[2]) + "</td>"
+        + "<td class=\\"num\\">" + fmtNum(r[7] ?? r[3]) + "</td>"
         + "<td class=\\"num\\">" + fmtNum(r[4]) + "</td>"
+        + "<td>" + esc(r[5]) + "</td>"
         + "</tr>";
     }
     body.innerHTML = html;
@@ -832,9 +891,10 @@ function main() {
 
   const { batches, ranges, games, config } = loadBatches(args.dataDir);
   const summary = buildSummary(games);
+  const strategySummary = buildStrategySummary(games);
   const timeHist = buildLogHistogram(games.map((g) => g[3]));
   const nodesHist = buildLogHistogram(games.map((g) => g[2]));
-  const html = renderReportHtml({ batches, ranges, games, config, summary, timeHist, nodesHist });
+  const html = renderReportHtml({ batches, ranges, games, config, summary, strategySummary, timeHist, nodesHist });
 
   mkdirSync(dirname(args.out), { recursive: true });
   writeFileSync(args.out, html);

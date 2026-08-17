@@ -12,7 +12,7 @@
  *   node scripts/benchmark/verify-node-limit.js --batch 1 --max-nodes 5000000
  *   node scripts/benchmark/verify-node-limit.js --input batch-01.json --max-nodes 5000000 --max-time-ms 600000
  *
- * 出力: docs/benchmark/data/verify-node-limit-<batch>-<maxNodes>.json
+ * 出力: docs/benchmark/data/verify-<strategy>-<batch>-<maxNodes>.json
  * ========================================================= */
 
 import {
@@ -23,7 +23,7 @@ import {
 } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { solve } from "../../src/js/solver.js";
+import { SOLVER_PROFILES, solveWithFallback } from "../../src/js/solver.js";
 import { dealGame } from "../../src/js/deal.js";
 
 const DEFAULT_MAX_NODES = 5000000;
@@ -40,6 +40,7 @@ function parseArgs(argv) {
     input: null, // 入力ファイル名 (batch-XX.json)。未指定なら --batch から導出
     maxNodes: DEFAULT_MAX_NODES,
     maxTimeMs: DEFAULT_MAX_TIME_MS,
+    strategy: "safe",
     dataDir: DEFAULT_DATA_DIR,
     help: false,
   };
@@ -62,6 +63,9 @@ function parseArgs(argv) {
       case "--max-time-ms":
         args.maxTimeMs = Number(argv[++i]);
         break;
+      case "--strategy":
+        args.strategy = argv[++i];
+        break;
       case "--data-dir":
         args.dataDir = resolve(argv[++i]);
         break;
@@ -83,29 +87,40 @@ function printHelp() {
   --input FILE       入力バッチファイル名 (batch-XX.json)。既定は --batch から導出
   --max-nodes N      再計測時のノード上限 (既定 ${DEFAULT_MAX_NODES})
   --max-time-ms N    再計測時の時間上限 ms (既定 ${DEFAULT_MAX_TIME_MS})
+  --strategy NAME    再計測戦略 (既定 safe)
   --data-dir DIR     データディレクトリ (既定 ${DEFAULT_DATA_DIR})
   -h, --help         このヘルプを表示
 
 入力バッチ内で status が "node-limit" のゲームだけを再計測し、
-docs/benchmark/data/verify-node-limit-<batch>-<maxNodes>.json に保存します。`);
+docs/benchmark/data/verify-<strategy>-<batch>-<maxNodes>.json に保存します。`);
 }
 
 /* ---------------- 計測 ---------------- */
 
-function measureGame(game, maxNodes, maxTimeMs) {
+function measureGame(game, maxNodes, maxTimeMs, strategy) {
   const deal = dealGame(game);
   const board = {
     cascades: deal.cascades.map((pile) => pile.map((card) => card.id)),
     freeCells: deal.freeCells.map((card) => (card === null ? null : card.id)),
     foundations: [],
   };
-  const res = solve(board, { maxNodes, maxTimeMs });
+  const res = solveWithFallback(board, {
+    strategy,
+    fastOptions: { ...SOLVER_PROFILES.fast, maxNodes, maxTimeMs },
+    safeOptions: { ...SOLVER_PROFILES.safe, maxNodes, maxTimeMs },
+  });
   return {
     game,
     status: res.status,
     solved: res.solved,
     nodes: res.nodes,
     timeMs: res.timeMs,
+    totalNodes: res.totalNodes,
+    totalTimeMs: res.totalTimeMs,
+    strategy: res.strategy,
+    finalMode: res.finalMode,
+    fallbackUsed: res.fallbackUsed,
+    attempts: res.attempts,
     moves: res.moves.length,
   };
 }
@@ -117,7 +132,7 @@ function summarize(results) {
   let unsolvable = 0;
   let totalTimeMs = 0;
   for (const r of results) {
-    totalTimeMs += r.timeMs;
+    totalTimeMs += r.totalTimeMs ?? r.timeMs;
     if (r.status === "solved") {
       solved++;
     } else if (r.status === "node-limit") {
@@ -146,7 +161,8 @@ function main() {
     printHelp();
     return;
   }
-  if (args.maxNodes <= 0 || args.maxTimeMs <= 0) {
+  if (args.maxNodes <= 0 || args.maxTimeMs <= 0
+    || !["fast", "safe", "fast-safe"].includes(args.strategy)) {
     console.error("エラー: --max-nodes / --max-time-ms は正の値を指定してください。");
     process.exit(1);
   }
@@ -168,14 +184,14 @@ function main() {
   const origConfig = batchData.config ?? {};
   console.log(
     `入力 ${inputName}: node-limit ${targets.length} ゲームを再計測 `
-    + `[maxNodes=${args.maxNodes}, maxTimeMs=${args.maxTimeMs}ms]`
+    + `[strategy=${args.strategy}, maxNodes=${args.maxNodes}, maxTimeMs=${args.maxTimeMs}ms]`
     + ` (元設定: maxNodes=${origConfig.maxNodes ?? "?"}, maxTimeMs=${origConfig.maxTimeMs ?? "?"}ms)`
   );
 
   const results = [];
   const startedAt = Date.now();
   for (const t of targets) {
-    const record = measureGame(t.game, args.maxNodes, args.maxTimeMs);
+    const record = measureGame(t.game, args.maxNodes, args.maxTimeMs, args.strategy);
     const orig = batchData.results.find((r) => r.game === t.game);
     results.push({
       game: t.game,
@@ -183,6 +199,12 @@ function main() {
       solved: record.solved,
       nodes: record.nodes,
       timeMs: record.timeMs,
+      totalNodes: record.totalNodes,
+      totalTimeMs: record.totalTimeMs,
+      strategy: record.strategy,
+      finalMode: record.finalMode,
+      fallbackUsed: record.fallbackUsed,
+      attempts: record.attempts,
       moves: record.moves,
       orig: {
         status: orig.status,
@@ -193,20 +215,20 @@ function main() {
     });
     console.log(
       `#${String(t.game).padStart(6, "0")} ${record.status.padEnd(10)} `
-      + `nodes=${record.nodes.toLocaleString("en-US")} `
-      + `time=${record.timeMs}ms moves=${record.moves}`
+      + `nodes=${record.totalNodes.toLocaleString("en-US")} `
+      + `time=${record.totalTimeMs}ms moves=${record.moves}`
       + `  (元: ${orig.status}, ${orig.nodes.toLocaleString("en-US")} nodes, ${orig.timeMs}ms)`
     );
   }
 
-  const outName = `verify-node-limit-${String(args.batch).padStart(2, "0")}-${args.maxNodes}.json`;
+  const outName = `verify-${args.strategy}-${String(args.batch).padStart(2, "0")}-${args.maxNodes}.json`;
   const outPath = resolve(args.dataDir, outName);
   mkdirSync(args.dataDir, { recursive: true });
   const meta = {
     kind: "verify-node-limit",
     batch: args.batch,
     input: inputName,
-    config: { maxNodes: args.maxNodes, maxTimeMs: args.maxTimeMs },
+    config: { strategy: args.strategy, maxNodes: args.maxNodes, maxTimeMs: args.maxTimeMs },
     origConfig,
     measuredAt: new Date().toISOString(),
     summary: summarize(results),
