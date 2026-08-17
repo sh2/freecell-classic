@@ -20,6 +20,30 @@ const rankOf = (id) => (id >> 2) + 1;
 const suitOf = (id) => id & 3;
 const isRed = (id) => (id & 3) === 1 || (id & 3) === 2;
 
+/**
+ * Horne's Rule に基づき、カードを土台へ送って安全か判定する。
+ *
+ * カードを土台へ送ると、そのカードは tableau の受け皿として使えなくなる。
+ * 反対色の両スートが rank - 2 まで進んでいれば、rank のカードを失っても
+ * それらのカードを受け皿として必要とする局面は生じない。A は常に安全である。
+ * foundationRanks は各スートの現在の先頭ランク(0〜13)を受け取る。
+ */
+export function isSafeFoundationMove(cardId, foundationRanks) {
+  const suit = suitOf(cardId);
+  const rank = rankOf(cardId);
+  if (rank <= 1) {
+    return true;
+  }
+  const oppositeRanks = [];
+  for (let otherSuit = 0; otherSuit < NUM_HOME; otherSuit++) {
+    if (isRed(cardId) === (otherSuit === 1 || otherSuit === 2)) {
+      continue;
+    }
+    oppositeRanks.push(foundationRanks[otherSuit] ?? 0);
+  }
+  return rank <= Math.min(...oppositeRanks) + 1;
+}
+
 /** search() の戻り値用の特殊値 */
 const FOUND = -1;
 const INF = 0x7fffffff;
@@ -191,7 +215,10 @@ export function formatMove(mv) {
 export function solve(board, options = {}) {
   const maxNodes = options.maxNodes ?? 2000000;
   const maxTimeMs = options.maxTimeMs ?? 60000;
-  const startedAt = Date.now();
+  const safeFoundationMoves = options.safeFoundationMoves ?? true;
+  // Date.now() は VirtualBox Guest Additions などによる時刻補正で逆行し得る。
+  // performance.now() は単調増加する経過時間用タイマーなので、探索時間の測定に使う。
+  const startedAt = performance.now();
 
   /* ---------------- 状態(検索中は 1 つの可変状態を使い回す) ---------------- */
 
@@ -221,6 +248,15 @@ export function solve(board, options = {}) {
 
   const totalCards = countCards(board);
   const path = []; // 初手から現在までの手順(自動ホーム含む)
+  const stats = {
+    unsafeHomeGenerated: 0,
+    unsafeHomeTried: 0,
+    unsafeHomeSolved: 0,
+    unsafeHomeDeadEnds: 0,
+    transpositionHits: 0,
+    deadEndNodes: 0,
+    maxSearchDepth: 0,
+  };
 
   /* ---------------- Zobrist ハッシュ ---------------- */
 
@@ -402,6 +438,9 @@ export function solve(board, options = {}) {
   }
 
   function moveScore(mv) {
+    if (mv.destZone === "home") {
+      return 12000 + rankOf(mv.cardId) * 500; // 実験3: ランクが高いホーム移動を優先する
+    }
     if (mv.destZone === "cascade") {
       let s = mv.count * 10000;
       if (cols[mv.destIndex].length > 0) {
@@ -456,7 +495,11 @@ export function solve(board, options = {}) {
   function findHomeMove() {
     for (let f = 0; f < NUM_FREE; f++) {
       const c = free[f];
-      if (c !== -1 && found[suitOf(c)] === rankOf(c) - 1) {
+      if (
+        c !== -1
+        && found[suitOf(c)] === rankOf(c) - 1
+        && (!safeFoundationMoves || isSafeFoundationMove(c, found))
+      ) {
         return { cardId: c, fromZone: "free", fromIndex: f, destZone: "home", destIndex: suitOf(c), count: 1 };
       }
     }
@@ -466,7 +509,10 @@ export function solve(board, options = {}) {
         continue;
       }
       const c = cols[i][len - 1];
-      if (found[suitOf(c)] === rankOf(c) - 1) {
+      if (
+        found[suitOf(c)] === rankOf(c) - 1
+        && (!safeFoundationMoves || isSafeFoundationMove(c, found))
+      ) {
         return { cardId: c, fromZone: "cascade", fromIndex: i, destZone: "home", destIndex: suitOf(c), count: 1 };
       }
     }
@@ -476,6 +522,41 @@ export function solve(board, options = {}) {
   /** 分岐手を列挙する(ホーム手は含まない。自動ホームで消化済み) */
   function generateMoves() {
     const moves = [];
+
+    // 安全でないホーム移動は、解に必要な場合があるため探索分岐として残す。
+    // findHomeMove() が安全な移動を先に全て自動適用しているため、ここで列挙
+    // されるホーム移動は常に「合法だが安全条件を満たさない」ものだけである。
+    if (safeFoundationMoves) {
+      for (let f = 0; f < NUM_FREE; f++) {
+      const cardId = free[f];
+      if (
+        cardId !== -1
+        && found[suitOf(cardId)] === rankOf(cardId) - 1
+        && !isSafeFoundationMove(cardId, found)
+      ) {
+        const mv = { cardId, fromZone: "free", fromIndex: f, destZone: "home", destIndex: suitOf(cardId), count: 1 };
+        mv.score = moveScore(mv);
+        moves.push(mv);
+        stats.unsafeHomeGenerated++;
+      }
+      }
+      for (let i = 0; i < NUM_CASCADES; i++) {
+      const len = cols[i].length;
+      if (len === 0) {
+        continue;
+      }
+      const cardId = cols[i][len - 1];
+      if (
+        found[suitOf(cardId)] === rankOf(cardId) - 1
+        && !isSafeFoundationMove(cardId, found)
+      ) {
+        const mv = { cardId, fromZone: "cascade", fromIndex: i, destZone: "home", destIndex: suitOf(cardId), count: 1 };
+        mv.score = moveScore(mv);
+        moves.push(mv);
+        stats.unsafeHomeGenerated++;
+      }
+      }
+    }
 
     // 空列の移動先は 1 つ(先頭の空列)に正規化する。列正規化によりどの空列へ
     // 動かしても同一状態になるため、複数の空列へ同じ手を生成する必要はない。
@@ -632,12 +713,15 @@ export function solve(board, options = {}) {
   }
 
   function search(g, bound) {
+    if (g > stats.maxSearchDepth) {
+      stats.maxSearchDepth = g;
+    }
     nodes++;
     if (nodes >= maxNodes) {
       aborted = "node-limit";
       throw ABORT;
     }
-    if ((nodes & 1023) === 0 && Date.now() - startedAt >= maxTimeMs) {
+    if ((nodes & 1023) === 0 && performance.now() - startedAt >= maxTimeMs) {
       aborted = "time-limit";
       throw ABORT;
     }
@@ -654,22 +738,34 @@ export function solve(board, options = {}) {
     const [stateH1, stateH2] = getStateHash();
     const stored = tt.lookup(stateH1, stateH2);
     if (stored !== -1 && stored <= g) {
+      stats.transpositionHits++;
       return INF; // 同等か浅い経路で既知の状態は刈る
     }
     tt.store(stateH1, stateH2, g);
 
     const moves = generateMoves();
     if (moves.length === 0) {
+      stats.deadEndNodes++;
       return INF; // 行き止まり(自動ホーム済みで分岐手も無い)
     }
 
     let min = INF;
     for (const mv of moves) {
+      const unsafeHome = mv.destZone === "home" && !isSafeFoundationMove(mv.cardId, found);
+      if (unsafeHome) {
+        stats.unsafeHomeTried++;
+      }
       const rec = makeMove(mv);
       const t = search(g + rec.moves.length, bound);
       unmakeMove(rec);
       if (t === FOUND) {
+        if (unsafeHome) {
+          stats.unsafeHomeSolved++;
+        }
         return FOUND;
+      }
+      if (unsafeHome && t >= INF) {
+        stats.unsafeHomeDeadEnds++;
       }
       if (t < min) {
         min = t;
@@ -685,7 +781,8 @@ export function solve(board, options = {}) {
     status,
     moves: solutionMoves !== null ? solutionMoves.slice() : [],
     nodes,
-    timeMs: Date.now() - startedAt,
+    timeMs: Math.round(performance.now() - startedAt),
+    stats: { ...stats },
   });
 
   try {

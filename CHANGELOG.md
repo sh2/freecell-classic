@@ -4,6 +4,21 @@
 
 ### 修正
 
+- ソルバーに自動ホーム方式の切替と探索カウンターを追加
+  (`src/js/solver.js` / `scripts/benchmark/run.js`)。安全条件付き方式と無条件自動ホーム
+  方式を比較できる `safeFoundationMoves` / `--unsafe-home` を追加し、安全でないホーム
+  手の生成・試行・解決到達・行き止まり、置換表ヒット数、探索深度などを結果へ記録する。
+
+- ソルバーの自動ホーム移動に Horne's Rule に基づく安全条件を追加
+  (`src/js/solver.js` / `tests/unit/solver.test.js`)。A は常に自動移動し、低ランクの
+  カードは反対色スートの土台が必要な位置まで進んだ場合だけ自動移動する。安全でない
+  合法なホーム移動は探索分岐として残し、解を取りこぼさないようにした。
+
+- ソルバーの経過時間測定を `Date.now()` から `performance.now()` へ変更
+  (`src/js/solver.js`)。VirtualBox Guest Additions などによるシステム時刻の補正で
+  測定時間が逆行する問題を防ぎ、時間上限判定と `timeMs` の測定を単調増加タイマーに
+  統一した。
+
 - ソルバーの列正規化キーを修正(`src/js/solver.js` / `tests/unit/solver.test.js`)。
   - 従来の全列カードを位置ごとに XOR する方式では列の境界を失い、異なる列構成を
     同一状態として置換表で誤って枝刈りする可能性があった。

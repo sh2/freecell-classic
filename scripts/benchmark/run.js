@@ -51,6 +51,7 @@ function parseArgs(argv) {
     force: false,
     maxNodes: DEFAULT_MAX_NODES,
     maxTimeMs: DEFAULT_MAX_TIME_MS,
+    safeFoundationMoves: true,
     dataDir: DEFAULT_DATA_DIR,
     help: false,
   };
@@ -82,6 +83,9 @@ function parseArgs(argv) {
       case "--max-time-ms":
         args.maxTimeMs = Number(argv[++i]);
         break;
+      case "--unsafe-home":
+        args.safeFoundationMoves = false;
+        break;
       case "--data-dir":
         args.dataDir = resolve(argv[++i]);
         break;
@@ -105,6 +109,7 @@ function printHelp() {
   --force            計測済みでも再計測して上書き
   --max-nodes N      ノード上限 (既定 ${DEFAULT_MAX_NODES})
   --max-time-ms N    時間上限 ms (既定 ${DEFAULT_MAX_TIME_MS})
+  --unsafe-home      ホーム移動を安全条件なしで自動適用
   --data-dir DIR     結果出力先 (既定 ${DEFAULT_DATA_DIR})
   -h, --help         このヘルプを表示
 
@@ -144,14 +149,14 @@ function batchRange(batch) {
 
 /* ---------------- 計測 ---------------- */
 
-function measureGame(game, maxNodes, maxTimeMs) {
+function measureGame(game, maxNodes, maxTimeMs, safeFoundationMoves) {
   const deal = dealGame(game);
   const board = {
     cascades: deal.cascades.map((pile) => pile.map((card) => card.id)),
     freeCells: deal.freeCells.map((card) => (card === null ? null : card.id)),
     foundations: [],
   };
-  const res = solve(board, { maxNodes, maxTimeMs });
+  const res = solve(board, { maxNodes, maxTimeMs, safeFoundationMoves });
   return {
     game,
     status: res.status,
@@ -159,6 +164,7 @@ function measureGame(game, maxNodes, maxTimeMs) {
     nodes: res.nodes,
     timeMs: res.timeMs,
     moves: res.moves.length,
+    stats: res.stats,
   };
 }
 
@@ -228,7 +234,7 @@ function runBatch(batch, args) {
     if (done.has(game)) {
       continue;
     }
-    const record = measureGame(game, args.maxNodes, args.maxTimeMs);
+    const record = measureGame(game, args.maxNodes, args.maxTimeMs, args.safeFoundationMoves);
     results.push(record);
     done.add(game);
     doneCount++;
@@ -273,7 +279,11 @@ function buildMeta(batch, args, results) {
     batch,
     start: batchRange(batch).start,
     end: batchRange(batch).end,
-    config: { maxNodes: args.maxNodes, maxTimeMs: args.maxTimeMs },
+    config: {
+      maxNodes: args.maxNodes,
+      maxTimeMs: args.maxTimeMs,
+      safeFoundationMoves: args.safeFoundationMoves,
+    },
     measuredAt: new Date().toISOString(),
     summary: summarize(results),
     results,
@@ -294,7 +304,7 @@ function runRange(start, count, args) {
   console.log(`範囲 ${start}〜${end} (${end - start + 1} ゲーム) を計測開始`
     + ` [maxNodes=${args.maxNodes}, maxTimeMs=${args.maxTimeMs}ms]`);
   for (let game = start; game <= end; game++) {
-    const record = measureGame(game, args.maxNodes, args.maxTimeMs);
+    const record = measureGame(game, args.maxNodes, args.maxTimeMs, args.safeFoundationMoves);
     results.push(record);
     console.log(
       `#${String(game).padStart(6, "0")} ${record.status.padEnd(10)} `
@@ -306,7 +316,11 @@ function runRange(start, count, args) {
     kind: "range",
     start,
     end,
-    config: { maxNodes: args.maxNodes, maxTimeMs: args.maxTimeMs },
+    config: {
+      maxNodes: args.maxNodes,
+      maxTimeMs: args.maxTimeMs,
+      safeFoundationMoves: args.safeFoundationMoves,
+    },
     measuredAt: new Date().toISOString(),
     summary: summarize(results),
     results,

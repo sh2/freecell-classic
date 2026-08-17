@@ -1,0 +1,8020 @@
+{
+  "batch": 1,
+  "start": 1,
+  "end": 1000,
+  "config": {
+    "maxNodes": 2000000,
+    "maxTimeMs": 60000
+  },
+  "measuredAt": "2026-08-17T02:42:27.748Z",
+  "summary": {
+    "solved": 992,
+    "nodeLimit": 8,
+    "timeLimit": 0,
+    "unsolvable": 0,
+    "totalTimeMs": 112963,
+    "medianTimeMs": 30
+  },
+  "results": [
+    {
+      "game": 1,
+      "status": "solved",
+      "solved": true,
+      "nodes": 24885,
+      "timeMs": 101,
+      "moves": 96
+    },
+    {
+      "game": 2,
+      "status": "solved",
+      "solved": true,
+      "nodes": 35246,
+      "timeMs": 99,
+      "moves": 93
+    },
+    {
+      "game": 3,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4885,
+      "timeMs": 30,
+      "moves": 94
+    },
+    {
+      "game": 4,
+      "status": "solved",
+      "solved": true,
+      "nodes": 766,
+      "timeMs": 12,
+      "moves": 95
+    },
+    {
+      "game": 5,
+      "status": "solved",
+      "solved": true,
+      "nodes": 66493,
+      "timeMs": 106,
+      "moves": 94
+    },
+    {
+      "game": 6,
+      "status": "solved",
+      "solved": true,
+      "nodes": 891,
+      "timeMs": 24,
+      "moves": 93
+    },
+    {
+      "game": 7,
+      "status": "solved",
+      "solved": true,
+      "nodes": 347788,
+      "timeMs": 334,
+      "moves": 95
+    },
+    {
+      "game": 8,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1158,
+      "timeMs": 10,
+      "moves": 93
+    },
+    {
+      "game": 9,
+      "status": "solved",
+      "solved": true,
+      "nodes": 131982,
+      "timeMs": 202,
+      "moves": 95
+    },
+    {
+      "game": 10,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5753,
+      "timeMs": 22,
+      "moves": 95
+    },
+    {
+      "game": 11,
+      "status": "solved",
+      "solved": true,
+      "nodes": 19971,
+      "timeMs": 41,
+      "moves": 93
+    },
+    {
+      "game": 12,
+      "status": "solved",
+      "solved": true,
+      "nodes": 33955,
+      "timeMs": 45,
+      "moves": 93
+    },
+    {
+      "game": 13,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2785,
+      "timeMs": 28,
+      "moves": 91
+    },
+    {
+      "game": 14,
+      "status": "solved",
+      "solved": true,
+      "nodes": 25605,
+      "timeMs": 42,
+      "moves": 93
+    },
+    {
+      "game": 15,
+      "status": "solved",
+      "solved": true,
+      "nodes": 530,
+      "timeMs": 7,
+      "moves": 93
+    },
+    {
+      "game": 16,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3082,
+      "timeMs": 17,
+      "moves": 93
+    },
+    {
+      "game": 17,
+      "status": "solved",
+      "solved": true,
+      "nodes": 7928,
+      "timeMs": 17,
+      "moves": 94
+    },
+    {
+      "game": 18,
+      "status": "solved",
+      "solved": true,
+      "nodes": 262,
+      "timeMs": 11,
+      "moves": 95
+    },
+    {
+      "game": 19,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1309,
+      "timeMs": 8,
+      "moves": 95
+    },
+    {
+      "game": 20,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3958,
+      "timeMs": 20,
+      "moves": 94
+    },
+    {
+      "game": 21,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4249,
+      "timeMs": 16,
+      "moves": 93
+    },
+    {
+      "game": 22,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4678,
+      "timeMs": 16,
+      "moves": 96
+    },
+    {
+      "game": 23,
+      "status": "solved",
+      "solved": true,
+      "nodes": 32490,
+      "timeMs": 40,
+      "moves": 95
+    },
+    {
+      "game": 24,
+      "status": "solved",
+      "solved": true,
+      "nodes": 25057,
+      "timeMs": 54,
+      "moves": 95
+    },
+    {
+      "game": 25,
+      "status": "solved",
+      "solved": true,
+      "nodes": 74430,
+      "timeMs": 95,
+      "moves": 95
+    },
+    {
+      "game": 26,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5518,
+      "timeMs": 17,
+      "moves": 94
+    },
+    {
+      "game": 27,
+      "status": "solved",
+      "solved": true,
+      "nodes": 34561,
+      "timeMs": 39,
+      "moves": 94
+    },
+    {
+      "game": 28,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1846,
+      "timeMs": 12,
+      "moves": 94
+    },
+    {
+      "game": 29,
+      "status": "solved",
+      "solved": true,
+      "nodes": 17816,
+      "timeMs": 28,
+      "moves": 94
+    },
+    {
+      "game": 30,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5768,
+      "timeMs": 18,
+      "moves": 94
+    },
+    {
+      "game": 31,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1500,
+      "timeMs": 15,
+      "moves": 94
+    },
+    {
+      "game": 32,
+      "status": "solved",
+      "solved": true,
+      "nodes": 61634,
+      "timeMs": 88,
+      "moves": 95
+    },
+    {
+      "game": 33,
+      "status": "solved",
+      "solved": true,
+      "nodes": 41779,
+      "timeMs": 56,
+      "moves": 94
+    },
+    {
+      "game": 34,
+      "status": "solved",
+      "solved": true,
+      "nodes": 60062,
+      "timeMs": 78,
+      "moves": 95
+    },
+    {
+      "game": 35,
+      "status": "solved",
+      "solved": true,
+      "nodes": 14457,
+      "timeMs": 22,
+      "moves": 95
+    },
+    {
+      "game": 36,
+      "status": "solved",
+      "solved": true,
+      "nodes": 32931,
+      "timeMs": 74,
+      "moves": 95
+    },
+    {
+      "game": 37,
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 2000000,
+      "timeMs": 2336,
+      "moves": 0
+    },
+    {
+      "game": 38,
+      "status": "solved",
+      "solved": true,
+      "nodes": 10282,
+      "timeMs": 24,
+      "moves": 93
+    },
+    {
+      "game": 39,
+      "status": "solved",
+      "solved": true,
+      "nodes": 58836,
+      "timeMs": 73,
+      "moves": 95
+    },
+    {
+      "game": 40,
+      "status": "solved",
+      "solved": true,
+      "nodes": 44224,
+      "timeMs": 89,
+      "moves": 94
+    },
+    {
+      "game": 41,
+      "status": "solved",
+      "solved": true,
+      "nodes": 187714,
+      "timeMs": 267,
+      "moves": 96
+    },
+    {
+      "game": 42,
+      "status": "solved",
+      "solved": true,
+      "nodes": 10271,
+      "timeMs": 25,
+      "moves": 92
+    },
+    {
+      "game": 43,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5486,
+      "timeMs": 12,
+      "moves": 93
+    },
+    {
+      "game": 44,
+      "status": "solved",
+      "solved": true,
+      "nodes": 11590,
+      "timeMs": 33,
+      "moves": 93
+    },
+    {
+      "game": 45,
+      "status": "solved",
+      "solved": true,
+      "nodes": 55286,
+      "timeMs": 61,
+      "moves": 94
+    },
+    {
+      "game": 46,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1583,
+      "timeMs": 16,
+      "moves": 95
+    },
+    {
+      "game": 47,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1372,
+      "timeMs": 7,
+      "moves": 95
+    },
+    {
+      "game": 48,
+      "status": "solved",
+      "solved": true,
+      "nodes": 87218,
+      "timeMs": 108,
+      "moves": 94
+    },
+    {
+      "game": 49,
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 2000000,
+      "timeMs": 2153,
+      "moves": 0
+    },
+    {
+      "game": 50,
+      "status": "solved",
+      "solved": true,
+      "nodes": 506,
+      "timeMs": 13,
+      "moves": 94
+    },
+    {
+      "game": 51,
+      "status": "solved",
+      "solved": true,
+      "nodes": 16939,
+      "timeMs": 40,
+      "moves": 94
+    },
+    {
+      "game": 52,
+      "status": "solved",
+      "solved": true,
+      "nodes": 17473,
+      "timeMs": 29,
+      "moves": 96
+    },
+    {
+      "game": 53,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5128,
+      "timeMs": 19,
+      "moves": 94
+    },
+    {
+      "game": 54,
+      "status": "solved",
+      "solved": true,
+      "nodes": 29767,
+      "timeMs": 40,
+      "moves": 96
+    },
+    {
+      "game": 55,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1983,
+      "timeMs": 19,
+      "moves": 95
+    },
+    {
+      "game": 56,
+      "status": "solved",
+      "solved": true,
+      "nodes": 36066,
+      "timeMs": 50,
+      "moves": 96
+    },
+    {
+      "game": 57,
+      "status": "solved",
+      "solved": true,
+      "nodes": 100360,
+      "timeMs": 161,
+      "moves": 93
+    },
+    {
+      "game": 58,
+      "status": "solved",
+      "solved": true,
+      "nodes": 6359,
+      "timeMs": 17,
+      "moves": 95
+    },
+    {
+      "game": 59,
+      "status": "solved",
+      "solved": true,
+      "nodes": 879,
+      "timeMs": 8,
+      "moves": 94
+    },
+    {
+      "game": 60,
+      "status": "solved",
+      "solved": true,
+      "nodes": 908,
+      "timeMs": 10,
+      "moves": 94
+    },
+    {
+      "game": 61,
+      "status": "solved",
+      "solved": true,
+      "nodes": 16305,
+      "timeMs": 30,
+      "moves": 96
+    },
+    {
+      "game": 62,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1971,
+      "timeMs": 9,
+      "moves": 96
+    },
+    {
+      "game": 63,
+      "status": "solved",
+      "solved": true,
+      "nodes": 36268,
+      "timeMs": 61,
+      "moves": 96
+    },
+    {
+      "game": 64,
+      "status": "solved",
+      "solved": true,
+      "nodes": 37374,
+      "timeMs": 57,
+      "moves": 93
+    },
+    {
+      "game": 65,
+      "status": "solved",
+      "solved": true,
+      "nodes": 154136,
+      "timeMs": 233,
+      "moves": 94
+    },
+    {
+      "game": 66,
+      "status": "solved",
+      "solved": true,
+      "nodes": 39224,
+      "timeMs": 43,
+      "moves": 94
+    },
+    {
+      "game": 67,
+      "status": "solved",
+      "solved": true,
+      "nodes": 48914,
+      "timeMs": 57,
+      "moves": 93
+    },
+    {
+      "game": 68,
+      "status": "solved",
+      "solved": true,
+      "nodes": 11017,
+      "timeMs": 19,
+      "moves": 95
+    },
+    {
+      "game": 69,
+      "status": "solved",
+      "solved": true,
+      "nodes": 16910,
+      "timeMs": 45,
+      "moves": 94
+    },
+    {
+      "game": 70,
+      "status": "solved",
+      "solved": true,
+      "nodes": 36044,
+      "timeMs": 45,
+      "moves": 96
+    },
+    {
+      "game": 71,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2625,
+      "timeMs": 14,
+      "moves": 92
+    },
+    {
+      "game": 72,
+      "status": "solved",
+      "solved": true,
+      "nodes": 74655,
+      "timeMs": 81,
+      "moves": 95
+    },
+    {
+      "game": 73,
+      "status": "solved",
+      "solved": true,
+      "nodes": 42821,
+      "timeMs": 80,
+      "moves": 95
+    },
+    {
+      "game": 74,
+      "status": "solved",
+      "solved": true,
+      "nodes": 19469,
+      "timeMs": 26,
+      "moves": 93
+    },
+    {
+      "game": 75,
+      "status": "solved",
+      "solved": true,
+      "nodes": 649,
+      "timeMs": 12,
+      "moves": 96
+    },
+    {
+      "game": 76,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4572,
+      "timeMs": 25,
+      "moves": 95
+    },
+    {
+      "game": 77,
+      "status": "solved",
+      "solved": true,
+      "nodes": 436,
+      "timeMs": 14,
+      "moves": 94
+    },
+    {
+      "game": 78,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5948,
+      "timeMs": 13,
+      "moves": 93
+    },
+    {
+      "game": 79,
+      "status": "solved",
+      "solved": true,
+      "nodes": 28619,
+      "timeMs": 35,
+      "moves": 93
+    },
+    {
+      "game": 80,
+      "status": "solved",
+      "solved": true,
+      "nodes": 39632,
+      "timeMs": 63,
+      "moves": 93
+    },
+    {
+      "game": 81,
+      "status": "solved",
+      "solved": true,
+      "nodes": 26396,
+      "timeMs": 47,
+      "moves": 96
+    },
+    {
+      "game": 82,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1042,
+      "timeMs": 8,
+      "moves": 95
+    },
+    {
+      "game": 83,
+      "status": "solved",
+      "solved": true,
+      "nodes": 58636,
+      "timeMs": 76,
+      "moves": 96
+    },
+    {
+      "game": 84,
+      "status": "solved",
+      "solved": true,
+      "nodes": 200238,
+      "timeMs": 208,
+      "moves": 96
+    },
+    {
+      "game": 85,
+      "status": "solved",
+      "solved": true,
+      "nodes": 867,
+      "timeMs": 15,
+      "moves": 96
+    },
+    {
+      "game": 86,
+      "status": "solved",
+      "solved": true,
+      "nodes": 247559,
+      "timeMs": 310,
+      "moves": 96
+    },
+    {
+      "game": 87,
+      "status": "solved",
+      "solved": true,
+      "nodes": 738103,
+      "timeMs": 696,
+      "moves": 94
+    },
+    {
+      "game": 88,
+      "status": "solved",
+      "solved": true,
+      "nodes": 144888,
+      "timeMs": 152,
+      "moves": 95
+    },
+    {
+      "game": 89,
+      "status": "solved",
+      "solved": true,
+      "nodes": 25197,
+      "timeMs": 31,
+      "moves": 93
+    },
+    {
+      "game": 90,
+      "status": "solved",
+      "solved": true,
+      "nodes": 75289,
+      "timeMs": 120,
+      "moves": 95
+    },
+    {
+      "game": 91,
+      "status": "solved",
+      "solved": true,
+      "nodes": 7088,
+      "timeMs": 15,
+      "moves": 94
+    },
+    {
+      "game": 92,
+      "status": "solved",
+      "solved": true,
+      "nodes": 16048,
+      "timeMs": 33,
+      "moves": 95
+    },
+    {
+      "game": 93,
+      "status": "solved",
+      "solved": true,
+      "nodes": 188174,
+      "timeMs": 222,
+      "moves": 95
+    },
+    {
+      "game": 94,
+      "status": "solved",
+      "solved": true,
+      "nodes": 23936,
+      "timeMs": 52,
+      "moves": 95
+    },
+    {
+      "game": 95,
+      "status": "solved",
+      "solved": true,
+      "nodes": 16092,
+      "timeMs": 29,
+      "moves": 95
+    },
+    {
+      "game": 96,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4125,
+      "timeMs": 20,
+      "moves": 95
+    },
+    {
+      "game": 97,
+      "status": "solved",
+      "solved": true,
+      "nodes": 6930,
+      "timeMs": 14,
+      "moves": 94
+    },
+    {
+      "game": 98,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5655,
+      "timeMs": 24,
+      "moves": 95
+    },
+    {
+      "game": 99,
+      "status": "solved",
+      "solved": true,
+      "nodes": 25283,
+      "timeMs": 33,
+      "moves": 96
+    },
+    {
+      "game": 100,
+      "status": "solved",
+      "solved": true,
+      "nodes": 28104,
+      "timeMs": 42,
+      "moves": 93
+    },
+    {
+      "game": 101,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2281,
+      "timeMs": 9,
+      "moves": 95
+    },
+    {
+      "game": 102,
+      "status": "solved",
+      "solved": true,
+      "nodes": 952,
+      "timeMs": 16,
+      "moves": 95
+    },
+    {
+      "game": 103,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4197,
+      "timeMs": 10,
+      "moves": 95
+    },
+    {
+      "game": 104,
+      "status": "solved",
+      "solved": true,
+      "nodes": 6227,
+      "timeMs": 18,
+      "moves": 96
+    },
+    {
+      "game": 105,
+      "status": "solved",
+      "solved": true,
+      "nodes": 36696,
+      "timeMs": 55,
+      "moves": 96
+    },
+    {
+      "game": 106,
+      "status": "solved",
+      "solved": true,
+      "nodes": 433647,
+      "timeMs": 510,
+      "moves": 93
+    },
+    {
+      "game": 107,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3502,
+      "timeMs": 14,
+      "moves": 95
+    },
+    {
+      "game": 108,
+      "status": "solved",
+      "solved": true,
+      "nodes": 793,
+      "timeMs": 14,
+      "moves": 93
+    },
+    {
+      "game": 109,
+      "status": "solved",
+      "solved": true,
+      "nodes": 83130,
+      "timeMs": 122,
+      "moves": 94
+    },
+    {
+      "game": 110,
+      "status": "solved",
+      "solved": true,
+      "nodes": 98199,
+      "timeMs": 151,
+      "moves": 95
+    },
+    {
+      "game": 111,
+      "status": "solved",
+      "solved": true,
+      "nodes": 30729,
+      "timeMs": 38,
+      "moves": 96
+    },
+    {
+      "game": 112,
+      "status": "solved",
+      "solved": true,
+      "nodes": 20873,
+      "timeMs": 34,
+      "moves": 95
+    },
+    {
+      "game": 113,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3038,
+      "timeMs": 9,
+      "moves": 96
+    },
+    {
+      "game": 114,
+      "status": "solved",
+      "solved": true,
+      "nodes": 86718,
+      "timeMs": 148,
+      "moves": 94
+    },
+    {
+      "game": 115,
+      "status": "solved",
+      "solved": true,
+      "nodes": 12986,
+      "timeMs": 20,
+      "moves": 93
+    },
+    {
+      "game": 116,
+      "status": "solved",
+      "solved": true,
+      "nodes": 14769,
+      "timeMs": 29,
+      "moves": 96
+    },
+    {
+      "game": 117,
+      "status": "solved",
+      "solved": true,
+      "nodes": 22922,
+      "timeMs": 30,
+      "moves": 93
+    },
+    {
+      "game": 118,
+      "status": "solved",
+      "solved": true,
+      "nodes": 64771,
+      "timeMs": 105,
+      "moves": 94
+    },
+    {
+      "game": 119,
+      "status": "solved",
+      "solved": true,
+      "nodes": 10838,
+      "timeMs": 18,
+      "moves": 95
+    },
+    {
+      "game": 120,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1242370,
+      "timeMs": 1082,
+      "moves": 95
+    },
+    {
+      "game": 121,
+      "status": "solved",
+      "solved": true,
+      "nodes": 25388,
+      "timeMs": 30,
+      "moves": 95
+    },
+    {
+      "game": 122,
+      "status": "solved",
+      "solved": true,
+      "nodes": 619587,
+      "timeMs": 630,
+      "moves": 94
+    },
+    {
+      "game": 123,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2278,
+      "timeMs": 9,
+      "moves": 95
+    },
+    {
+      "game": 124,
+      "status": "solved",
+      "solved": true,
+      "nodes": 54497,
+      "timeMs": 72,
+      "moves": 95
+    },
+    {
+      "game": 125,
+      "status": "solved",
+      "solved": true,
+      "nodes": 72844,
+      "timeMs": 84,
+      "moves": 92
+    },
+    {
+      "game": 126,
+      "status": "solved",
+      "solved": true,
+      "nodes": 118505,
+      "timeMs": 190,
+      "moves": 96
+    },
+    {
+      "game": 127,
+      "status": "solved",
+      "solved": true,
+      "nodes": 45258,
+      "timeMs": 85,
+      "moves": 95
+    },
+    {
+      "game": 128,
+      "status": "solved",
+      "solved": true,
+      "nodes": 226,
+      "timeMs": 13,
+      "moves": 95
+    },
+    {
+      "game": 129,
+      "status": "solved",
+      "solved": true,
+      "nodes": 30006,
+      "timeMs": 68,
+      "moves": 94
+    },
+    {
+      "game": 130,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5528,
+      "timeMs": 11,
+      "moves": 95
+    },
+    {
+      "game": 131,
+      "status": "solved",
+      "solved": true,
+      "nodes": 102592,
+      "timeMs": 152,
+      "moves": 95
+    },
+    {
+      "game": 132,
+      "status": "solved",
+      "solved": true,
+      "nodes": 255062,
+      "timeMs": 277,
+      "moves": 95
+    },
+    {
+      "game": 133,
+      "status": "solved",
+      "solved": true,
+      "nodes": 447859,
+      "timeMs": 402,
+      "moves": 95
+    },
+    {
+      "game": 134,
+      "status": "solved",
+      "solved": true,
+      "nodes": 51348,
+      "timeMs": 95,
+      "moves": 93
+    },
+    {
+      "game": 135,
+      "status": "solved",
+      "solved": true,
+      "nodes": 11635,
+      "timeMs": 24,
+      "moves": 96
+    },
+    {
+      "game": 136,
+      "status": "solved",
+      "solved": true,
+      "nodes": 8679,
+      "timeMs": 25,
+      "moves": 95
+    },
+    {
+      "game": 137,
+      "status": "solved",
+      "solved": true,
+      "nodes": 106353,
+      "timeMs": 136,
+      "moves": 95
+    },
+    {
+      "game": 138,
+      "status": "solved",
+      "solved": true,
+      "nodes": 17758,
+      "timeMs": 41,
+      "moves": 92
+    },
+    {
+      "game": 139,
+      "status": "solved",
+      "solved": true,
+      "nodes": 635952,
+      "timeMs": 757,
+      "moves": 95
+    },
+    {
+      "game": 140,
+      "status": "solved",
+      "solved": true,
+      "nodes": 45314,
+      "timeMs": 68,
+      "moves": 95
+    },
+    {
+      "game": 141,
+      "status": "solved",
+      "solved": true,
+      "nodes": 67196,
+      "timeMs": 93,
+      "moves": 96
+    },
+    {
+      "game": 142,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1666,
+      "timeMs": 20,
+      "moves": 94
+    },
+    {
+      "game": 143,
+      "status": "solved",
+      "solved": true,
+      "nodes": 146027,
+      "timeMs": 141,
+      "moves": 95
+    },
+    {
+      "game": 144,
+      "status": "solved",
+      "solved": true,
+      "nodes": 35874,
+      "timeMs": 44,
+      "moves": 96
+    },
+    {
+      "game": 145,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4300,
+      "timeMs": 11,
+      "moves": 92
+    },
+    {
+      "game": 146,
+      "status": "solved",
+      "solved": true,
+      "nodes": 25455,
+      "timeMs": 57,
+      "moves": 95
+    },
+    {
+      "game": 147,
+      "status": "solved",
+      "solved": true,
+      "nodes": 15589,
+      "timeMs": 26,
+      "moves": 96
+    },
+    {
+      "game": 148,
+      "status": "solved",
+      "solved": true,
+      "nodes": 960,
+      "timeMs": 14,
+      "moves": 93
+    },
+    {
+      "game": 149,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4192,
+      "timeMs": 14,
+      "moves": 96
+    },
+    {
+      "game": 150,
+      "status": "solved",
+      "solved": true,
+      "nodes": 34854,
+      "timeMs": 39,
+      "moves": 93
+    },
+    {
+      "game": 151,
+      "status": "solved",
+      "solved": true,
+      "nodes": 32708,
+      "timeMs": 62,
+      "moves": 92
+    },
+    {
+      "game": 152,
+      "status": "solved",
+      "solved": true,
+      "nodes": 6604,
+      "timeMs": 15,
+      "moves": 96
+    },
+    {
+      "game": 153,
+      "status": "solved",
+      "solved": true,
+      "nodes": 464420,
+      "timeMs": 571,
+      "moves": 95
+    },
+    {
+      "game": 154,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5639,
+      "timeMs": 13,
+      "moves": 95
+    },
+    {
+      "game": 155,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2034,
+      "timeMs": 19,
+      "moves": 92
+    },
+    {
+      "game": 156,
+      "status": "solved",
+      "solved": true,
+      "nodes": 19527,
+      "timeMs": 24,
+      "moves": 95
+    },
+    {
+      "game": 157,
+      "status": "solved",
+      "solved": true,
+      "nodes": 7952,
+      "timeMs": 20,
+      "moves": 95
+    },
+    {
+      "game": 158,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2327,
+      "timeMs": 9,
+      "moves": 94
+    },
+    {
+      "game": 159,
+      "status": "solved",
+      "solved": true,
+      "nodes": 8145,
+      "timeMs": 27,
+      "moves": 93
+    },
+    {
+      "game": 160,
+      "status": "solved",
+      "solved": true,
+      "nodes": 14744,
+      "timeMs": 22,
+      "moves": 95
+    },
+    {
+      "game": 161,
+      "status": "solved",
+      "solved": true,
+      "nodes": 33788,
+      "timeMs": 50,
+      "moves": 94
+    },
+    {
+      "game": 162,
+      "status": "solved",
+      "solved": true,
+      "nodes": 151555,
+      "timeMs": 164,
+      "moves": 91
+    },
+    {
+      "game": 163,
+      "status": "solved",
+      "solved": true,
+      "nodes": 12767,
+      "timeMs": 30,
+      "moves": 93
+    },
+    {
+      "game": 164,
+      "status": "solved",
+      "solved": true,
+      "nodes": 79268,
+      "timeMs": 92,
+      "moves": 95
+    },
+    {
+      "game": 165,
+      "status": "solved",
+      "solved": true,
+      "nodes": 243,
+      "timeMs": 13,
+      "moves": 93
+    },
+    {
+      "game": 166,
+      "status": "solved",
+      "solved": true,
+      "nodes": 116,
+      "timeMs": 7,
+      "moves": 91
+    },
+    {
+      "game": 167,
+      "status": "solved",
+      "solved": true,
+      "nodes": 39122,
+      "timeMs": 71,
+      "moves": 92
+    },
+    {
+      "game": 168,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2396,
+      "timeMs": 8,
+      "moves": 96
+    },
+    {
+      "game": 169,
+      "status": "solved",
+      "solved": true,
+      "nodes": 315779,
+      "timeMs": 313,
+      "moves": 95
+    },
+    {
+      "game": 170,
+      "status": "solved",
+      "solved": true,
+      "nodes": 21608,
+      "timeMs": 29,
+      "moves": 94
+    },
+    {
+      "game": 171,
+      "status": "solved",
+      "solved": true,
+      "nodes": 16921,
+      "timeMs": 38,
+      "moves": 95
+    },
+    {
+      "game": 172,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5565,
+      "timeMs": 13,
+      "moves": 95
+    },
+    {
+      "game": 173,
+      "status": "solved",
+      "solved": true,
+      "nodes": 11841,
+      "timeMs": 26,
+      "moves": 92
+    },
+    {
+      "game": 174,
+      "status": "solved",
+      "solved": true,
+      "nodes": 42512,
+      "timeMs": 48,
+      "moves": 94
+    },
+    {
+      "game": 175,
+      "status": "solved",
+      "solved": true,
+      "nodes": 12653,
+      "timeMs": 35,
+      "moves": 95
+    },
+    {
+      "game": 176,
+      "status": "solved",
+      "solved": true,
+      "nodes": 7753,
+      "timeMs": 15,
+      "moves": 96
+    },
+    {
+      "game": 177,
+      "status": "solved",
+      "solved": true,
+      "nodes": 31089,
+      "timeMs": 37,
+      "moves": 93
+    },
+    {
+      "game": 178,
+      "status": "solved",
+      "solved": true,
+      "nodes": 395193,
+      "timeMs": 495,
+      "moves": 95
+    },
+    {
+      "game": 179,
+      "status": "solved",
+      "solved": true,
+      "nodes": 705,
+      "timeMs": 8,
+      "moves": 95
+    },
+    {
+      "game": 180,
+      "status": "solved",
+      "solved": true,
+      "nodes": 15095,
+      "timeMs": 25,
+      "moves": 92
+    },
+    {
+      "game": 181,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5052,
+      "timeMs": 14,
+      "moves": 95
+    },
+    {
+      "game": 182,
+      "status": "solved",
+      "solved": true,
+      "nodes": 203645,
+      "timeMs": 201,
+      "moves": 93
+    },
+    {
+      "game": 183,
+      "status": "solved",
+      "solved": true,
+      "nodes": 8719,
+      "timeMs": 14,
+      "moves": 95
+    },
+    {
+      "game": 184,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5483,
+      "timeMs": 13,
+      "moves": 90
+    },
+    {
+      "game": 185,
+      "status": "solved",
+      "solved": true,
+      "nodes": 11890,
+      "timeMs": 29,
+      "moves": 94
+    },
+    {
+      "game": 186,
+      "status": "solved",
+      "solved": true,
+      "nodes": 8825,
+      "timeMs": 17,
+      "moves": 95
+    },
+    {
+      "game": 187,
+      "status": "solved",
+      "solved": true,
+      "nodes": 69738,
+      "timeMs": 123,
+      "moves": 95
+    },
+    {
+      "game": 188,
+      "status": "solved",
+      "solved": true,
+      "nodes": 17160,
+      "timeMs": 29,
+      "moves": 94
+    },
+    {
+      "game": 189,
+      "status": "solved",
+      "solved": true,
+      "nodes": 44282,
+      "timeMs": 57,
+      "moves": 93
+    },
+    {
+      "game": 190,
+      "status": "solved",
+      "solved": true,
+      "nodes": 57604,
+      "timeMs": 61,
+      "moves": 95
+    },
+    {
+      "game": 191,
+      "status": "solved",
+      "solved": true,
+      "nodes": 8102,
+      "timeMs": 31,
+      "moves": 96
+    },
+    {
+      "game": 192,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3689,
+      "timeMs": 9,
+      "moves": 94
+    },
+    {
+      "game": 193,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5038,
+      "timeMs": 19,
+      "moves": 94
+    },
+    {
+      "game": 194,
+      "status": "solved",
+      "solved": true,
+      "nodes": 126963,
+      "timeMs": 207,
+      "moves": 95
+    },
+    {
+      "game": 195,
+      "status": "solved",
+      "solved": true,
+      "nodes": 19672,
+      "timeMs": 40,
+      "moves": 94
+    },
+    {
+      "game": 196,
+      "status": "solved",
+      "solved": true,
+      "nodes": 214,
+      "timeMs": 7,
+      "moves": 95
+    },
+    {
+      "game": 197,
+      "status": "solved",
+      "solved": true,
+      "nodes": 392575,
+      "timeMs": 476,
+      "moves": 95
+    },
+    {
+      "game": 198,
+      "status": "solved",
+      "solved": true,
+      "nodes": 7832,
+      "timeMs": 14,
+      "moves": 94
+    },
+    {
+      "game": 199,
+      "status": "solved",
+      "solved": true,
+      "nodes": 823,
+      "timeMs": 15,
+      "moves": 95
+    },
+    {
+      "game": 200,
+      "status": "solved",
+      "solved": true,
+      "nodes": 9284,
+      "timeMs": 17,
+      "moves": 93
+    },
+    {
+      "game": 201,
+      "status": "solved",
+      "solved": true,
+      "nodes": 134024,
+      "timeMs": 159,
+      "moves": 96
+    },
+    {
+      "game": 202,
+      "status": "solved",
+      "solved": true,
+      "nodes": 65212,
+      "timeMs": 84,
+      "moves": 93
+    },
+    {
+      "game": 203,
+      "status": "solved",
+      "solved": true,
+      "nodes": 122203,
+      "timeMs": 183,
+      "moves": 94
+    },
+    {
+      "game": 204,
+      "status": "solved",
+      "solved": true,
+      "nodes": 46493,
+      "timeMs": 59,
+      "moves": 93
+    },
+    {
+      "game": 205,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5836,
+      "timeMs": 17,
+      "moves": 95
+    },
+    {
+      "game": 206,
+      "status": "solved",
+      "solved": true,
+      "nodes": 76832,
+      "timeMs": 82,
+      "moves": 94
+    },
+    {
+      "game": 207,
+      "status": "solved",
+      "solved": true,
+      "nodes": 184371,
+      "timeMs": 263,
+      "moves": 92
+    },
+    {
+      "game": 208,
+      "status": "solved",
+      "solved": true,
+      "nodes": 9030,
+      "timeMs": 18,
+      "moves": 94
+    },
+    {
+      "game": 209,
+      "status": "solved",
+      "solved": true,
+      "nodes": 319745,
+      "timeMs": 343,
+      "moves": 92
+    },
+    {
+      "game": 210,
+      "status": "solved",
+      "solved": true,
+      "nodes": 50877,
+      "timeMs": 54,
+      "moves": 92
+    },
+    {
+      "game": 211,
+      "status": "solved",
+      "solved": true,
+      "nodes": 12752,
+      "timeMs": 35,
+      "moves": 95
+    },
+    {
+      "game": 212,
+      "status": "solved",
+      "solved": true,
+      "nodes": 9961,
+      "timeMs": 16,
+      "moves": 96
+    },
+    {
+      "game": 213,
+      "status": "solved",
+      "solved": true,
+      "nodes": 36416,
+      "timeMs": 66,
+      "moves": 93
+    },
+    {
+      "game": 214,
+      "status": "solved",
+      "solved": true,
+      "nodes": 7748,
+      "timeMs": 15,
+      "moves": 94
+    },
+    {
+      "game": 215,
+      "status": "solved",
+      "solved": true,
+      "nodes": 14144,
+      "timeMs": 33,
+      "moves": 94
+    },
+    {
+      "game": 216,
+      "status": "solved",
+      "solved": true,
+      "nodes": 9005,
+      "timeMs": 18,
+      "moves": 95
+    },
+    {
+      "game": 217,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3294,
+      "timeMs": 14,
+      "moves": 94
+    },
+    {
+      "game": 218,
+      "status": "solved",
+      "solved": true,
+      "nodes": 150771,
+      "timeMs": 150,
+      "moves": 92
+    },
+    {
+      "game": 219,
+      "status": "solved",
+      "solved": true,
+      "nodes": 416,
+      "timeMs": 14,
+      "moves": 94
+    },
+    {
+      "game": 220,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5791,
+      "timeMs": 11,
+      "moves": 95
+    },
+    {
+      "game": 221,
+      "status": "solved",
+      "solved": true,
+      "nodes": 593,
+      "timeMs": 13,
+      "moves": 94
+    },
+    {
+      "game": 222,
+      "status": "solved",
+      "solved": true,
+      "nodes": 100918,
+      "timeMs": 112,
+      "moves": 96
+    },
+    {
+      "game": 223,
+      "status": "solved",
+      "solved": true,
+      "nodes": 134373,
+      "timeMs": 139,
+      "moves": 94
+    },
+    {
+      "game": 224,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4711,
+      "timeMs": 21,
+      "moves": 91
+    },
+    {
+      "game": 225,
+      "status": "solved",
+      "solved": true,
+      "nodes": 27270,
+      "timeMs": 30,
+      "moves": 95
+    },
+    {
+      "game": 226,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4506,
+      "timeMs": 17,
+      "moves": 96
+    },
+    {
+      "game": 227,
+      "status": "solved",
+      "solved": true,
+      "nodes": 47785,
+      "timeMs": 60,
+      "moves": 95
+    },
+    {
+      "game": 228,
+      "status": "solved",
+      "solved": true,
+      "nodes": 101641,
+      "timeMs": 138,
+      "moves": 95
+    },
+    {
+      "game": 229,
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 2000000,
+      "timeMs": 1977,
+      "moves": 0
+    },
+    {
+      "game": 230,
+      "status": "solved",
+      "solved": true,
+      "nodes": 376,
+      "timeMs": 7,
+      "moves": 93
+    },
+    {
+      "game": 231,
+      "status": "solved",
+      "solved": true,
+      "nodes": 182206,
+      "timeMs": 236,
+      "moves": 94
+    },
+    {
+      "game": 232,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4557,
+      "timeMs": 20,
+      "moves": 93
+    },
+    {
+      "game": 233,
+      "status": "solved",
+      "solved": true,
+      "nodes": 8985,
+      "timeMs": 16,
+      "moves": 96
+    },
+    {
+      "game": 234,
+      "status": "solved",
+      "solved": true,
+      "nodes": 10376,
+      "timeMs": 25,
+      "moves": 96
+    },
+    {
+      "game": 235,
+      "status": "solved",
+      "solved": true,
+      "nodes": 82641,
+      "timeMs": 101,
+      "moves": 93
+    },
+    {
+      "game": 236,
+      "status": "solved",
+      "solved": true,
+      "nodes": 22732,
+      "timeMs": 50,
+      "moves": 93
+    },
+    {
+      "game": 237,
+      "status": "solved",
+      "solved": true,
+      "nodes": 30197,
+      "timeMs": 41,
+      "moves": 96
+    },
+    {
+      "game": 238,
+      "status": "solved",
+      "solved": true,
+      "nodes": 259454,
+      "timeMs": 293,
+      "moves": 94
+    },
+    {
+      "game": 239,
+      "status": "solved",
+      "solved": true,
+      "nodes": 239429,
+      "timeMs": 231,
+      "moves": 96
+    },
+    {
+      "game": 240,
+      "status": "solved",
+      "solved": true,
+      "nodes": 61070,
+      "timeMs": 101,
+      "moves": 90
+    },
+    {
+      "game": 241,
+      "status": "solved",
+      "solved": true,
+      "nodes": 7566,
+      "timeMs": 13,
+      "moves": 88
+    },
+    {
+      "game": 242,
+      "status": "solved",
+      "solved": true,
+      "nodes": 133759,
+      "timeMs": 146,
+      "moves": 93
+    },
+    {
+      "game": 243,
+      "status": "solved",
+      "solved": true,
+      "nodes": 11733,
+      "timeMs": 19,
+      "moves": 95
+    },
+    {
+      "game": 244,
+      "status": "solved",
+      "solved": true,
+      "nodes": 7757,
+      "timeMs": 26,
+      "moves": 96
+    },
+    {
+      "game": 245,
+      "status": "solved",
+      "solved": true,
+      "nodes": 20872,
+      "timeMs": 27,
+      "moves": 92
+    },
+    {
+      "game": 246,
+      "status": "solved",
+      "solved": true,
+      "nodes": 72760,
+      "timeMs": 83,
+      "moves": 95
+    },
+    {
+      "game": 247,
+      "status": "solved",
+      "solved": true,
+      "nodes": 6145,
+      "timeMs": 13,
+      "moves": 95
+    },
+    {
+      "game": 248,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1003,
+      "timeMs": 14,
+      "moves": 94
+    },
+    {
+      "game": 249,
+      "status": "solved",
+      "solved": true,
+      "nodes": 19786,
+      "timeMs": 23,
+      "moves": 94
+    },
+    {
+      "game": 250,
+      "status": "solved",
+      "solved": true,
+      "nodes": 14560,
+      "timeMs": 25,
+      "moves": 92
+    },
+    {
+      "game": 251,
+      "status": "solved",
+      "solved": true,
+      "nodes": 6768,
+      "timeMs": 11,
+      "moves": 91
+    },
+    {
+      "game": 252,
+      "status": "solved",
+      "solved": true,
+      "nodes": 154314,
+      "timeMs": 207,
+      "moves": 96
+    },
+    {
+      "game": 253,
+      "status": "solved",
+      "solved": true,
+      "nodes": 406572,
+      "timeMs": 588,
+      "moves": 92
+    },
+    {
+      "game": 254,
+      "status": "solved",
+      "solved": true,
+      "nodes": 101538,
+      "timeMs": 148,
+      "moves": 96
+    },
+    {
+      "game": 255,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2378,
+      "timeMs": 10,
+      "moves": 92
+    },
+    {
+      "game": 256,
+      "status": "solved",
+      "solved": true,
+      "nodes": 12326,
+      "timeMs": 29,
+      "moves": 94
+    },
+    {
+      "game": 257,
+      "status": "solved",
+      "solved": true,
+      "nodes": 8375,
+      "timeMs": 15,
+      "moves": 95
+    },
+    {
+      "game": 258,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5865,
+      "timeMs": 18,
+      "moves": 94
+    },
+    {
+      "game": 259,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1621,
+      "timeMs": 9,
+      "moves": 93
+    },
+    {
+      "game": 260,
+      "status": "solved",
+      "solved": true,
+      "nodes": 710,
+      "timeMs": 14,
+      "moves": 96
+    },
+    {
+      "game": 261,
+      "status": "solved",
+      "solved": true,
+      "nodes": 23978,
+      "timeMs": 41,
+      "moves": 92
+    },
+    {
+      "game": 262,
+      "status": "solved",
+      "solved": true,
+      "nodes": 430,
+      "timeMs": 8,
+      "moves": 94
+    },
+    {
+      "game": 263,
+      "status": "solved",
+      "solved": true,
+      "nodes": 52725,
+      "timeMs": 67,
+      "moves": 96
+    },
+    {
+      "game": 264,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2827,
+      "timeMs": 15,
+      "moves": 93
+    },
+    {
+      "game": 265,
+      "status": "solved",
+      "solved": true,
+      "nodes": 8629,
+      "timeMs": 15,
+      "moves": 96
+    },
+    {
+      "game": 266,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1750,
+      "timeMs": 12,
+      "moves": 96
+    },
+    {
+      "game": 267,
+      "status": "solved",
+      "solved": true,
+      "nodes": 61063,
+      "timeMs": 85,
+      "moves": 94
+    },
+    {
+      "game": 268,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3341,
+      "timeMs": 17,
+      "moves": 96
+    },
+    {
+      "game": 269,
+      "status": "solved",
+      "solved": true,
+      "nodes": 356962,
+      "timeMs": 412,
+      "moves": 96
+    },
+    {
+      "game": 270,
+      "status": "solved",
+      "solved": true,
+      "nodes": 32692,
+      "timeMs": 50,
+      "moves": 95
+    },
+    {
+      "game": 271,
+      "status": "solved",
+      "solved": true,
+      "nodes": 65736,
+      "timeMs": 80,
+      "moves": 94
+    },
+    {
+      "game": 272,
+      "status": "solved",
+      "solved": true,
+      "nodes": 21118,
+      "timeMs": 52,
+      "moves": 94
+    },
+    {
+      "game": 273,
+      "status": "solved",
+      "solved": true,
+      "nodes": 277572,
+      "timeMs": 335,
+      "moves": 92
+    },
+    {
+      "game": 274,
+      "status": "solved",
+      "solved": true,
+      "nodes": 27626,
+      "timeMs": 42,
+      "moves": 95
+    },
+    {
+      "game": 275,
+      "status": "solved",
+      "solved": true,
+      "nodes": 15086,
+      "timeMs": 19,
+      "moves": 93
+    },
+    {
+      "game": 276,
+      "status": "solved",
+      "solved": true,
+      "nodes": 486,
+      "timeMs": 15,
+      "moves": 96
+    },
+    {
+      "game": 277,
+      "status": "solved",
+      "solved": true,
+      "nodes": 11513,
+      "timeMs": 19,
+      "moves": 93
+    },
+    {
+      "game": 278,
+      "status": "solved",
+      "solved": true,
+      "nodes": 12549,
+      "timeMs": 25,
+      "moves": 96
+    },
+    {
+      "game": 279,
+      "status": "solved",
+      "solved": true,
+      "nodes": 31235,
+      "timeMs": 37,
+      "moves": 95
+    },
+    {
+      "game": 280,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1388,
+      "timeMs": 15,
+      "moves": 92
+    },
+    {
+      "game": 281,
+      "status": "solved",
+      "solved": true,
+      "nodes": 13618,
+      "timeMs": 22,
+      "moves": 95
+    },
+    {
+      "game": 282,
+      "status": "solved",
+      "solved": true,
+      "nodes": 35098,
+      "timeMs": 44,
+      "moves": 95
+    },
+    {
+      "game": 283,
+      "status": "solved",
+      "solved": true,
+      "nodes": 697006,
+      "timeMs": 848,
+      "moves": 94
+    },
+    {
+      "game": 284,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1466,
+      "timeMs": 16,
+      "moves": 95
+    },
+    {
+      "game": 285,
+      "status": "solved",
+      "solved": true,
+      "nodes": 54057,
+      "timeMs": 71,
+      "moves": 95
+    },
+    {
+      "game": 286,
+      "status": "solved",
+      "solved": true,
+      "nodes": 30469,
+      "timeMs": 51,
+      "moves": 94
+    },
+    {
+      "game": 287,
+      "status": "solved",
+      "solved": true,
+      "nodes": 14793,
+      "timeMs": 25,
+      "moves": 95
+    },
+    {
+      "game": 288,
+      "status": "solved",
+      "solved": true,
+      "nodes": 6304,
+      "timeMs": 20,
+      "moves": 96
+    },
+    {
+      "game": 289,
+      "status": "solved",
+      "solved": true,
+      "nodes": 103156,
+      "timeMs": 112,
+      "moves": 95
+    },
+    {
+      "game": 290,
+      "status": "solved",
+      "solved": true,
+      "nodes": 21446,
+      "timeMs": 33,
+      "moves": 96
+    },
+    {
+      "game": 291,
+      "status": "solved",
+      "solved": true,
+      "nodes": 29172,
+      "timeMs": 41,
+      "moves": 91
+    },
+    {
+      "game": 292,
+      "status": "solved",
+      "solved": true,
+      "nodes": 6145,
+      "timeMs": 27,
+      "moves": 94
+    },
+    {
+      "game": 293,
+      "status": "solved",
+      "solved": true,
+      "nodes": 74134,
+      "timeMs": 94,
+      "moves": 93
+    },
+    {
+      "game": 294,
+      "status": "solved",
+      "solved": true,
+      "nodes": 308328,
+      "timeMs": 431,
+      "moves": 94
+    },
+    {
+      "game": 295,
+      "status": "solved",
+      "solved": true,
+      "nodes": 135258,
+      "timeMs": 126,
+      "moves": 96
+    },
+    {
+      "game": 296,
+      "status": "solved",
+      "solved": true,
+      "nodes": 199107,
+      "timeMs": 256,
+      "moves": 95
+    },
+    {
+      "game": 297,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5508,
+      "timeMs": 15,
+      "moves": 95
+    },
+    {
+      "game": 298,
+      "status": "solved",
+      "solved": true,
+      "nodes": 99260,
+      "timeMs": 113,
+      "moves": 92
+    },
+    {
+      "game": 299,
+      "status": "solved",
+      "solved": true,
+      "nodes": 558306,
+      "timeMs": 578,
+      "moves": 91
+    },
+    {
+      "game": 300,
+      "status": "solved",
+      "solved": true,
+      "nodes": 117,
+      "timeMs": 13,
+      "moves": 94
+    },
+    {
+      "game": 301,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1044,
+      "timeMs": 8,
+      "moves": 96
+    },
+    {
+      "game": 302,
+      "status": "solved",
+      "solved": true,
+      "nodes": 114392,
+      "timeMs": 124,
+      "moves": 95
+    },
+    {
+      "game": 303,
+      "status": "solved",
+      "solved": true,
+      "nodes": 15095,
+      "timeMs": 23,
+      "moves": 91
+    },
+    {
+      "game": 304,
+      "status": "solved",
+      "solved": true,
+      "nodes": 84432,
+      "timeMs": 92,
+      "moves": 94
+    },
+    {
+      "game": 305,
+      "status": "solved",
+      "solved": true,
+      "nodes": 78358,
+      "timeMs": 88,
+      "moves": 95
+    },
+    {
+      "game": 306,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3101,
+      "timeMs": 15,
+      "moves": 93
+    },
+    {
+      "game": 307,
+      "status": "solved",
+      "solved": true,
+      "nodes": 29472,
+      "timeMs": 46,
+      "moves": 95
+    },
+    {
+      "game": 308,
+      "status": "solved",
+      "solved": true,
+      "nodes": 137328,
+      "timeMs": 228,
+      "moves": 95
+    },
+    {
+      "game": 309,
+      "status": "solved",
+      "solved": true,
+      "nodes": 22386,
+      "timeMs": 36,
+      "moves": 96
+    },
+    {
+      "game": 310,
+      "status": "solved",
+      "solved": true,
+      "nodes": 7516,
+      "timeMs": 20,
+      "moves": 94
+    },
+    {
+      "game": 311,
+      "status": "solved",
+      "solved": true,
+      "nodes": 8361,
+      "timeMs": 15,
+      "moves": 94
+    },
+    {
+      "game": 312,
+      "status": "solved",
+      "solved": true,
+      "nodes": 10342,
+      "timeMs": 27,
+      "moves": 96
+    },
+    {
+      "game": 313,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4524,
+      "timeMs": 11,
+      "moves": 92
+    },
+    {
+      "game": 314,
+      "status": "solved",
+      "solved": true,
+      "nodes": 13784,
+      "timeMs": 26,
+      "moves": 93
+    },
+    {
+      "game": 315,
+      "status": "solved",
+      "solved": true,
+      "nodes": 17937,
+      "timeMs": 26,
+      "moves": 94
+    },
+    {
+      "game": 316,
+      "status": "solved",
+      "solved": true,
+      "nodes": 78914,
+      "timeMs": 118,
+      "moves": 94
+    },
+    {
+      "game": 317,
+      "status": "solved",
+      "solved": true,
+      "nodes": 76927,
+      "timeMs": 77,
+      "moves": 92
+    },
+    {
+      "game": 318,
+      "status": "solved",
+      "solved": true,
+      "nodes": 7177,
+      "timeMs": 22,
+      "moves": 91
+    },
+    {
+      "game": 319,
+      "status": "solved",
+      "solved": true,
+      "nodes": 7150,
+      "timeMs": 22,
+      "moves": 96
+    },
+    {
+      "game": 320,
+      "status": "solved",
+      "solved": true,
+      "nodes": 18678,
+      "timeMs": 28,
+      "moves": 96
+    },
+    {
+      "game": 321,
+      "status": "solved",
+      "solved": true,
+      "nodes": 935,
+      "timeMs": 14,
+      "moves": 94
+    },
+    {
+      "game": 322,
+      "status": "solved",
+      "solved": true,
+      "nodes": 140498,
+      "timeMs": 205,
+      "moves": 96
+    },
+    {
+      "game": 323,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3410,
+      "timeMs": 14,
+      "moves": 94
+    },
+    {
+      "game": 324,
+      "status": "solved",
+      "solved": true,
+      "nodes": 194028,
+      "timeMs": 243,
+      "moves": 92
+    },
+    {
+      "game": 325,
+      "status": "solved",
+      "solved": true,
+      "nodes": 37306,
+      "timeMs": 60,
+      "moves": 95
+    },
+    {
+      "game": 326,
+      "status": "solved",
+      "solved": true,
+      "nodes": 16222,
+      "timeMs": 21,
+      "moves": 94
+    },
+    {
+      "game": 327,
+      "status": "solved",
+      "solved": true,
+      "nodes": 24718,
+      "timeMs": 42,
+      "moves": 96
+    },
+    {
+      "game": 328,
+      "status": "solved",
+      "solved": true,
+      "nodes": 22289,
+      "timeMs": 32,
+      "moves": 95
+    },
+    {
+      "game": 329,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4559,
+      "timeMs": 24,
+      "moves": 93
+    },
+    {
+      "game": 330,
+      "status": "solved",
+      "solved": true,
+      "nodes": 298,
+      "timeMs": 7,
+      "moves": 95
+    },
+    {
+      "game": 331,
+      "status": "solved",
+      "solved": true,
+      "nodes": 27341,
+      "timeMs": 40,
+      "moves": 94
+    },
+    {
+      "game": 332,
+      "status": "solved",
+      "solved": true,
+      "nodes": 33249,
+      "timeMs": 54,
+      "moves": 91
+    },
+    {
+      "game": 333,
+      "status": "solved",
+      "solved": true,
+      "nodes": 11458,
+      "timeMs": 18,
+      "moves": 91
+    },
+    {
+      "game": 334,
+      "status": "solved",
+      "solved": true,
+      "nodes": 257406,
+      "timeMs": 295,
+      "moves": 95
+    },
+    {
+      "game": 335,
+      "status": "solved",
+      "solved": true,
+      "nodes": 81428,
+      "timeMs": 97,
+      "moves": 95
+    },
+    {
+      "game": 336,
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 2000000,
+      "timeMs": 2336,
+      "moves": 0
+    },
+    {
+      "game": 337,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4604,
+      "timeMs": 13,
+      "moves": 94
+    },
+    {
+      "game": 338,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1939,
+      "timeMs": 18,
+      "moves": 91
+    },
+    {
+      "game": 339,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2640,
+      "timeMs": 10,
+      "moves": 95
+    },
+    {
+      "game": 340,
+      "status": "solved",
+      "solved": true,
+      "nodes": 464,
+      "timeMs": 9,
+      "moves": 94
+    },
+    {
+      "game": 341,
+      "status": "solved",
+      "solved": true,
+      "nodes": 32109,
+      "timeMs": 39,
+      "moves": 94
+    },
+    {
+      "game": 342,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1221,
+      "timeMs": 16,
+      "moves": 95
+    },
+    {
+      "game": 343,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2345,
+      "timeMs": 10,
+      "moves": 92
+    },
+    {
+      "game": 344,
+      "status": "solved",
+      "solved": true,
+      "nodes": 44959,
+      "timeMs": 69,
+      "moves": 96
+    },
+    {
+      "game": 345,
+      "status": "solved",
+      "solved": true,
+      "nodes": 136894,
+      "timeMs": 170,
+      "moves": 96
+    },
+    {
+      "game": 346,
+      "status": "solved",
+      "solved": true,
+      "nodes": 10766,
+      "timeMs": 27,
+      "moves": 94
+    },
+    {
+      "game": 347,
+      "status": "solved",
+      "solved": true,
+      "nodes": 55436,
+      "timeMs": 69,
+      "moves": 95
+    },
+    {
+      "game": 348,
+      "status": "solved",
+      "solved": true,
+      "nodes": 55140,
+      "timeMs": 65,
+      "moves": 92
+    },
+    {
+      "game": 349,
+      "status": "solved",
+      "solved": true,
+      "nodes": 13320,
+      "timeMs": 18,
+      "moves": 94
+    },
+    {
+      "game": 350,
+      "status": "solved",
+      "solved": true,
+      "nodes": 597411,
+      "timeMs": 640,
+      "moves": 91
+    },
+    {
+      "game": 351,
+      "status": "solved",
+      "solved": true,
+      "nodes": 129813,
+      "timeMs": 150,
+      "moves": 91
+    },
+    {
+      "game": 352,
+      "status": "solved",
+      "solved": true,
+      "nodes": 79835,
+      "timeMs": 99,
+      "moves": 96
+    },
+    {
+      "game": 353,
+      "status": "solved",
+      "solved": true,
+      "nodes": 132164,
+      "timeMs": 143,
+      "moves": 94
+    },
+    {
+      "game": 354,
+      "status": "solved",
+      "solved": true,
+      "nodes": 33442,
+      "timeMs": 65,
+      "moves": 95
+    },
+    {
+      "game": 355,
+      "status": "solved",
+      "solved": true,
+      "nodes": 709,
+      "timeMs": 8,
+      "moves": 94
+    },
+    {
+      "game": 356,
+      "status": "solved",
+      "solved": true,
+      "nodes": 7920,
+      "timeMs": 21,
+      "moves": 93
+    },
+    {
+      "game": 357,
+      "status": "solved",
+      "solved": true,
+      "nodes": 871,
+      "timeMs": 8,
+      "moves": 95
+    },
+    {
+      "game": 358,
+      "status": "solved",
+      "solved": true,
+      "nodes": 48048,
+      "timeMs": 85,
+      "moves": 93
+    },
+    {
+      "game": 359,
+      "status": "solved",
+      "solved": true,
+      "nodes": 65118,
+      "timeMs": 69,
+      "moves": 94
+    },
+    {
+      "game": 360,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2696,
+      "timeMs": 17,
+      "moves": 95
+    },
+    {
+      "game": 361,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2832,
+      "timeMs": 9,
+      "moves": 94
+    },
+    {
+      "game": 362,
+      "status": "solved",
+      "solved": true,
+      "nodes": 45791,
+      "timeMs": 89,
+      "moves": 93
+    },
+    {
+      "game": 363,
+      "status": "solved",
+      "solved": true,
+      "nodes": 14508,
+      "timeMs": 27,
+      "moves": 94
+    },
+    {
+      "game": 364,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3061,
+      "timeMs": 16,
+      "moves": 96
+    },
+    {
+      "game": 365,
+      "status": "solved",
+      "solved": true,
+      "nodes": 6210,
+      "timeMs": 12,
+      "moves": 94
+    },
+    {
+      "game": 366,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4709,
+      "timeMs": 23,
+      "moves": 92
+    },
+    {
+      "game": 367,
+      "status": "solved",
+      "solved": true,
+      "nodes": 853,
+      "timeMs": 7,
+      "moves": 95
+    },
+    {
+      "game": 368,
+      "status": "solved",
+      "solved": true,
+      "nodes": 93183,
+      "timeMs": 97,
+      "moves": 96
+    },
+    {
+      "game": 369,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4978,
+      "timeMs": 12,
+      "moves": 93
+    },
+    {
+      "game": 370,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2338,
+      "timeMs": 19,
+      "moves": 93
+    },
+    {
+      "game": 371,
+      "status": "solved",
+      "solved": true,
+      "nodes": 24841,
+      "timeMs": 31,
+      "moves": 95
+    },
+    {
+      "game": 372,
+      "status": "solved",
+      "solved": true,
+      "nodes": 68944,
+      "timeMs": 72,
+      "moves": 95
+    },
+    {
+      "game": 373,
+      "status": "solved",
+      "solved": true,
+      "nodes": 9818,
+      "timeMs": 19,
+      "moves": 95
+    },
+    {
+      "game": 374,
+      "status": "solved",
+      "solved": true,
+      "nodes": 487,
+      "timeMs": 7,
+      "moves": 96
+    },
+    {
+      "game": 375,
+      "status": "solved",
+      "solved": true,
+      "nodes": 28047,
+      "timeMs": 66,
+      "moves": 95
+    },
+    {
+      "game": 376,
+      "status": "solved",
+      "solved": true,
+      "nodes": 172358,
+      "timeMs": 205,
+      "moves": 92
+    },
+    {
+      "game": 377,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1986,
+      "timeMs": 14,
+      "moves": 95
+    },
+    {
+      "game": 378,
+      "status": "solved",
+      "solved": true,
+      "nodes": 221,
+      "timeMs": 7,
+      "moves": 94
+    },
+    {
+      "game": 379,
+      "status": "solved",
+      "solved": true,
+      "nodes": 65790,
+      "timeMs": 85,
+      "moves": 93
+    },
+    {
+      "game": 380,
+      "status": "solved",
+      "solved": true,
+      "nodes": 604592,
+      "timeMs": 664,
+      "moves": 90
+    },
+    {
+      "game": 381,
+      "status": "solved",
+      "solved": true,
+      "nodes": 9405,
+      "timeMs": 23,
+      "moves": 94
+    },
+    {
+      "game": 382,
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 2000000,
+      "timeMs": 2297,
+      "moves": 0
+    },
+    {
+      "game": 383,
+      "status": "solved",
+      "solved": true,
+      "nodes": 47148,
+      "timeMs": 76,
+      "moves": 92
+    },
+    {
+      "game": 384,
+      "status": "solved",
+      "solved": true,
+      "nodes": 36372,
+      "timeMs": 41,
+      "moves": 94
+    },
+    {
+      "game": 385,
+      "status": "solved",
+      "solved": true,
+      "nodes": 36448,
+      "timeMs": 55,
+      "moves": 93
+    },
+    {
+      "game": 386,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3964,
+      "timeMs": 10,
+      "moves": 90
+    },
+    {
+      "game": 387,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4913,
+      "timeMs": 26,
+      "moves": 93
+    },
+    {
+      "game": 388,
+      "status": "solved",
+      "solved": true,
+      "nodes": 283336,
+      "timeMs": 356,
+      "moves": 93
+    },
+    {
+      "game": 389,
+      "status": "solved",
+      "solved": true,
+      "nodes": 7486,
+      "timeMs": 20,
+      "moves": 94
+    },
+    {
+      "game": 390,
+      "status": "solved",
+      "solved": true,
+      "nodes": 7129,
+      "timeMs": 24,
+      "moves": 94
+    },
+    {
+      "game": 391,
+      "status": "solved",
+      "solved": true,
+      "nodes": 78563,
+      "timeMs": 94,
+      "moves": 95
+    },
+    {
+      "game": 392,
+      "status": "solved",
+      "solved": true,
+      "nodes": 53423,
+      "timeMs": 74,
+      "moves": 92
+    },
+    {
+      "game": 393,
+      "status": "solved",
+      "solved": true,
+      "nodes": 18608,
+      "timeMs": 28,
+      "moves": 95
+    },
+    {
+      "game": 394,
+      "status": "solved",
+      "solved": true,
+      "nodes": 606827,
+      "timeMs": 635,
+      "moves": 95
+    },
+    {
+      "game": 395,
+      "status": "solved",
+      "solved": true,
+      "nodes": 9141,
+      "timeMs": 14,
+      "moves": 95
+    },
+    {
+      "game": 396,
+      "status": "solved",
+      "solved": true,
+      "nodes": 11806,
+      "timeMs": 27,
+      "moves": 95
+    },
+    {
+      "game": 397,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4403,
+      "timeMs": 10,
+      "moves": 96
+    },
+    {
+      "game": 398,
+      "status": "solved",
+      "solved": true,
+      "nodes": 188579,
+      "timeMs": 225,
+      "moves": 95
+    },
+    {
+      "game": 399,
+      "status": "solved",
+      "solved": true,
+      "nodes": 65728,
+      "timeMs": 63,
+      "moves": 95
+    },
+    {
+      "game": 400,
+      "status": "solved",
+      "solved": true,
+      "nodes": 380807,
+      "timeMs": 369,
+      "moves": 95
+    },
+    {
+      "game": 401,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1941,
+      "timeMs": 8,
+      "moves": 93
+    },
+    {
+      "game": 402,
+      "status": "solved",
+      "solved": true,
+      "nodes": 41871,
+      "timeMs": 53,
+      "moves": 95
+    },
+    {
+      "game": 403,
+      "status": "solved",
+      "solved": true,
+      "nodes": 163843,
+      "timeMs": 170,
+      "moves": 93
+    },
+    {
+      "game": 404,
+      "status": "solved",
+      "solved": true,
+      "nodes": 428,
+      "timeMs": 12,
+      "moves": 95
+    },
+    {
+      "game": 405,
+      "status": "solved",
+      "solved": true,
+      "nodes": 169,
+      "timeMs": 7,
+      "moves": 91
+    },
+    {
+      "game": 406,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3379,
+      "timeMs": 14,
+      "moves": 95
+    },
+    {
+      "game": 407,
+      "status": "solved",
+      "solved": true,
+      "nodes": 982307,
+      "timeMs": 1030,
+      "moves": 96
+    },
+    {
+      "game": 408,
+      "status": "solved",
+      "solved": true,
+      "nodes": 19134,
+      "timeMs": 39,
+      "moves": 90
+    },
+    {
+      "game": 409,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3887,
+      "timeMs": 10,
+      "moves": 94
+    },
+    {
+      "game": 410,
+      "status": "solved",
+      "solved": true,
+      "nodes": 12604,
+      "timeMs": 27,
+      "moves": 94
+    },
+    {
+      "game": 411,
+      "status": "solved",
+      "solved": true,
+      "nodes": 18669,
+      "timeMs": 27,
+      "moves": 94
+    },
+    {
+      "game": 412,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1944,
+      "timeMs": 15,
+      "moves": 94
+    },
+    {
+      "game": 413,
+      "status": "solved",
+      "solved": true,
+      "nodes": 98149,
+      "timeMs": 110,
+      "moves": 94
+    },
+    {
+      "game": 414,
+      "status": "solved",
+      "solved": true,
+      "nodes": 263,
+      "timeMs": 11,
+      "moves": 92
+    },
+    {
+      "game": 415,
+      "status": "solved",
+      "solved": true,
+      "nodes": 276893,
+      "timeMs": 296,
+      "moves": 96
+    },
+    {
+      "game": 416,
+      "status": "solved",
+      "solved": true,
+      "nodes": 62236,
+      "timeMs": 92,
+      "moves": 96
+    },
+    {
+      "game": 417,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3697,
+      "timeMs": 13,
+      "moves": 93
+    },
+    {
+      "game": 418,
+      "status": "solved",
+      "solved": true,
+      "nodes": 7536,
+      "timeMs": 21,
+      "moves": 93
+    },
+    {
+      "game": 419,
+      "status": "solved",
+      "solved": true,
+      "nodes": 471982,
+      "timeMs": 487,
+      "moves": 96
+    },
+    {
+      "game": 420,
+      "status": "solved",
+      "solved": true,
+      "nodes": 10327,
+      "timeMs": 24,
+      "moves": 95
+    },
+    {
+      "game": 421,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2847,
+      "timeMs": 10,
+      "moves": 95
+    },
+    {
+      "game": 422,
+      "status": "solved",
+      "solved": true,
+      "nodes": 266881,
+      "timeMs": 300,
+      "moves": 95
+    },
+    {
+      "game": 423,
+      "status": "solved",
+      "solved": true,
+      "nodes": 380,
+      "timeMs": 6,
+      "moves": 91
+    },
+    {
+      "game": 424,
+      "status": "solved",
+      "solved": true,
+      "nodes": 15144,
+      "timeMs": 38,
+      "moves": 94
+    },
+    {
+      "game": 425,
+      "status": "solved",
+      "solved": true,
+      "nodes": 31840,
+      "timeMs": 31,
+      "moves": 95
+    },
+    {
+      "game": 426,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4310,
+      "timeMs": 14,
+      "moves": 93
+    },
+    {
+      "game": 427,
+      "status": "solved",
+      "solved": true,
+      "nodes": 12893,
+      "timeMs": 25,
+      "moves": 96
+    },
+    {
+      "game": 428,
+      "status": "solved",
+      "solved": true,
+      "nodes": 19221,
+      "timeMs": 41,
+      "moves": 91
+    },
+    {
+      "game": 429,
+      "status": "solved",
+      "solved": true,
+      "nodes": 92828,
+      "timeMs": 115,
+      "moves": 94
+    },
+    {
+      "game": 430,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5481,
+      "timeMs": 19,
+      "moves": 96
+    },
+    {
+      "game": 431,
+      "status": "solved",
+      "solved": true,
+      "nodes": 18404,
+      "timeMs": 29,
+      "moves": 96
+    },
+    {
+      "game": 432,
+      "status": "solved",
+      "solved": true,
+      "nodes": 86635,
+      "timeMs": 113,
+      "moves": 94
+    },
+    {
+      "game": 433,
+      "status": "solved",
+      "solved": true,
+      "nodes": 293099,
+      "timeMs": 375,
+      "moves": 93
+    },
+    {
+      "game": 434,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2984,
+      "timeMs": 17,
+      "moves": 93
+    },
+    {
+      "game": 435,
+      "status": "solved",
+      "solved": true,
+      "nodes": 149284,
+      "timeMs": 210,
+      "moves": 92
+    },
+    {
+      "game": 436,
+      "status": "solved",
+      "solved": true,
+      "nodes": 26425,
+      "timeMs": 53,
+      "moves": 96
+    },
+    {
+      "game": 437,
+      "status": "solved",
+      "solved": true,
+      "nodes": 11686,
+      "timeMs": 18,
+      "moves": 94
+    },
+    {
+      "game": 438,
+      "status": "solved",
+      "solved": true,
+      "nodes": 58068,
+      "timeMs": 63,
+      "moves": 95
+    },
+    {
+      "game": 439,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2431,
+      "timeMs": 9,
+      "moves": 93
+    },
+    {
+      "game": 440,
+      "status": "solved",
+      "solved": true,
+      "nodes": 123706,
+      "timeMs": 166,
+      "moves": 91
+    },
+    {
+      "game": 441,
+      "status": "solved",
+      "solved": true,
+      "nodes": 135529,
+      "timeMs": 151,
+      "moves": 93
+    },
+    {
+      "game": 442,
+      "status": "solved",
+      "solved": true,
+      "nodes": 8255,
+      "timeMs": 24,
+      "moves": 93
+    },
+    {
+      "game": 443,
+      "status": "solved",
+      "solved": true,
+      "nodes": 75596,
+      "timeMs": 84,
+      "moves": 95
+    },
+    {
+      "game": 444,
+      "status": "solved",
+      "solved": true,
+      "nodes": 18523,
+      "timeMs": 36,
+      "moves": 92
+    },
+    {
+      "game": 445,
+      "status": "solved",
+      "solved": true,
+      "nodes": 10134,
+      "timeMs": 18,
+      "moves": 92
+    },
+    {
+      "game": 446,
+      "status": "solved",
+      "solved": true,
+      "nodes": 92740,
+      "timeMs": 104,
+      "moves": 95
+    },
+    {
+      "game": 447,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4580,
+      "timeMs": 10,
+      "moves": 92
+    },
+    {
+      "game": 448,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4323,
+      "timeMs": 19,
+      "moves": 89
+    },
+    {
+      "game": 449,
+      "status": "solved",
+      "solved": true,
+      "nodes": 727,
+      "timeMs": 7,
+      "moves": 94
+    },
+    {
+      "game": 450,
+      "status": "solved",
+      "solved": true,
+      "nodes": 51834,
+      "timeMs": 61,
+      "moves": 94
+    },
+    {
+      "game": 451,
+      "status": "solved",
+      "solved": true,
+      "nodes": 7945,
+      "timeMs": 18,
+      "moves": 96
+    },
+    {
+      "game": 452,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4722,
+      "timeMs": 19,
+      "moves": 92
+    },
+    {
+      "game": 453,
+      "status": "solved",
+      "solved": true,
+      "nodes": 6350,
+      "timeMs": 15,
+      "moves": 94
+    },
+    {
+      "game": 454,
+      "status": "solved",
+      "solved": true,
+      "nodes": 131754,
+      "timeMs": 144,
+      "moves": 94
+    },
+    {
+      "game": 455,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2754,
+      "timeMs": 9,
+      "moves": 94
+    },
+    {
+      "game": 456,
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 2000000,
+      "timeMs": 2059,
+      "moves": 0
+    },
+    {
+      "game": 457,
+      "status": "solved",
+      "solved": true,
+      "nodes": 10399,
+      "timeMs": 17,
+      "moves": 94
+    },
+    {
+      "game": 458,
+      "status": "solved",
+      "solved": true,
+      "nodes": 14600,
+      "timeMs": 29,
+      "moves": 93
+    },
+    {
+      "game": 459,
+      "status": "solved",
+      "solved": true,
+      "nodes": 13397,
+      "timeMs": 20,
+      "moves": 94
+    },
+    {
+      "game": 460,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3843,
+      "timeMs": 20,
+      "moves": 95
+    },
+    {
+      "game": 461,
+      "status": "solved",
+      "solved": true,
+      "nodes": 98879,
+      "timeMs": 109,
+      "moves": 95
+    },
+    {
+      "game": 462,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5792,
+      "timeMs": 17,
+      "moves": 94
+    },
+    {
+      "game": 463,
+      "status": "solved",
+      "solved": true,
+      "nodes": 11657,
+      "timeMs": 23,
+      "moves": 91
+    },
+    {
+      "game": 464,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2663,
+      "timeMs": 22,
+      "moves": 96
+    },
+    {
+      "game": 465,
+      "status": "solved",
+      "solved": true,
+      "nodes": 297930,
+      "timeMs": 310,
+      "moves": 94
+    },
+    {
+      "game": 466,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3836,
+      "timeMs": 13,
+      "moves": 96
+    },
+    {
+      "game": 467,
+      "status": "solved",
+      "solved": true,
+      "nodes": 39064,
+      "timeMs": 44,
+      "moves": 96
+    },
+    {
+      "game": 468,
+      "status": "solved",
+      "solved": true,
+      "nodes": 478,
+      "timeMs": 13,
+      "moves": 94
+    },
+    {
+      "game": 469,
+      "status": "solved",
+      "solved": true,
+      "nodes": 114789,
+      "timeMs": 113,
+      "moves": 93
+    },
+    {
+      "game": 470,
+      "status": "solved",
+      "solved": true,
+      "nodes": 645698,
+      "timeMs": 706,
+      "moves": 91
+    },
+    {
+      "game": 471,
+      "status": "solved",
+      "solved": true,
+      "nodes": 29466,
+      "timeMs": 37,
+      "moves": 96
+    },
+    {
+      "game": 472,
+      "status": "solved",
+      "solved": true,
+      "nodes": 108123,
+      "timeMs": 160,
+      "moves": 95
+    },
+    {
+      "game": 473,
+      "status": "solved",
+      "solved": true,
+      "nodes": 185088,
+      "timeMs": 210,
+      "moves": 93
+    },
+    {
+      "game": 474,
+      "status": "solved",
+      "solved": true,
+      "nodes": 85911,
+      "timeMs": 107,
+      "moves": 91
+    },
+    {
+      "game": 475,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5868,
+      "timeMs": 13,
+      "moves": 92
+    },
+    {
+      "game": 476,
+      "status": "solved",
+      "solved": true,
+      "nodes": 501747,
+      "timeMs": 606,
+      "moves": 91
+    },
+    {
+      "game": 477,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4628,
+      "timeMs": 11,
+      "moves": 93
+    },
+    {
+      "game": 478,
+      "status": "solved",
+      "solved": true,
+      "nodes": 604,
+      "timeMs": 14,
+      "moves": 96
+    },
+    {
+      "game": 479,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2202,
+      "timeMs": 9,
+      "moves": 94
+    },
+    {
+      "game": 480,
+      "status": "solved",
+      "solved": true,
+      "nodes": 46274,
+      "timeMs": 69,
+      "moves": 92
+    },
+    {
+      "game": 481,
+      "status": "solved",
+      "solved": true,
+      "nodes": 17260,
+      "timeMs": 21,
+      "moves": 93
+    },
+    {
+      "game": 482,
+      "status": "solved",
+      "solved": true,
+      "nodes": 15747,
+      "timeMs": 29,
+      "moves": 96
+    },
+    {
+      "game": 483,
+      "status": "solved",
+      "solved": true,
+      "nodes": 10586,
+      "timeMs": 20,
+      "moves": 95
+    },
+    {
+      "game": 484,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1475,
+      "timeMs": 15,
+      "moves": 94
+    },
+    {
+      "game": 485,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4208,
+      "timeMs": 11,
+      "moves": 93
+    },
+    {
+      "game": 486,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3391,
+      "timeMs": 14,
+      "moves": 95
+    },
+    {
+      "game": 487,
+      "status": "solved",
+      "solved": true,
+      "nodes": 68814,
+      "timeMs": 66,
+      "moves": 94
+    },
+    {
+      "game": 488,
+      "status": "solved",
+      "solved": true,
+      "nodes": 7316,
+      "timeMs": 30,
+      "moves": 96
+    },
+    {
+      "game": 489,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1937218,
+      "timeMs": 2961,
+      "moves": 93
+    },
+    {
+      "game": 490,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5883,
+      "timeMs": 19,
+      "moves": 95
+    },
+    {
+      "game": 491,
+      "status": "solved",
+      "solved": true,
+      "nodes": 17496,
+      "timeMs": 24,
+      "moves": 94
+    },
+    {
+      "game": 492,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2096,
+      "timeMs": 16,
+      "moves": 93
+    },
+    {
+      "game": 493,
+      "status": "solved",
+      "solved": true,
+      "nodes": 993,
+      "timeMs": 8,
+      "moves": 96
+    },
+    {
+      "game": 494,
+      "status": "solved",
+      "solved": true,
+      "nodes": 8276,
+      "timeMs": 20,
+      "moves": 95
+    },
+    {
+      "game": 495,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4271,
+      "timeMs": 12,
+      "moves": 96
+    },
+    {
+      "game": 496,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2674,
+      "timeMs": 20,
+      "moves": 94
+    },
+    {
+      "game": 497,
+      "status": "solved",
+      "solved": true,
+      "nodes": 69964,
+      "timeMs": 65,
+      "moves": 91
+    },
+    {
+      "game": 498,
+      "status": "solved",
+      "solved": true,
+      "nodes": 6490,
+      "timeMs": 17,
+      "moves": 94
+    },
+    {
+      "game": 499,
+      "status": "solved",
+      "solved": true,
+      "nodes": 26697,
+      "timeMs": 33,
+      "moves": 93
+    },
+    {
+      "game": 500,
+      "status": "solved",
+      "solved": true,
+      "nodes": 45566,
+      "timeMs": 92,
+      "moves": 95
+    },
+    {
+      "game": 501,
+      "status": "solved",
+      "solved": true,
+      "nodes": 25811,
+      "timeMs": 39,
+      "moves": 92
+    },
+    {
+      "game": 502,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1312,
+      "timeMs": 15,
+      "moves": 95
+    },
+    {
+      "game": 503,
+      "status": "solved",
+      "solved": true,
+      "nodes": 49060,
+      "timeMs": 69,
+      "moves": 92
+    },
+    {
+      "game": 504,
+      "status": "solved",
+      "solved": true,
+      "nodes": 772,
+      "timeMs": 13,
+      "moves": 95
+    },
+    {
+      "game": 505,
+      "status": "solved",
+      "solved": true,
+      "nodes": 13794,
+      "timeMs": 27,
+      "moves": 95
+    },
+    {
+      "game": 506,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3212,
+      "timeMs": 14,
+      "moves": 96
+    },
+    {
+      "game": 507,
+      "status": "solved",
+      "solved": true,
+      "nodes": 16764,
+      "timeMs": 22,
+      "moves": 91
+    },
+    {
+      "game": 508,
+      "status": "solved",
+      "solved": true,
+      "nodes": 30363,
+      "timeMs": 77,
+      "moves": 95
+    },
+    {
+      "game": 509,
+      "status": "solved",
+      "solved": true,
+      "nodes": 17419,
+      "timeMs": 19,
+      "moves": 92
+    },
+    {
+      "game": 510,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3119,
+      "timeMs": 17,
+      "moves": 95
+    },
+    {
+      "game": 511,
+      "status": "solved",
+      "solved": true,
+      "nodes": 74967,
+      "timeMs": 80,
+      "moves": 96
+    },
+    {
+      "game": 512,
+      "status": "solved",
+      "solved": true,
+      "nodes": 521279,
+      "timeMs": 547,
+      "moves": 94
+    },
+    {
+      "game": 513,
+      "status": "solved",
+      "solved": true,
+      "nodes": 387414,
+      "timeMs": 333,
+      "moves": 94
+    },
+    {
+      "game": 514,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3069,
+      "timeMs": 18,
+      "moves": 95
+    },
+    {
+      "game": 515,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2503,
+      "timeMs": 10,
+      "moves": 96
+    },
+    {
+      "game": 516,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2843,
+      "timeMs": 21,
+      "moves": 94
+    },
+    {
+      "game": 517,
+      "status": "solved",
+      "solved": true,
+      "nodes": 47350,
+      "timeMs": 60,
+      "moves": 94
+    },
+    {
+      "game": 518,
+      "status": "solved",
+      "solved": true,
+      "nodes": 92023,
+      "timeMs": 115,
+      "moves": 92
+    },
+    {
+      "game": 519,
+      "status": "solved",
+      "solved": true,
+      "nodes": 11136,
+      "timeMs": 17,
+      "moves": 95
+    },
+    {
+      "game": 520,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4459,
+      "timeMs": 24,
+      "moves": 93
+    },
+    {
+      "game": 521,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2645,
+      "timeMs": 10,
+      "moves": 92
+    },
+    {
+      "game": 522,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1175,
+      "timeMs": 10,
+      "moves": 96
+    },
+    {
+      "game": 523,
+      "status": "solved",
+      "solved": true,
+      "nodes": 9224,
+      "timeMs": 16,
+      "moves": 95
+    },
+    {
+      "game": 524,
+      "status": "solved",
+      "solved": true,
+      "nodes": 852,
+      "timeMs": 17,
+      "moves": 94
+    },
+    {
+      "game": 525,
+      "status": "solved",
+      "solved": true,
+      "nodes": 77939,
+      "timeMs": 73,
+      "moves": 95
+    },
+    {
+      "game": 526,
+      "status": "solved",
+      "solved": true,
+      "nodes": 742,
+      "timeMs": 11,
+      "moves": 95
+    },
+    {
+      "game": 527,
+      "status": "solved",
+      "solved": true,
+      "nodes": 121806,
+      "timeMs": 165,
+      "moves": 94
+    },
+    {
+      "game": 528,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1223920,
+      "timeMs": 1760,
+      "moves": 96
+    },
+    {
+      "game": 529,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1113,
+      "timeMs": 8,
+      "moves": 95
+    },
+    {
+      "game": 530,
+      "status": "solved",
+      "solved": true,
+      "nodes": 150443,
+      "timeMs": 193,
+      "moves": 92
+    },
+    {
+      "game": 531,
+      "status": "solved",
+      "solved": true,
+      "nodes": 14478,
+      "timeMs": 19,
+      "moves": 92
+    },
+    {
+      "game": 532,
+      "status": "solved",
+      "solved": true,
+      "nodes": 32417,
+      "timeMs": 66,
+      "moves": 94
+    },
+    {
+      "game": 533,
+      "status": "solved",
+      "solved": true,
+      "nodes": 26054,
+      "timeMs": 41,
+      "moves": 93
+    },
+    {
+      "game": 534,
+      "status": "solved",
+      "solved": true,
+      "nodes": 595720,
+      "timeMs": 1028,
+      "moves": 91
+    },
+    {
+      "game": 535,
+      "status": "solved",
+      "solved": true,
+      "nodes": 137950,
+      "timeMs": 143,
+      "moves": 96
+    },
+    {
+      "game": 536,
+      "status": "solved",
+      "solved": true,
+      "nodes": 280,
+      "timeMs": 14,
+      "moves": 92
+    },
+    {
+      "game": 537,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4883,
+      "timeMs": 16,
+      "moves": 95
+    },
+    {
+      "game": 538,
+      "status": "solved",
+      "solved": true,
+      "nodes": 6107,
+      "timeMs": 20,
+      "moves": 96
+    },
+    {
+      "game": 539,
+      "status": "solved",
+      "solved": true,
+      "nodes": 22822,
+      "timeMs": 35,
+      "moves": 94
+    },
+    {
+      "game": 540,
+      "status": "solved",
+      "solved": true,
+      "nodes": 12365,
+      "timeMs": 21,
+      "moves": 96
+    },
+    {
+      "game": 541,
+      "status": "solved",
+      "solved": true,
+      "nodes": 171665,
+      "timeMs": 217,
+      "moves": 95
+    },
+    {
+      "game": 542,
+      "status": "solved",
+      "solved": true,
+      "nodes": 12838,
+      "timeMs": 19,
+      "moves": 95
+    },
+    {
+      "game": 543,
+      "status": "solved",
+      "solved": true,
+      "nodes": 62844,
+      "timeMs": 77,
+      "moves": 96
+    },
+    {
+      "game": 544,
+      "status": "solved",
+      "solved": true,
+      "nodes": 115326,
+      "timeMs": 135,
+      "moves": 92
+    },
+    {
+      "game": 545,
+      "status": "solved",
+      "solved": true,
+      "nodes": 6225,
+      "timeMs": 22,
+      "moves": 91
+    },
+    {
+      "game": 546,
+      "status": "solved",
+      "solved": true,
+      "nodes": 11113,
+      "timeMs": 18,
+      "moves": 93
+    },
+    {
+      "game": 547,
+      "status": "solved",
+      "solved": true,
+      "nodes": 18412,
+      "timeMs": 29,
+      "moves": 94
+    },
+    {
+      "game": 548,
+      "status": "solved",
+      "solved": true,
+      "nodes": 46182,
+      "timeMs": 75,
+      "moves": 95
+    },
+    {
+      "game": 549,
+      "status": "solved",
+      "solved": true,
+      "nodes": 27120,
+      "timeMs": 58,
+      "moves": 94
+    },
+    {
+      "game": 550,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1713,
+      "timeMs": 8,
+      "moves": 93
+    },
+    {
+      "game": 551,
+      "status": "solved",
+      "solved": true,
+      "nodes": 52971,
+      "timeMs": 62,
+      "moves": 94
+    },
+    {
+      "game": 552,
+      "status": "solved",
+      "solved": true,
+      "nodes": 28833,
+      "timeMs": 37,
+      "moves": 95
+    },
+    {
+      "game": 553,
+      "status": "solved",
+      "solved": true,
+      "nodes": 56023,
+      "timeMs": 75,
+      "moves": 94
+    },
+    {
+      "game": 554,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4353,
+      "timeMs": 11,
+      "moves": 93
+    },
+    {
+      "game": 555,
+      "status": "solved",
+      "solved": true,
+      "nodes": 11558,
+      "timeMs": 19,
+      "moves": 94
+    },
+    {
+      "game": 556,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1105,
+      "timeMs": 7,
+      "moves": 94
+    },
+    {
+      "game": 557,
+      "status": "solved",
+      "solved": true,
+      "nodes": 13634,
+      "timeMs": 35,
+      "moves": 96
+    },
+    {
+      "game": 558,
+      "status": "solved",
+      "solved": true,
+      "nodes": 19255,
+      "timeMs": 26,
+      "moves": 96
+    },
+    {
+      "game": 559,
+      "status": "solved",
+      "solved": true,
+      "nodes": 38199,
+      "timeMs": 55,
+      "moves": 96
+    },
+    {
+      "game": 560,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4529,
+      "timeMs": 10,
+      "moves": 92
+    },
+    {
+      "game": 561,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2732,
+      "timeMs": 17,
+      "moves": 96
+    },
+    {
+      "game": 562,
+      "status": "solved",
+      "solved": true,
+      "nodes": 17253,
+      "timeMs": 25,
+      "moves": 94
+    },
+    {
+      "game": 563,
+      "status": "solved",
+      "solved": true,
+      "nodes": 11116,
+      "timeMs": 23,
+      "moves": 92
+    },
+    {
+      "game": 564,
+      "status": "solved",
+      "solved": true,
+      "nodes": 340,
+      "timeMs": 7,
+      "moves": 93
+    },
+    {
+      "game": 565,
+      "status": "solved",
+      "solved": true,
+      "nodes": 179509,
+      "timeMs": 240,
+      "moves": 93
+    },
+    {
+      "game": 566,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1991,
+      "timeMs": 9,
+      "moves": 95
+    },
+    {
+      "game": 567,
+      "status": "solved",
+      "solved": true,
+      "nodes": 542471,
+      "timeMs": 598,
+      "moves": 94
+    },
+    {
+      "game": 568,
+      "status": "solved",
+      "solved": true,
+      "nodes": 47069,
+      "timeMs": 53,
+      "moves": 95
+    },
+    {
+      "game": 569,
+      "status": "solved",
+      "solved": true,
+      "nodes": 17904,
+      "timeMs": 34,
+      "moves": 92
+    },
+    {
+      "game": 570,
+      "status": "solved",
+      "solved": true,
+      "nodes": 994,
+      "timeMs": 7,
+      "moves": 96
+    },
+    {
+      "game": 571,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1853,
+      "timeMs": 12,
+      "moves": 95
+    },
+    {
+      "game": 572,
+      "status": "solved",
+      "solved": true,
+      "nodes": 14189,
+      "timeMs": 23,
+      "moves": 95
+    },
+    {
+      "game": 573,
+      "status": "solved",
+      "solved": true,
+      "nodes": 31241,
+      "timeMs": 65,
+      "moves": 96
+    },
+    {
+      "game": 574,
+      "status": "solved",
+      "solved": true,
+      "nodes": 6768,
+      "timeMs": 13,
+      "moves": 93
+    },
+    {
+      "game": 575,
+      "status": "solved",
+      "solved": true,
+      "nodes": 7437,
+      "timeMs": 19,
+      "moves": 93
+    },
+    {
+      "game": 576,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1121,
+      "timeMs": 8,
+      "moves": 93
+    },
+    {
+      "game": 577,
+      "status": "solved",
+      "solved": true,
+      "nodes": 48142,
+      "timeMs": 87,
+      "moves": 95
+    },
+    {
+      "game": 578,
+      "status": "solved",
+      "solved": true,
+      "nodes": 309269,
+      "timeMs": 268,
+      "moves": 94
+    },
+    {
+      "game": 579,
+      "status": "solved",
+      "solved": true,
+      "nodes": 268257,
+      "timeMs": 390,
+      "moves": 94
+    },
+    {
+      "game": 580,
+      "status": "solved",
+      "solved": true,
+      "nodes": 119859,
+      "timeMs": 123,
+      "moves": 93
+    },
+    {
+      "game": 581,
+      "status": "solved",
+      "solved": true,
+      "nodes": 34168,
+      "timeMs": 65,
+      "moves": 93
+    },
+    {
+      "game": 582,
+      "status": "solved",
+      "solved": true,
+      "nodes": 16238,
+      "timeMs": 30,
+      "moves": 91
+    },
+    {
+      "game": 583,
+      "status": "solved",
+      "solved": true,
+      "nodes": 63879,
+      "timeMs": 96,
+      "moves": 96
+    },
+    {
+      "game": 584,
+      "status": "solved",
+      "solved": true,
+      "nodes": 308220,
+      "timeMs": 383,
+      "moves": 93
+    },
+    {
+      "game": 585,
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 2000000,
+      "timeMs": 2080,
+      "moves": 0
+    },
+    {
+      "game": 586,
+      "status": "solved",
+      "solved": true,
+      "nodes": 374,
+      "timeMs": 13,
+      "moves": 94
+    },
+    {
+      "game": 587,
+      "status": "solved",
+      "solved": true,
+      "nodes": 13133,
+      "timeMs": 23,
+      "moves": 96
+    },
+    {
+      "game": 588,
+      "status": "solved",
+      "solved": true,
+      "nodes": 26896,
+      "timeMs": 53,
+      "moves": 94
+    },
+    {
+      "game": 589,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1217,
+      "timeMs": 8,
+      "moves": 95
+    },
+    {
+      "game": 590,
+      "status": "solved",
+      "solved": true,
+      "nodes": 39801,
+      "timeMs": 57,
+      "moves": 96
+    },
+    {
+      "game": 591,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3355,
+      "timeMs": 10,
+      "moves": 93
+    },
+    {
+      "game": 592,
+      "status": "solved",
+      "solved": true,
+      "nodes": 8437,
+      "timeMs": 29,
+      "moves": 95
+    },
+    {
+      "game": 593,
+      "status": "solved",
+      "solved": true,
+      "nodes": 18909,
+      "timeMs": 29,
+      "moves": 93
+    },
+    {
+      "game": 594,
+      "status": "solved",
+      "solved": true,
+      "nodes": 363556,
+      "timeMs": 502,
+      "moves": 93
+    },
+    {
+      "game": 595,
+      "status": "solved",
+      "solved": true,
+      "nodes": 110899,
+      "timeMs": 139,
+      "moves": 95
+    },
+    {
+      "game": 596,
+      "status": "solved",
+      "solved": true,
+      "nodes": 9537,
+      "timeMs": 33,
+      "moves": 92
+    },
+    {
+      "game": 597,
+      "status": "solved",
+      "solved": true,
+      "nodes": 52527,
+      "timeMs": 81,
+      "moves": 95
+    },
+    {
+      "game": 598,
+      "status": "solved",
+      "solved": true,
+      "nodes": 407143,
+      "timeMs": 591,
+      "moves": 95
+    },
+    {
+      "game": 599,
+      "status": "solved",
+      "solved": true,
+      "nodes": 18014,
+      "timeMs": 23,
+      "moves": 95
+    },
+    {
+      "game": 600,
+      "status": "solved",
+      "solved": true,
+      "nodes": 68126,
+      "timeMs": 108,
+      "moves": 95
+    },
+    {
+      "game": 601,
+      "status": "solved",
+      "solved": true,
+      "nodes": 28639,
+      "timeMs": 35,
+      "moves": 95
+    },
+    {
+      "game": 602,
+      "status": "solved",
+      "solved": true,
+      "nodes": 24687,
+      "timeMs": 37,
+      "moves": 95
+    },
+    {
+      "game": 603,
+      "status": "solved",
+      "solved": true,
+      "nodes": 210255,
+      "timeMs": 192,
+      "moves": 95
+    },
+    {
+      "game": 604,
+      "status": "solved",
+      "solved": true,
+      "nodes": 745501,
+      "timeMs": 792,
+      "moves": 96
+    },
+    {
+      "game": 605,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5575,
+      "timeMs": 10,
+      "moves": 95
+    },
+    {
+      "game": 606,
+      "status": "solved",
+      "solved": true,
+      "nodes": 46215,
+      "timeMs": 61,
+      "moves": 95
+    },
+    {
+      "game": 607,
+      "status": "solved",
+      "solved": true,
+      "nodes": 184943,
+      "timeMs": 247,
+      "moves": 92
+    },
+    {
+      "game": 608,
+      "status": "solved",
+      "solved": true,
+      "nodes": 249546,
+      "timeMs": 292,
+      "moves": 91
+    },
+    {
+      "game": 609,
+      "status": "solved",
+      "solved": true,
+      "nodes": 51079,
+      "timeMs": 51,
+      "moves": 93
+    },
+    {
+      "game": 610,
+      "status": "solved",
+      "solved": true,
+      "nodes": 25750,
+      "timeMs": 53,
+      "moves": 95
+    },
+    {
+      "game": 611,
+      "status": "solved",
+      "solved": true,
+      "nodes": 133361,
+      "timeMs": 138,
+      "moves": 93
+    },
+    {
+      "game": 612,
+      "status": "solved",
+      "solved": true,
+      "nodes": 69055,
+      "timeMs": 122,
+      "moves": 92
+    },
+    {
+      "game": 613,
+      "status": "solved",
+      "solved": true,
+      "nodes": 40208,
+      "timeMs": 44,
+      "moves": 95
+    },
+    {
+      "game": 614,
+      "status": "solved",
+      "solved": true,
+      "nodes": 15165,
+      "timeMs": 34,
+      "moves": 95
+    },
+    {
+      "game": 615,
+      "status": "solved",
+      "solved": true,
+      "nodes": 39749,
+      "timeMs": 64,
+      "moves": 96
+    },
+    {
+      "game": 616,
+      "status": "solved",
+      "solved": true,
+      "nodes": 104282,
+      "timeMs": 109,
+      "moves": 95
+    },
+    {
+      "game": 617,
+      "status": "solved",
+      "solved": true,
+      "nodes": 137942,
+      "timeMs": 225,
+      "moves": 92
+    },
+    {
+      "game": 618,
+      "status": "solved",
+      "solved": true,
+      "nodes": 59176,
+      "timeMs": 69,
+      "moves": 92
+    },
+    {
+      "game": 619,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2303,
+      "timeMs": 16,
+      "moves": 93
+    },
+    {
+      "game": 620,
+      "status": "solved",
+      "solved": true,
+      "nodes": 13833,
+      "timeMs": 23,
+      "moves": 87
+    },
+    {
+      "game": 621,
+      "status": "solved",
+      "solved": true,
+      "nodes": 86079,
+      "timeMs": 107,
+      "moves": 94
+    },
+    {
+      "game": 622,
+      "status": "solved",
+      "solved": true,
+      "nodes": 10344,
+      "timeMs": 19,
+      "moves": 95
+    },
+    {
+      "game": 623,
+      "status": "solved",
+      "solved": true,
+      "nodes": 28314,
+      "timeMs": 48,
+      "moves": 95
+    },
+    {
+      "game": 624,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5084,
+      "timeMs": 11,
+      "moves": 94
+    },
+    {
+      "game": 625,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2918,
+      "timeMs": 16,
+      "moves": 94
+    },
+    {
+      "game": 626,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2848,
+      "timeMs": 16,
+      "moves": 93
+    },
+    {
+      "game": 627,
+      "status": "solved",
+      "solved": true,
+      "nodes": 385423,
+      "timeMs": 536,
+      "moves": 94
+    },
+    {
+      "game": 628,
+      "status": "solved",
+      "solved": true,
+      "nodes": 46550,
+      "timeMs": 66,
+      "moves": 96
+    },
+    {
+      "game": 629,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5819,
+      "timeMs": 14,
+      "moves": 94
+    },
+    {
+      "game": 630,
+      "status": "solved",
+      "solved": true,
+      "nodes": 56696,
+      "timeMs": 63,
+      "moves": 91
+    },
+    {
+      "game": 631,
+      "status": "solved",
+      "solved": true,
+      "nodes": 67153,
+      "timeMs": 72,
+      "moves": 95
+    },
+    {
+      "game": 632,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3867,
+      "timeMs": 11,
+      "moves": 95
+    },
+    {
+      "game": 633,
+      "status": "solved",
+      "solved": true,
+      "nodes": 14371,
+      "timeMs": 29,
+      "moves": 94
+    },
+    {
+      "game": 634,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2813,
+      "timeMs": 19,
+      "moves": 92
+    },
+    {
+      "game": 635,
+      "status": "solved",
+      "solved": true,
+      "nodes": 55164,
+      "timeMs": 112,
+      "moves": 95
+    },
+    {
+      "game": 636,
+      "status": "solved",
+      "solved": true,
+      "nodes": 32605,
+      "timeMs": 67,
+      "moves": 95
+    },
+    {
+      "game": 637,
+      "status": "solved",
+      "solved": true,
+      "nodes": 733,
+      "timeMs": 7,
+      "moves": 95
+    },
+    {
+      "game": 638,
+      "status": "solved",
+      "solved": true,
+      "nodes": 40321,
+      "timeMs": 59,
+      "moves": 95
+    },
+    {
+      "game": 639,
+      "status": "solved",
+      "solved": true,
+      "nodes": 107198,
+      "timeMs": 129,
+      "moves": 95
+    },
+    {
+      "game": 640,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1542,
+      "timeMs": 16,
+      "moves": 96
+    },
+    {
+      "game": 641,
+      "status": "solved",
+      "solved": true,
+      "nodes": 9436,
+      "timeMs": 16,
+      "moves": 94
+    },
+    {
+      "game": 642,
+      "status": "solved",
+      "solved": true,
+      "nodes": 377783,
+      "timeMs": 484,
+      "moves": 95
+    },
+    {
+      "game": 643,
+      "status": "solved",
+      "solved": true,
+      "nodes": 14426,
+      "timeMs": 19,
+      "moves": 96
+    },
+    {
+      "game": 644,
+      "status": "solved",
+      "solved": true,
+      "nodes": 6134,
+      "timeMs": 25,
+      "moves": 94
+    },
+    {
+      "game": 645,
+      "status": "solved",
+      "solved": true,
+      "nodes": 9276,
+      "timeMs": 22,
+      "moves": 96
+    },
+    {
+      "game": 646,
+      "status": "solved",
+      "solved": true,
+      "nodes": 30121,
+      "timeMs": 39,
+      "moves": 94
+    },
+    {
+      "game": 647,
+      "status": "solved",
+      "solved": true,
+      "nodes": 75057,
+      "timeMs": 127,
+      "moves": 95
+    },
+    {
+      "game": 648,
+      "status": "solved",
+      "solved": true,
+      "nodes": 16411,
+      "timeMs": 21,
+      "moves": 95
+    },
+    {
+      "game": 649,
+      "status": "solved",
+      "solved": true,
+      "nodes": 589,
+      "timeMs": 12,
+      "moves": 96
+    },
+    {
+      "game": 650,
+      "status": "solved",
+      "solved": true,
+      "nodes": 135644,
+      "timeMs": 141,
+      "moves": 95
+    },
+    {
+      "game": 651,
+      "status": "solved",
+      "solved": true,
+      "nodes": 25418,
+      "timeMs": 50,
+      "moves": 91
+    },
+    {
+      "game": 652,
+      "status": "solved",
+      "solved": true,
+      "nodes": 227589,
+      "timeMs": 226,
+      "moves": 94
+    },
+    {
+      "game": 653,
+      "status": "solved",
+      "solved": true,
+      "nodes": 27533,
+      "timeMs": 49,
+      "moves": 93
+    },
+    {
+      "game": 654,
+      "status": "solved",
+      "solved": true,
+      "nodes": 9276,
+      "timeMs": 19,
+      "moves": 93
+    },
+    {
+      "game": 655,
+      "status": "solved",
+      "solved": true,
+      "nodes": 242,
+      "timeMs": 14,
+      "moves": 93
+    },
+    {
+      "game": 656,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2756,
+      "timeMs": 9,
+      "moves": 96
+    },
+    {
+      "game": 657,
+      "status": "solved",
+      "solved": true,
+      "nodes": 77878,
+      "timeMs": 101,
+      "moves": 96
+    },
+    {
+      "game": 658,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1251236,
+      "timeMs": 1281,
+      "moves": 94
+    },
+    {
+      "game": 659,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4406,
+      "timeMs": 21,
+      "moves": 93
+    },
+    {
+      "game": 660,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2420,
+      "timeMs": 9,
+      "moves": 95
+    },
+    {
+      "game": 661,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2539,
+      "timeMs": 20,
+      "moves": 94
+    },
+    {
+      "game": 662,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2413,
+      "timeMs": 20,
+      "moves": 94
+    },
+    {
+      "game": 663,
+      "status": "solved",
+      "solved": true,
+      "nodes": 9146,
+      "timeMs": 29,
+      "moves": 92
+    },
+    {
+      "game": 664,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4581,
+      "timeMs": 20,
+      "moves": 93
+    },
+    {
+      "game": 665,
+      "status": "solved",
+      "solved": true,
+      "nodes": 42714,
+      "timeMs": 51,
+      "moves": 95
+    },
+    {
+      "game": 666,
+      "status": "solved",
+      "solved": true,
+      "nodes": 793468,
+      "timeMs": 839,
+      "moves": 94
+    },
+    {
+      "game": 667,
+      "status": "solved",
+      "solved": true,
+      "nodes": 21719,
+      "timeMs": 34,
+      "moves": 96
+    },
+    {
+      "game": 668,
+      "status": "solved",
+      "solved": true,
+      "nodes": 497,
+      "timeMs": 7,
+      "moves": 96
+    },
+    {
+      "game": 669,
+      "status": "solved",
+      "solved": true,
+      "nodes": 34490,
+      "timeMs": 82,
+      "moves": 92
+    },
+    {
+      "game": 670,
+      "status": "solved",
+      "solved": true,
+      "nodes": 421696,
+      "timeMs": 392,
+      "moves": 95
+    },
+    {
+      "game": 671,
+      "status": "solved",
+      "solved": true,
+      "nodes": 57145,
+      "timeMs": 65,
+      "moves": 95
+    },
+    {
+      "game": 672,
+      "status": "solved",
+      "solved": true,
+      "nodes": 244992,
+      "timeMs": 279,
+      "moves": 94
+    },
+    {
+      "game": 673,
+      "status": "solved",
+      "solved": true,
+      "nodes": 102886,
+      "timeMs": 135,
+      "moves": 94
+    },
+    {
+      "game": 674,
+      "status": "solved",
+      "solved": true,
+      "nodes": 501735,
+      "timeMs": 596,
+      "moves": 93
+    },
+    {
+      "game": 675,
+      "status": "solved",
+      "solved": true,
+      "nodes": 81430,
+      "timeMs": 87,
+      "moves": 94
+    },
+    {
+      "game": 676,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1767,
+      "timeMs": 8,
+      "moves": 93
+    },
+    {
+      "game": 677,
+      "status": "solved",
+      "solved": true,
+      "nodes": 114634,
+      "timeMs": 138,
+      "moves": 94
+    },
+    {
+      "game": 678,
+      "status": "solved",
+      "solved": true,
+      "nodes": 616,
+      "timeMs": 7,
+      "moves": 96
+    },
+    {
+      "game": 679,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2367,
+      "timeMs": 11,
+      "moves": 93
+    },
+    {
+      "game": 680,
+      "status": "solved",
+      "solved": true,
+      "nodes": 14516,
+      "timeMs": 20,
+      "moves": 95
+    },
+    {
+      "game": 681,
+      "status": "solved",
+      "solved": true,
+      "nodes": 15324,
+      "timeMs": 33,
+      "moves": 92
+    },
+    {
+      "game": 682,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1163,
+      "timeMs": 8,
+      "moves": 95
+    },
+    {
+      "game": 683,
+      "status": "solved",
+      "solved": true,
+      "nodes": 15424,
+      "timeMs": 28,
+      "moves": 93
+    },
+    {
+      "game": 684,
+      "status": "solved",
+      "solved": true,
+      "nodes": 11142,
+      "timeMs": 16,
+      "moves": 95
+    },
+    {
+      "game": 685,
+      "status": "solved",
+      "solved": true,
+      "nodes": 61088,
+      "timeMs": 76,
+      "moves": 93
+    },
+    {
+      "game": 686,
+      "status": "solved",
+      "solved": true,
+      "nodes": 21904,
+      "timeMs": 31,
+      "moves": 92
+    },
+    {
+      "game": 687,
+      "status": "solved",
+      "solved": true,
+      "nodes": 694,
+      "timeMs": 14,
+      "moves": 95
+    },
+    {
+      "game": 688,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2788,
+      "timeMs": 10,
+      "moves": 95
+    },
+    {
+      "game": 689,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5983,
+      "timeMs": 26,
+      "moves": 94
+    },
+    {
+      "game": 690,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5333,
+      "timeMs": 12,
+      "moves": 93
+    },
+    {
+      "game": 691,
+      "status": "solved",
+      "solved": true,
+      "nodes": 173505,
+      "timeMs": 193,
+      "moves": 95
+    },
+    {
+      "game": 692,
+      "status": "solved",
+      "solved": true,
+      "nodes": 19420,
+      "timeMs": 32,
+      "moves": 93
+    },
+    {
+      "game": 693,
+      "status": "solved",
+      "solved": true,
+      "nodes": 60154,
+      "timeMs": 122,
+      "moves": 94
+    },
+    {
+      "game": 694,
+      "status": "solved",
+      "solved": true,
+      "nodes": 9711,
+      "timeMs": 19,
+      "moves": 95
+    },
+    {
+      "game": 695,
+      "status": "solved",
+      "solved": true,
+      "nodes": 64642,
+      "timeMs": 70,
+      "moves": 95
+    },
+    {
+      "game": 696,
+      "status": "solved",
+      "solved": true,
+      "nodes": 32676,
+      "timeMs": 42,
+      "moves": 94
+    },
+    {
+      "game": 697,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2945,
+      "timeMs": 21,
+      "moves": 94
+    },
+    {
+      "game": 698,
+      "status": "solved",
+      "solved": true,
+      "nodes": 29380,
+      "timeMs": 42,
+      "moves": 93
+    },
+    {
+      "game": 699,
+      "status": "solved",
+      "solved": true,
+      "nodes": 159985,
+      "timeMs": 211,
+      "moves": 96
+    },
+    {
+      "game": 700,
+      "status": "solved",
+      "solved": true,
+      "nodes": 60715,
+      "timeMs": 78,
+      "moves": 95
+    },
+    {
+      "game": 701,
+      "status": "solved",
+      "solved": true,
+      "nodes": 10966,
+      "timeMs": 35,
+      "moves": 93
+    },
+    {
+      "game": 702,
+      "status": "solved",
+      "solved": true,
+      "nodes": 10889,
+      "timeMs": 16,
+      "moves": 95
+    },
+    {
+      "game": 703,
+      "status": "solved",
+      "solved": true,
+      "nodes": 176,
+      "timeMs": 7,
+      "moves": 95
+    },
+    {
+      "game": 704,
+      "status": "solved",
+      "solved": true,
+      "nodes": 40387,
+      "timeMs": 67,
+      "moves": 93
+    },
+    {
+      "game": 705,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3935,
+      "timeMs": 23,
+      "moves": 96
+    },
+    {
+      "game": 706,
+      "status": "solved",
+      "solved": true,
+      "nodes": 21852,
+      "timeMs": 27,
+      "moves": 92
+    },
+    {
+      "game": 707,
+      "status": "solved",
+      "solved": true,
+      "nodes": 21595,
+      "timeMs": 35,
+      "moves": 95
+    },
+    {
+      "game": 708,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2237,
+      "timeMs": 8,
+      "moves": 94
+    },
+    {
+      "game": 709,
+      "status": "solved",
+      "solved": true,
+      "nodes": 8379,
+      "timeMs": 25,
+      "moves": 91
+    },
+    {
+      "game": 710,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2009,
+      "timeMs": 8,
+      "moves": 96
+    },
+    {
+      "game": 711,
+      "status": "solved",
+      "solved": true,
+      "nodes": 616406,
+      "timeMs": 600,
+      "moves": 95
+    },
+    {
+      "game": 712,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5856,
+      "timeMs": 13,
+      "moves": 96
+    },
+    {
+      "game": 713,
+      "status": "solved",
+      "solved": true,
+      "nodes": 345960,
+      "timeMs": 420,
+      "moves": 96
+    },
+    {
+      "game": 714,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4118,
+      "timeMs": 10,
+      "moves": 93
+    },
+    {
+      "game": 715,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1964,
+      "timeMs": 15,
+      "moves": 94
+    },
+    {
+      "game": 716,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2417,
+      "timeMs": 10,
+      "moves": 96
+    },
+    {
+      "game": 717,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3245,
+      "timeMs": 17,
+      "moves": 93
+    },
+    {
+      "game": 718,
+      "status": "solved",
+      "solved": true,
+      "nodes": 34740,
+      "timeMs": 44,
+      "moves": 94
+    },
+    {
+      "game": 719,
+      "status": "solved",
+      "solved": true,
+      "nodes": 39546,
+      "timeMs": 53,
+      "moves": 93
+    },
+    {
+      "game": 720,
+      "status": "solved",
+      "solved": true,
+      "nodes": 881015,
+      "timeMs": 1059,
+      "moves": 95
+    },
+    {
+      "game": 721,
+      "status": "solved",
+      "solved": true,
+      "nodes": 380496,
+      "timeMs": 428,
+      "moves": 95
+    },
+    {
+      "game": 722,
+      "status": "solved",
+      "solved": true,
+      "nodes": 24231,
+      "timeMs": 44,
+      "moves": 96
+    },
+    {
+      "game": 723,
+      "status": "solved",
+      "solved": true,
+      "nodes": 440348,
+      "timeMs": 499,
+      "moves": 96
+    },
+    {
+      "game": 724,
+      "status": "solved",
+      "solved": true,
+      "nodes": 7739,
+      "timeMs": 15,
+      "moves": 96
+    },
+    {
+      "game": 725,
+      "status": "solved",
+      "solved": true,
+      "nodes": 256254,
+      "timeMs": 309,
+      "moves": 95
+    },
+    {
+      "game": 726,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1469,
+      "timeMs": 8,
+      "moves": 94
+    },
+    {
+      "game": 727,
+      "status": "solved",
+      "solved": true,
+      "nodes": 135354,
+      "timeMs": 171,
+      "moves": 94
+    },
+    {
+      "game": 728,
+      "status": "solved",
+      "solved": true,
+      "nodes": 8865,
+      "timeMs": 14,
+      "moves": 95
+    },
+    {
+      "game": 729,
+      "status": "solved",
+      "solved": true,
+      "nodes": 24321,
+      "timeMs": 49,
+      "moves": 95
+    },
+    {
+      "game": 730,
+      "status": "solved",
+      "solved": true,
+      "nodes": 913702,
+      "timeMs": 1009,
+      "moves": 94
+    },
+    {
+      "game": 731,
+      "status": "solved",
+      "solved": true,
+      "nodes": 112,
+      "timeMs": 12,
+      "moves": 93
+    },
+    {
+      "game": 732,
+      "status": "solved",
+      "solved": true,
+      "nodes": 6792,
+      "timeMs": 14,
+      "moves": 93
+    },
+    {
+      "game": 733,
+      "status": "solved",
+      "solved": true,
+      "nodes": 155364,
+      "timeMs": 180,
+      "moves": 91
+    },
+    {
+      "game": 734,
+      "status": "solved",
+      "solved": true,
+      "nodes": 567,
+      "timeMs": 7,
+      "moves": 94
+    },
+    {
+      "game": 735,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4249,
+      "timeMs": 18,
+      "moves": 95
+    },
+    {
+      "game": 736,
+      "status": "solved",
+      "solved": true,
+      "nodes": 14591,
+      "timeMs": 23,
+      "moves": 94
+    },
+    {
+      "game": 737,
+      "status": "solved",
+      "solved": true,
+      "nodes": 8897,
+      "timeMs": 27,
+      "moves": 95
+    },
+    {
+      "game": 738,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3622,
+      "timeMs": 10,
+      "moves": 95
+    },
+    {
+      "game": 739,
+      "status": "solved",
+      "solved": true,
+      "nodes": 29730,
+      "timeMs": 41,
+      "moves": 94
+    },
+    {
+      "game": 740,
+      "status": "solved",
+      "solved": true,
+      "nodes": 8400,
+      "timeMs": 14,
+      "moves": 95
+    },
+    {
+      "game": 741,
+      "status": "solved",
+      "solved": true,
+      "nodes": 9285,
+      "timeMs": 30,
+      "moves": 96
+    },
+    {
+      "game": 742,
+      "status": "solved",
+      "solved": true,
+      "nodes": 586,
+      "timeMs": 7,
+      "moves": 93
+    },
+    {
+      "game": 743,
+      "status": "solved",
+      "solved": true,
+      "nodes": 94243,
+      "timeMs": 77,
+      "moves": 94
+    },
+    {
+      "game": 744,
+      "status": "solved",
+      "solved": true,
+      "nodes": 835133,
+      "timeMs": 894,
+      "moves": 92
+    },
+    {
+      "game": 745,
+      "status": "solved",
+      "solved": true,
+      "nodes": 11766,
+      "timeMs": 35,
+      "moves": 95
+    },
+    {
+      "game": 746,
+      "status": "solved",
+      "solved": true,
+      "nodes": 21372,
+      "timeMs": 24,
+      "moves": 96
+    },
+    {
+      "game": 747,
+      "status": "solved",
+      "solved": true,
+      "nodes": 15349,
+      "timeMs": 32,
+      "moves": 95
+    },
+    {
+      "game": 748,
+      "status": "solved",
+      "solved": true,
+      "nodes": 976,
+      "timeMs": 8,
+      "moves": 94
+    },
+    {
+      "game": 749,
+      "status": "solved",
+      "solved": true,
+      "nodes": 33922,
+      "timeMs": 69,
+      "moves": 96
+    },
+    {
+      "game": 750,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1258,
+      "timeMs": 8,
+      "moves": 95
+    },
+    {
+      "game": 751,
+      "status": "solved",
+      "solved": true,
+      "nodes": 857,
+      "timeMs": 17,
+      "moves": 92
+    },
+    {
+      "game": 752,
+      "status": "solved",
+      "solved": true,
+      "nodes": 13946,
+      "timeMs": 27,
+      "moves": 95
+    },
+    {
+      "game": 753,
+      "status": "solved",
+      "solved": true,
+      "nodes": 391505,
+      "timeMs": 474,
+      "moves": 93
+    },
+    {
+      "game": 754,
+      "status": "solved",
+      "solved": true,
+      "nodes": 169202,
+      "timeMs": 161,
+      "moves": 94
+    },
+    {
+      "game": 755,
+      "status": "solved",
+      "solved": true,
+      "nodes": 11112,
+      "timeMs": 26,
+      "moves": 94
+    },
+    {
+      "game": 756,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3265,
+      "timeMs": 9,
+      "moves": 94
+    },
+    {
+      "game": 757,
+      "status": "solved",
+      "solved": true,
+      "nodes": 12425,
+      "timeMs": 35,
+      "moves": 94
+    },
+    {
+      "game": 758,
+      "status": "solved",
+      "solved": true,
+      "nodes": 78279,
+      "timeMs": 100,
+      "moves": 95
+    },
+    {
+      "game": 759,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4078,
+      "timeMs": 14,
+      "moves": 93
+    },
+    {
+      "game": 760,
+      "status": "solved",
+      "solved": true,
+      "nodes": 72918,
+      "timeMs": 78,
+      "moves": 92
+    },
+    {
+      "game": 761,
+      "status": "solved",
+      "solved": true,
+      "nodes": 57326,
+      "timeMs": 108,
+      "moves": 94
+    },
+    {
+      "game": 762,
+      "status": "solved",
+      "solved": true,
+      "nodes": 26815,
+      "timeMs": 29,
+      "moves": 95
+    },
+    {
+      "game": 763,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1400,
+      "timeMs": 14,
+      "moves": 95
+    },
+    {
+      "game": 764,
+      "status": "solved",
+      "solved": true,
+      "nodes": 659908,
+      "timeMs": 675,
+      "moves": 94
+    },
+    {
+      "game": 765,
+      "status": "solved",
+      "solved": true,
+      "nodes": 52505,
+      "timeMs": 86,
+      "moves": 95
+    },
+    {
+      "game": 766,
+      "status": "solved",
+      "solved": true,
+      "nodes": 118118,
+      "timeMs": 112,
+      "moves": 96
+    },
+    {
+      "game": 767,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5446,
+      "timeMs": 17,
+      "moves": 95
+    },
+    {
+      "game": 768,
+      "status": "solved",
+      "solved": true,
+      "nodes": 16155,
+      "timeMs": 23,
+      "moves": 94
+    },
+    {
+      "game": 769,
+      "status": "solved",
+      "solved": true,
+      "nodes": 105251,
+      "timeMs": 131,
+      "moves": 93
+    },
+    {
+      "game": 770,
+      "status": "solved",
+      "solved": true,
+      "nodes": 21437,
+      "timeMs": 30,
+      "moves": 93
+    },
+    {
+      "game": 771,
+      "status": "solved",
+      "solved": true,
+      "nodes": 33256,
+      "timeMs": 48,
+      "moves": 95
+    },
+    {
+      "game": 772,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2216,
+      "timeMs": 9,
+      "moves": 94
+    },
+    {
+      "game": 773,
+      "status": "solved",
+      "solved": true,
+      "nodes": 301346,
+      "timeMs": 410,
+      "moves": 93
+    },
+    {
+      "game": 774,
+      "status": "solved",
+      "solved": true,
+      "nodes": 111851,
+      "timeMs": 89,
+      "moves": 94
+    },
+    {
+      "game": 775,
+      "status": "solved",
+      "solved": true,
+      "nodes": 50690,
+      "timeMs": 68,
+      "moves": 96
+    },
+    {
+      "game": 776,
+      "status": "solved",
+      "solved": true,
+      "nodes": 149676,
+      "timeMs": 201,
+      "moves": 95
+    },
+    {
+      "game": 777,
+      "status": "solved",
+      "solved": true,
+      "nodes": 772,
+      "timeMs": 7,
+      "moves": 95
+    },
+    {
+      "game": 778,
+      "status": "solved",
+      "solved": true,
+      "nodes": 95428,
+      "timeMs": 107,
+      "moves": 95
+    },
+    {
+      "game": 779,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1087063,
+      "timeMs": 1074,
+      "moves": 94
+    },
+    {
+      "game": 780,
+      "status": "solved",
+      "solved": true,
+      "nodes": 12628,
+      "timeMs": 25,
+      "moves": 94
+    },
+    {
+      "game": 781,
+      "status": "solved",
+      "solved": true,
+      "nodes": 16364,
+      "timeMs": 19,
+      "moves": 95
+    },
+    {
+      "game": 782,
+      "status": "solved",
+      "solved": true,
+      "nodes": 11753,
+      "timeMs": 33,
+      "moves": 94
+    },
+    {
+      "game": 783,
+      "status": "solved",
+      "solved": true,
+      "nodes": 9620,
+      "timeMs": 16,
+      "moves": 95
+    },
+    {
+      "game": 784,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1602,
+      "timeMs": 22,
+      "moves": 90
+    },
+    {
+      "game": 785,
+      "status": "solved",
+      "solved": true,
+      "nodes": 17606,
+      "timeMs": 45,
+      "moves": 95
+    },
+    {
+      "game": 786,
+      "status": "solved",
+      "solved": true,
+      "nodes": 148321,
+      "timeMs": 180,
+      "moves": 95
+    },
+    {
+      "game": 787,
+      "status": "solved",
+      "solved": true,
+      "nodes": 22134,
+      "timeMs": 45,
+      "moves": 94
+    },
+    {
+      "game": 788,
+      "status": "solved",
+      "solved": true,
+      "nodes": 13419,
+      "timeMs": 19,
+      "moves": 96
+    },
+    {
+      "game": 789,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4523,
+      "timeMs": 17,
+      "moves": 94
+    },
+    {
+      "game": 790,
+      "status": "solved",
+      "solved": true,
+      "nodes": 37635,
+      "timeMs": 52,
+      "moves": 94
+    },
+    {
+      "game": 791,
+      "status": "solved",
+      "solved": true,
+      "nodes": 53714,
+      "timeMs": 88,
+      "moves": 95
+    },
+    {
+      "game": 792,
+      "status": "solved",
+      "solved": true,
+      "nodes": 49019,
+      "timeMs": 54,
+      "moves": 96
+    },
+    {
+      "game": 793,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2153,
+      "timeMs": 14,
+      "moves": 95
+    },
+    {
+      "game": 794,
+      "status": "solved",
+      "solved": true,
+      "nodes": 23410,
+      "timeMs": 30,
+      "moves": 95
+    },
+    {
+      "game": 795,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2452,
+      "timeMs": 19,
+      "moves": 95
+    },
+    {
+      "game": 796,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1046,
+      "timeMs": 8,
+      "moves": 95
+    },
+    {
+      "game": 797,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1734,
+      "timeMs": 12,
+      "moves": 95
+    },
+    {
+      "game": 798,
+      "status": "solved",
+      "solved": true,
+      "nodes": 111766,
+      "timeMs": 222,
+      "moves": 94
+    },
+    {
+      "game": 799,
+      "status": "solved",
+      "solved": true,
+      "nodes": 9676,
+      "timeMs": 31,
+      "moves": 92
+    },
+    {
+      "game": 800,
+      "status": "solved",
+      "solved": true,
+      "nodes": 14057,
+      "timeMs": 27,
+      "moves": 96
+    },
+    {
+      "game": 801,
+      "status": "solved",
+      "solved": true,
+      "nodes": 294463,
+      "timeMs": 335,
+      "moves": 93
+    },
+    {
+      "game": 802,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2106,
+      "timeMs": 9,
+      "moves": 94
+    },
+    {
+      "game": 803,
+      "status": "solved",
+      "solved": true,
+      "nodes": 12038,
+      "timeMs": 38,
+      "moves": 92
+    },
+    {
+      "game": 804,
+      "status": "solved",
+      "solved": true,
+      "nodes": 10914,
+      "timeMs": 21,
+      "moves": 95
+    },
+    {
+      "game": 805,
+      "status": "solved",
+      "solved": true,
+      "nodes": 120098,
+      "timeMs": 154,
+      "moves": 96
+    },
+    {
+      "game": 806,
+      "status": "solved",
+      "solved": true,
+      "nodes": 10737,
+      "timeMs": 16,
+      "moves": 95
+    },
+    {
+      "game": 807,
+      "status": "solved",
+      "solved": true,
+      "nodes": 23977,
+      "timeMs": 41,
+      "moves": 95
+    },
+    {
+      "game": 808,
+      "status": "solved",
+      "solved": true,
+      "nodes": 18247,
+      "timeMs": 31,
+      "moves": 94
+    },
+    {
+      "game": 809,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1274,
+      "timeMs": 13,
+      "moves": 93
+    },
+    {
+      "game": 810,
+      "status": "solved",
+      "solved": true,
+      "nodes": 31017,
+      "timeMs": 36,
+      "moves": 94
+    },
+    {
+      "game": 811,
+      "status": "solved",
+      "solved": true,
+      "nodes": 44647,
+      "timeMs": 88,
+      "moves": 94
+    },
+    {
+      "game": 812,
+      "status": "solved",
+      "solved": true,
+      "nodes": 14783,
+      "timeMs": 21,
+      "moves": 93
+    },
+    {
+      "game": 813,
+      "status": "solved",
+      "solved": true,
+      "nodes": 14200,
+      "timeMs": 24,
+      "moves": 93
+    },
+    {
+      "game": 814,
+      "status": "solved",
+      "solved": true,
+      "nodes": 32721,
+      "timeMs": 35,
+      "moves": 92
+    },
+    {
+      "game": 815,
+      "status": "solved",
+      "solved": true,
+      "nodes": 9832,
+      "timeMs": 31,
+      "moves": 93
+    },
+    {
+      "game": 816,
+      "status": "solved",
+      "solved": true,
+      "nodes": 11867,
+      "timeMs": 17,
+      "moves": 91
+    },
+    {
+      "game": 817,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4531,
+      "timeMs": 17,
+      "moves": 96
+    },
+    {
+      "game": 818,
+      "status": "solved",
+      "solved": true,
+      "nodes": 99505,
+      "timeMs": 117,
+      "moves": 93
+    },
+    {
+      "game": 819,
+      "status": "solved",
+      "solved": true,
+      "nodes": 6026,
+      "timeMs": 22,
+      "moves": 94
+    },
+    {
+      "game": 820,
+      "status": "solved",
+      "solved": true,
+      "nodes": 46734,
+      "timeMs": 55,
+      "moves": 94
+    },
+    {
+      "game": 821,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5355,
+      "timeMs": 16,
+      "moves": 91
+    },
+    {
+      "game": 822,
+      "status": "solved",
+      "solved": true,
+      "nodes": 726039,
+      "timeMs": 840,
+      "moves": 96
+    },
+    {
+      "game": 823,
+      "status": "solved",
+      "solved": true,
+      "nodes": 45871,
+      "timeMs": 65,
+      "moves": 94
+    },
+    {
+      "game": 824,
+      "status": "solved",
+      "solved": true,
+      "nodes": 7304,
+      "timeMs": 12,
+      "moves": 94
+    },
+    {
+      "game": 825,
+      "status": "solved",
+      "solved": true,
+      "nodes": 43367,
+      "timeMs": 52,
+      "moves": 94
+    },
+    {
+      "game": 826,
+      "status": "solved",
+      "solved": true,
+      "nodes": 9858,
+      "timeMs": 14,
+      "moves": 93
+    },
+    {
+      "game": 827,
+      "status": "solved",
+      "solved": true,
+      "nodes": 36317,
+      "timeMs": 71,
+      "moves": 94
+    },
+    {
+      "game": 828,
+      "status": "solved",
+      "solved": true,
+      "nodes": 18507,
+      "timeMs": 27,
+      "moves": 92
+    },
+    {
+      "game": 829,
+      "status": "solved",
+      "solved": true,
+      "nodes": 35218,
+      "timeMs": 63,
+      "moves": 95
+    },
+    {
+      "game": 830,
+      "status": "solved",
+      "solved": true,
+      "nodes": 14057,
+      "timeMs": 19,
+      "moves": 93
+    },
+    {
+      "game": 831,
+      "status": "solved",
+      "solved": true,
+      "nodes": 7988,
+      "timeMs": 21,
+      "moves": 96
+    },
+    {
+      "game": 832,
+      "status": "solved",
+      "solved": true,
+      "nodes": 11948,
+      "timeMs": 19,
+      "moves": 90
+    },
+    {
+      "game": 833,
+      "status": "solved",
+      "solved": true,
+      "nodes": 828561,
+      "timeMs": 1100,
+      "moves": 96
+    },
+    {
+      "game": 834,
+      "status": "solved",
+      "solved": true,
+      "nodes": 568,
+      "timeMs": 6,
+      "moves": 93
+    },
+    {
+      "game": 835,
+      "status": "solved",
+      "solved": true,
+      "nodes": 11060,
+      "timeMs": 28,
+      "moves": 94
+    },
+    {
+      "game": 836,
+      "status": "solved",
+      "solved": true,
+      "nodes": 16895,
+      "timeMs": 22,
+      "moves": 93
+    },
+    {
+      "game": 837,
+      "status": "solved",
+      "solved": true,
+      "nodes": 8567,
+      "timeMs": 22,
+      "moves": 96
+    },
+    {
+      "game": 838,
+      "status": "solved",
+      "solved": true,
+      "nodes": 51725,
+      "timeMs": 53,
+      "moves": 93
+    },
+    {
+      "game": 839,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3039,
+      "timeMs": 19,
+      "moves": 96
+    },
+    {
+      "game": 840,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5142,
+      "timeMs": 12,
+      "moves": 95
+    },
+    {
+      "game": 841,
+      "status": "solved",
+      "solved": true,
+      "nodes": 14952,
+      "timeMs": 29,
+      "moves": 92
+    },
+    {
+      "game": 842,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1490,
+      "timeMs": 8,
+      "moves": 95
+    },
+    {
+      "game": 843,
+      "status": "solved",
+      "solved": true,
+      "nodes": 18866,
+      "timeMs": 29,
+      "moves": 95
+    },
+    {
+      "game": 844,
+      "status": "solved",
+      "solved": true,
+      "nodes": 20484,
+      "timeMs": 39,
+      "moves": 89
+    },
+    {
+      "game": 845,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3750,
+      "timeMs": 17,
+      "moves": 96
+    },
+    {
+      "game": 846,
+      "status": "solved",
+      "solved": true,
+      "nodes": 10885,
+      "timeMs": 38,
+      "moves": 96
+    },
+    {
+      "game": 847,
+      "status": "solved",
+      "solved": true,
+      "nodes": 188281,
+      "timeMs": 163,
+      "moves": 95
+    },
+    {
+      "game": 848,
+      "status": "solved",
+      "solved": true,
+      "nodes": 30558,
+      "timeMs": 66,
+      "moves": 93
+    },
+    {
+      "game": 849,
+      "status": "solved",
+      "solved": true,
+      "nodes": 66147,
+      "timeMs": 99,
+      "moves": 96
+    },
+    {
+      "game": 850,
+      "status": "solved",
+      "solved": true,
+      "nodes": 161555,
+      "timeMs": 189,
+      "moves": 94
+    },
+    {
+      "game": 851,
+      "status": "solved",
+      "solved": true,
+      "nodes": 37816,
+      "timeMs": 61,
+      "moves": 95
+    },
+    {
+      "game": 852,
+      "status": "solved",
+      "solved": true,
+      "nodes": 508,
+      "timeMs": 7,
+      "moves": 94
+    },
+    {
+      "game": 853,
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 2000000,
+      "timeMs": 1822,
+      "moves": 0
+    },
+    {
+      "game": 854,
+      "status": "solved",
+      "solved": true,
+      "nodes": 7341,
+      "timeMs": 25,
+      "moves": 96
+    },
+    {
+      "game": 855,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1532,
+      "timeMs": 8,
+      "moves": 95
+    },
+    {
+      "game": 856,
+      "status": "solved",
+      "solved": true,
+      "nodes": 38472,
+      "timeMs": 71,
+      "moves": 92
+    },
+    {
+      "game": 857,
+      "status": "solved",
+      "solved": true,
+      "nodes": 114416,
+      "timeMs": 139,
+      "moves": 95
+    },
+    {
+      "game": 858,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3097,
+      "timeMs": 16,
+      "moves": 93
+    },
+    {
+      "game": 859,
+      "status": "solved",
+      "solved": true,
+      "nodes": 29458,
+      "timeMs": 38,
+      "moves": 92
+    },
+    {
+      "game": 860,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5438,
+      "timeMs": 21,
+      "moves": 96
+    },
+    {
+      "game": 861,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4083,
+      "timeMs": 10,
+      "moves": 95
+    },
+    {
+      "game": 862,
+      "status": "solved",
+      "solved": true,
+      "nodes": 198,
+      "timeMs": 11,
+      "moves": 91
+    },
+    {
+      "game": 863,
+      "status": "solved",
+      "solved": true,
+      "nodes": 53878,
+      "timeMs": 84,
+      "moves": 93
+    },
+    {
+      "game": 864,
+      "status": "solved",
+      "solved": true,
+      "nodes": 7497,
+      "timeMs": 32,
+      "moves": 95
+    },
+    {
+      "game": 865,
+      "status": "solved",
+      "solved": true,
+      "nodes": 27567,
+      "timeMs": 47,
+      "moves": 94
+    },
+    {
+      "game": 866,
+      "status": "solved",
+      "solved": true,
+      "nodes": 629672,
+      "timeMs": 665,
+      "moves": 96
+    },
+    {
+      "game": 867,
+      "status": "solved",
+      "solved": true,
+      "nodes": 12620,
+      "timeMs": 18,
+      "moves": 95
+    },
+    {
+      "game": 868,
+      "status": "solved",
+      "solved": true,
+      "nodes": 58639,
+      "timeMs": 95,
+      "moves": 92
+    },
+    {
+      "game": 869,
+      "status": "solved",
+      "solved": true,
+      "nodes": 743,
+      "timeMs": 7,
+      "moves": 91
+    },
+    {
+      "game": 870,
+      "status": "solved",
+      "solved": true,
+      "nodes": 182340,
+      "timeMs": 208,
+      "moves": 92
+    },
+    {
+      "game": 871,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1619,
+      "timeMs": 9,
+      "moves": 93
+    },
+    {
+      "game": 872,
+      "status": "solved",
+      "solved": true,
+      "nodes": 64412,
+      "timeMs": 129,
+      "moves": 96
+    },
+    {
+      "game": 873,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5461,
+      "timeMs": 11,
+      "moves": 93
+    },
+    {
+      "game": 874,
+      "status": "solved",
+      "solved": true,
+      "nodes": 35386,
+      "timeMs": 55,
+      "moves": 95
+    },
+    {
+      "game": 875,
+      "status": "solved",
+      "solved": true,
+      "nodes": 17534,
+      "timeMs": 23,
+      "moves": 94
+    },
+    {
+      "game": 876,
+      "status": "solved",
+      "solved": true,
+      "nodes": 33762,
+      "timeMs": 50,
+      "moves": 92
+    },
+    {
+      "game": 877,
+      "status": "solved",
+      "solved": true,
+      "nodes": 8663,
+      "timeMs": 13,
+      "moves": 95
+    },
+    {
+      "game": 878,
+      "status": "solved",
+      "solved": true,
+      "nodes": 585,
+      "timeMs": 9,
+      "moves": 95
+    },
+    {
+      "game": 879,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1751,
+      "timeMs": 8,
+      "moves": 93
+    },
+    {
+      "game": 880,
+      "status": "solved",
+      "solved": true,
+      "nodes": 484180,
+      "timeMs": 549,
+      "moves": 96
+    },
+    {
+      "game": 881,
+      "status": "solved",
+      "solved": true,
+      "nodes": 154479,
+      "timeMs": 156,
+      "moves": 95
+    },
+    {
+      "game": 882,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2846,
+      "timeMs": 16,
+      "moves": 94
+    },
+    {
+      "game": 883,
+      "status": "solved",
+      "solved": true,
+      "nodes": 236,
+      "timeMs": 7,
+      "moves": 95
+    },
+    {
+      "game": 884,
+      "status": "solved",
+      "solved": true,
+      "nodes": 131160,
+      "timeMs": 187,
+      "moves": 92
+    },
+    {
+      "game": 885,
+      "status": "solved",
+      "solved": true,
+      "nodes": 78985,
+      "timeMs": 80,
+      "moves": 93
+    },
+    {
+      "game": 886,
+      "status": "solved",
+      "solved": true,
+      "nodes": 9071,
+      "timeMs": 21,
+      "moves": 94
+    },
+    {
+      "game": 887,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1350,
+      "timeMs": 8,
+      "moves": 94
+    },
+    {
+      "game": 888,
+      "status": "solved",
+      "solved": true,
+      "nodes": 71887,
+      "timeMs": 98,
+      "moves": 94
+    },
+    {
+      "game": 889,
+      "status": "solved",
+      "solved": true,
+      "nodes": 20138,
+      "timeMs": 34,
+      "moves": 93
+    },
+    {
+      "game": 890,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2851,
+      "timeMs": 15,
+      "moves": 92
+    },
+    {
+      "game": 891,
+      "status": "solved",
+      "solved": true,
+      "nodes": 16046,
+      "timeMs": 29,
+      "moves": 95
+    },
+    {
+      "game": 892,
+      "status": "solved",
+      "solved": true,
+      "nodes": 11544,
+      "timeMs": 24,
+      "moves": 95
+    },
+    {
+      "game": 893,
+      "status": "solved",
+      "solved": true,
+      "nodes": 358,
+      "timeMs": 7,
+      "moves": 95
+    },
+    {
+      "game": 894,
+      "status": "solved",
+      "solved": true,
+      "nodes": 487738,
+      "timeMs": 588,
+      "moves": 94
+    },
+    {
+      "game": 895,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2638,
+      "timeMs": 11,
+      "moves": 94
+    },
+    {
+      "game": 896,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5321,
+      "timeMs": 22,
+      "moves": 96
+    },
+    {
+      "game": 897,
+      "status": "solved",
+      "solved": true,
+      "nodes": 153677,
+      "timeMs": 235,
+      "moves": 95
+    },
+    {
+      "game": 898,
+      "status": "solved",
+      "solved": true,
+      "nodes": 39247,
+      "timeMs": 53,
+      "moves": 90
+    },
+    {
+      "game": 899,
+      "status": "solved",
+      "solved": true,
+      "nodes": 10581,
+      "timeMs": 19,
+      "moves": 94
+    },
+    {
+      "game": 900,
+      "status": "solved",
+      "solved": true,
+      "nodes": 11162,
+      "timeMs": 29,
+      "moves": 95
+    },
+    {
+      "game": 901,
+      "status": "solved",
+      "solved": true,
+      "nodes": 9380,
+      "timeMs": 15,
+      "moves": 93
+    },
+    {
+      "game": 902,
+      "status": "solved",
+      "solved": true,
+      "nodes": 48780,
+      "timeMs": 71,
+      "moves": 94
+    },
+    {
+      "game": 903,
+      "status": "solved",
+      "solved": true,
+      "nodes": 13578,
+      "timeMs": 29,
+      "moves": 94
+    },
+    {
+      "game": 904,
+      "status": "solved",
+      "solved": true,
+      "nodes": 900,
+      "timeMs": 9,
+      "moves": 94
+    },
+    {
+      "game": 905,
+      "status": "solved",
+      "solved": true,
+      "nodes": 70889,
+      "timeMs": 95,
+      "moves": 93
+    },
+    {
+      "game": 906,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3428,
+      "timeMs": 9,
+      "moves": 92
+    },
+    {
+      "game": 907,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3278,
+      "timeMs": 16,
+      "moves": 95
+    },
+    {
+      "game": 908,
+      "status": "solved",
+      "solved": true,
+      "nodes": 134345,
+      "timeMs": 150,
+      "moves": 95
+    },
+    {
+      "game": 909,
+      "status": "solved",
+      "solved": true,
+      "nodes": 10706,
+      "timeMs": 32,
+      "moves": 95
+    },
+    {
+      "game": 910,
+      "status": "solved",
+      "solved": true,
+      "nodes": 55656,
+      "timeMs": 61,
+      "moves": 93
+    },
+    {
+      "game": 911,
+      "status": "solved",
+      "solved": true,
+      "nodes": 29143,
+      "timeMs": 40,
+      "moves": 95
+    },
+    {
+      "game": 912,
+      "status": "solved",
+      "solved": true,
+      "nodes": 113851,
+      "timeMs": 120,
+      "moves": 93
+    },
+    {
+      "game": 913,
+      "status": "solved",
+      "solved": true,
+      "nodes": 793,
+      "timeMs": 9,
+      "moves": 93
+    },
+    {
+      "game": 914,
+      "status": "solved",
+      "solved": true,
+      "nodes": 128825,
+      "timeMs": 151,
+      "moves": 94
+    },
+    {
+      "game": 915,
+      "status": "solved",
+      "solved": true,
+      "nodes": 787990,
+      "timeMs": 1089,
+      "moves": 95
+    },
+    {
+      "game": 916,
+      "status": "solved",
+      "solved": true,
+      "nodes": 515,
+      "timeMs": 13,
+      "moves": 91
+    },
+    {
+      "game": 917,
+      "status": "solved",
+      "solved": true,
+      "nodes": 41393,
+      "timeMs": 57,
+      "moves": 96
+    },
+    {
+      "game": 918,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1219,
+      "timeMs": 12,
+      "moves": 94
+    },
+    {
+      "game": 919,
+      "status": "solved",
+      "solved": true,
+      "nodes": 6040,
+      "timeMs": 13,
+      "moves": 94
+    },
+    {
+      "game": 920,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4935,
+      "timeMs": 27,
+      "moves": 94
+    },
+    {
+      "game": 921,
+      "status": "solved",
+      "solved": true,
+      "nodes": 16458,
+      "timeMs": 23,
+      "moves": 94
+    },
+    {
+      "game": 922,
+      "status": "solved",
+      "solved": true,
+      "nodes": 9517,
+      "timeMs": 19,
+      "moves": 96
+    },
+    {
+      "game": 923,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1041,
+      "timeMs": 8,
+      "moves": 93
+    },
+    {
+      "game": 924,
+      "status": "solved",
+      "solved": true,
+      "nodes": 352,
+      "timeMs": 13,
+      "moves": 95
+    },
+    {
+      "game": 925,
+      "status": "solved",
+      "solved": true,
+      "nodes": 221086,
+      "timeMs": 294,
+      "moves": 96
+    },
+    {
+      "game": 926,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2048,
+      "timeMs": 12,
+      "moves": 95
+    },
+    {
+      "game": 927,
+      "status": "solved",
+      "solved": true,
+      "nodes": 50437,
+      "timeMs": 61,
+      "moves": 93
+    },
+    {
+      "game": 928,
+      "status": "solved",
+      "solved": true,
+      "nodes": 23830,
+      "timeMs": 42,
+      "moves": 96
+    },
+    {
+      "game": 929,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2186,
+      "timeMs": 8,
+      "moves": 92
+    },
+    {
+      "game": 930,
+      "status": "solved",
+      "solved": true,
+      "nodes": 11838,
+      "timeMs": 23,
+      "moves": 93
+    },
+    {
+      "game": 931,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2005,
+      "timeMs": 8,
+      "moves": 94
+    },
+    {
+      "game": 932,
+      "status": "solved",
+      "solved": true,
+      "nodes": 850566,
+      "timeMs": 1025,
+      "moves": 96
+    },
+    {
+      "game": 933,
+      "status": "solved",
+      "solved": true,
+      "nodes": 8218,
+      "timeMs": 13,
+      "moves": 94
+    },
+    {
+      "game": 934,
+      "status": "solved",
+      "solved": true,
+      "nodes": 345506,
+      "timeMs": 407,
+      "moves": 94
+    },
+    {
+      "game": 935,
+      "status": "solved",
+      "solved": true,
+      "nodes": 22828,
+      "timeMs": 30,
+      "moves": 92
+    },
+    {
+      "game": 936,
+      "status": "solved",
+      "solved": true,
+      "nodes": 15948,
+      "timeMs": 40,
+      "moves": 93
+    },
+    {
+      "game": 937,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2620,
+      "timeMs": 9,
+      "moves": 93
+    },
+    {
+      "game": 938,
+      "status": "solved",
+      "solved": true,
+      "nodes": 11266,
+      "timeMs": 25,
+      "moves": 94
+    },
+    {
+      "game": 939,
+      "status": "solved",
+      "solved": true,
+      "nodes": 12088,
+      "timeMs": 20,
+      "moves": 95
+    },
+    {
+      "game": 940,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1242383,
+      "timeMs": 1310,
+      "moves": 94
+    },
+    {
+      "game": 941,
+      "status": "solved",
+      "solved": true,
+      "nodes": 395,
+      "timeMs": 7,
+      "moves": 95
+    },
+    {
+      "game": 942,
+      "status": "solved",
+      "solved": true,
+      "nodes": 992322,
+      "timeMs": 1233,
+      "moves": 96
+    },
+    {
+      "game": 943,
+      "status": "solved",
+      "solved": true,
+      "nodes": 21194,
+      "timeMs": 24,
+      "moves": 93
+    },
+    {
+      "game": 944,
+      "status": "solved",
+      "solved": true,
+      "nodes": 146328,
+      "timeMs": 221,
+      "moves": 91
+    },
+    {
+      "game": 945,
+      "status": "solved",
+      "solved": true,
+      "nodes": 210780,
+      "timeMs": 268,
+      "moves": 91
+    },
+    {
+      "game": 946,
+      "status": "solved",
+      "solved": true,
+      "nodes": 591,
+      "timeMs": 13,
+      "moves": 94
+    },
+    {
+      "game": 947,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4659,
+      "timeMs": 12,
+      "moves": 92
+    },
+    {
+      "game": 948,
+      "status": "solved",
+      "solved": true,
+      "nodes": 18333,
+      "timeMs": 32,
+      "moves": 94
+    },
+    {
+      "game": 949,
+      "status": "solved",
+      "solved": true,
+      "nodes": 36817,
+      "timeMs": 69,
+      "moves": 96
+    },
+    {
+      "game": 950,
+      "status": "solved",
+      "solved": true,
+      "nodes": 8504,
+      "timeMs": 15,
+      "moves": 93
+    },
+    {
+      "game": 951,
+      "status": "solved",
+      "solved": true,
+      "nodes": 32332,
+      "timeMs": 43,
+      "moves": 94
+    },
+    {
+      "game": 952,
+      "status": "solved",
+      "solved": true,
+      "nodes": 14141,
+      "timeMs": 22,
+      "moves": 93
+    },
+    {
+      "game": 953,
+      "status": "solved",
+      "solved": true,
+      "nodes": 44859,
+      "timeMs": 58,
+      "moves": 90
+    },
+    {
+      "game": 954,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3758,
+      "timeMs": 10,
+      "moves": 91
+    },
+    {
+      "game": 955,
+      "status": "solved",
+      "solved": true,
+      "nodes": 5182,
+      "timeMs": 25,
+      "moves": 95
+    },
+    {
+      "game": 956,
+      "status": "solved",
+      "solved": true,
+      "nodes": 20885,
+      "timeMs": 23,
+      "moves": 96
+    },
+    {
+      "game": 957,
+      "status": "solved",
+      "solved": true,
+      "nodes": 8433,
+      "timeMs": 24,
+      "moves": 94
+    },
+    {
+      "game": 958,
+      "status": "solved",
+      "solved": true,
+      "nodes": 8226,
+      "timeMs": 14,
+      "moves": 95
+    },
+    {
+      "game": 959,
+      "status": "solved",
+      "solved": true,
+      "nodes": 24390,
+      "timeMs": 45,
+      "moves": 92
+    },
+    {
+      "game": 960,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1659,
+      "timeMs": 8,
+      "moves": 93
+    },
+    {
+      "game": 961,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2572,
+      "timeMs": 14,
+      "moves": 93
+    },
+    {
+      "game": 962,
+      "status": "solved",
+      "solved": true,
+      "nodes": 168336,
+      "timeMs": 154,
+      "moves": 96
+    },
+    {
+      "game": 963,
+      "status": "solved",
+      "solved": true,
+      "nodes": 362286,
+      "timeMs": 395,
+      "moves": 93
+    },
+    {
+      "game": 964,
+      "status": "solved",
+      "solved": true,
+      "nodes": 21299,
+      "timeMs": 23,
+      "moves": 95
+    },
+    {
+      "game": 965,
+      "status": "solved",
+      "solved": true,
+      "nodes": 48543,
+      "timeMs": 70,
+      "moves": 92
+    },
+    {
+      "game": 966,
+      "status": "solved",
+      "solved": true,
+      "nodes": 13510,
+      "timeMs": 17,
+      "moves": 93
+    },
+    {
+      "game": 967,
+      "status": "solved",
+      "solved": true,
+      "nodes": 86257,
+      "timeMs": 125,
+      "moves": 96
+    },
+    {
+      "game": 968,
+      "status": "solved",
+      "solved": true,
+      "nodes": 8593,
+      "timeMs": 16,
+      "moves": 93
+    },
+    {
+      "game": 969,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4475,
+      "timeMs": 17,
+      "moves": 93
+    },
+    {
+      "game": 970,
+      "status": "solved",
+      "solved": true,
+      "nodes": 14522,
+      "timeMs": 22,
+      "moves": 94
+    },
+    {
+      "game": 971,
+      "status": "solved",
+      "solved": true,
+      "nodes": 330,
+      "timeMs": 13,
+      "moves": 95
+    },
+    {
+      "game": 972,
+      "status": "solved",
+      "solved": true,
+      "nodes": 15910,
+      "timeMs": 21,
+      "moves": 93
+    },
+    {
+      "game": 973,
+      "status": "solved",
+      "solved": true,
+      "nodes": 34894,
+      "timeMs": 49,
+      "moves": 93
+    },
+    {
+      "game": 974,
+      "status": "solved",
+      "solved": true,
+      "nodes": 12449,
+      "timeMs": 18,
+      "moves": 96
+    },
+    {
+      "game": 975,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3790,
+      "timeMs": 22,
+      "moves": 95
+    },
+    {
+      "game": 976,
+      "status": "solved",
+      "solved": true,
+      "nodes": 79191,
+      "timeMs": 73,
+      "moves": 93
+    },
+    {
+      "game": 977,
+      "status": "solved",
+      "solved": true,
+      "nodes": 7536,
+      "timeMs": 18,
+      "moves": 94
+    },
+    {
+      "game": 978,
+      "status": "solved",
+      "solved": true,
+      "nodes": 218968,
+      "timeMs": 270,
+      "moves": 95
+    },
+    {
+      "game": 979,
+      "status": "solved",
+      "solved": true,
+      "nodes": 7277,
+      "timeMs": 25,
+      "moves": 95
+    },
+    {
+      "game": 980,
+      "status": "solved",
+      "solved": true,
+      "nodes": 175044,
+      "timeMs": 180,
+      "moves": 96
+    },
+    {
+      "game": 981,
+      "status": "solved",
+      "solved": true,
+      "nodes": 692,
+      "timeMs": 11,
+      "moves": 95
+    },
+    {
+      "game": 982,
+      "status": "solved",
+      "solved": true,
+      "nodes": 140801,
+      "timeMs": 178,
+      "moves": 93
+    },
+    {
+      "game": 983,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1264,
+      "timeMs": 15,
+      "moves": 93
+    },
+    {
+      "game": 984,
+      "status": "solved",
+      "solved": true,
+      "nodes": 338521,
+      "timeMs": 336,
+      "moves": 96
+    },
+    {
+      "game": 985,
+      "status": "solved",
+      "solved": true,
+      "nodes": 56531,
+      "timeMs": 64,
+      "moves": 95
+    },
+    {
+      "game": 986,
+      "status": "solved",
+      "solved": true,
+      "nodes": 11974,
+      "timeMs": 19,
+      "moves": 95
+    },
+    {
+      "game": 987,
+      "status": "solved",
+      "solved": true,
+      "nodes": 45232,
+      "timeMs": 77,
+      "moves": 93
+    },
+    {
+      "game": 988,
+      "status": "solved",
+      "solved": true,
+      "nodes": 48968,
+      "timeMs": 66,
+      "moves": 96
+    },
+    {
+      "game": 989,
+      "status": "solved",
+      "solved": true,
+      "nodes": 3178,
+      "timeMs": 16,
+      "moves": 94
+    },
+    {
+      "game": 990,
+      "status": "solved",
+      "solved": true,
+      "nodes": 50340,
+      "timeMs": 59,
+      "moves": 94
+    },
+    {
+      "game": 991,
+      "status": "solved",
+      "solved": true,
+      "nodes": 178156,
+      "timeMs": 209,
+      "moves": 93
+    },
+    {
+      "game": 992,
+      "status": "solved",
+      "solved": true,
+      "nodes": 115681,
+      "timeMs": 125,
+      "moves": 91
+    },
+    {
+      "game": 993,
+      "status": "solved",
+      "solved": true,
+      "nodes": 30001,
+      "timeMs": 46,
+      "moves": 95
+    },
+    {
+      "game": 994,
+      "status": "solved",
+      "solved": true,
+      "nodes": 616324,
+      "timeMs": 575,
+      "moves": 94
+    },
+    {
+      "game": 995,
+      "status": "solved",
+      "solved": true,
+      "nodes": 1507,
+      "timeMs": 14,
+      "moves": 91
+    },
+    {
+      "game": 996,
+      "status": "solved",
+      "solved": true,
+      "nodes": 176,
+      "timeMs": 7,
+      "moves": 94
+    },
+    {
+      "game": 997,
+      "status": "solved",
+      "solved": true,
+      "nodes": 143944,
+      "timeMs": 147,
+      "moves": 95
+    },
+    {
+      "game": 998,
+      "status": "solved",
+      "solved": true,
+      "nodes": 13683,
+      "timeMs": 23,
+      "moves": 94
+    },
+    {
+      "game": 999,
+      "status": "solved",
+      "solved": true,
+      "nodes": 4597,
+      "timeMs": 20,
+      "moves": 92
+    },
+    {
+      "game": 1000,
+      "status": "solved",
+      "solved": true,
+      "nodes": 2989,
+      "timeMs": 11,
+      "moves": 95
+    }
+  ]
+}

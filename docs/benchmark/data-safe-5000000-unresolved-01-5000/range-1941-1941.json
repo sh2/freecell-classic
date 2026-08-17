@@ -1,0 +1,38 @@
+{
+  "kind": "range",
+  "start": 1941,
+  "end": 1941,
+  "config": {
+    "maxNodes": 5000000,
+    "maxTimeMs": 600000,
+    "safeFoundationMoves": true
+  },
+  "measuredAt": "2026-08-17T11:59:58.225Z",
+  "summary": {
+    "solved": 1,
+    "nodeLimit": 0,
+    "timeLimit": 0,
+    "unsolvable": 0,
+    "totalTimeMs": 444,
+    "medianTimeMs": 444
+  },
+  "results": [
+    {
+      "game": 1941,
+      "status": "solved",
+      "solved": true,
+      "nodes": 265145,
+      "timeMs": 444,
+      "moves": 93,
+      "stats": {
+        "unsafeHomeGenerated": 559,
+        "unsafeHomeTried": 533,
+        "unsafeHomeSolved": 11,
+        "unsafeHomeDeadEnds": 391,
+        "transpositionHits": 99289,
+        "deadEndNodes": 2483,
+        "maxSearchDepth": 93
+      }
+    }
+  ]
+}
