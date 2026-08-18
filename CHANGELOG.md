@@ -4,6 +4,12 @@
 
 ### 修正
 
+- フェーズ4の全32,000ゲーム性能評価を完了(`docs/benchmark/data/` /
+  `docs/benchmark/report.html` / `docs/benchmark/`)。`fast-safe` 戦略で31,974件を
+  解決し、解決率99.919%となった。26件は高速・安全モードともに`node-limit`、
+  `time-limit` と `unsolvable` は0件だった。`unsolvable` は64bit Zobrist衝突を
+  無視した探索上の結果であり、数学的な完全証明ではない。
+
 - フェーズ3レビュー指摘を反映(`src/js/solver.js` / `tests/unit/solver.test.js` /
   `docs/`)。安全モードでは未検証の逆手除外を既定で無効化し、APIコメントへ
   `search-exhausted` と、64bit Zobrist衝突を無視した `unsolvable` の意味を追記した。
