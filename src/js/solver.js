@@ -37,6 +37,63 @@ const rankOf = (id) => (id >> 2) + 1;
 const suitOf = (id) => id & 3;
 const isRed = (id) => (id & 3) === 1 || (id & 3) === 2;
 
+/* =========================================================
+ * 手のパック表現 (32bit 整数)
+ *
+ * 探索のホットパスで毎回 move オブジェクト { cardId, fromZone, ... } を生成
+ * すると GC 圧迫の要因になるため、手を 32bit 整数にパックして扱う (フェーズB)。
+ * 探索終了時にオブジェクト形式へアンパックして返す。
+ *
+ * bit 割り当て:
+ *   [5:0]   cardId     (0..51)
+ *   [7:6]   fromZone   (0=free, 1=cascade, 2=home)
+ *   [10:8]  fromIndex  (0..7)
+ *   [12:11] destZone   (0=free, 1=cascade, 2=home)
+ *   [15:13] destIndex  (0..7)
+ *   [20:16] count      (1..19)
+ * ========================================================= */
+const ZONE_FREE = 0;
+const ZONE_CASCADE = 1;
+const ZONE_HOME = 2;
+const ZONE_NAMES = ["free", "cascade", "home"];
+
+const MV_CARD_SHIFT = 0;
+const MV_CARD_MASK = 0x3f;
+const MV_FROM_ZONE_SHIFT = 6;
+const MV_FROM_ZONE_MASK = 0x3;
+const MV_FROM_INDEX_SHIFT = 8;
+const MV_FROM_INDEX_MASK = 0x7;
+const MV_DEST_ZONE_SHIFT = 11;
+const MV_DEST_ZONE_MASK = 0x3;
+const MV_DEST_INDEX_SHIFT = 13;
+const MV_DEST_INDEX_MASK = 0x7;
+const MV_COUNT_SHIFT = 16;
+const MV_COUNT_MASK = 0x1f;
+
+const packMove = (cardId, fromZone, fromIndex, destZone, destIndex, count) =>
+  cardId
+  | (fromZone << MV_FROM_ZONE_SHIFT)
+  | (fromIndex << MV_FROM_INDEX_SHIFT)
+  | (destZone << MV_DEST_ZONE_SHIFT)
+  | (destIndex << MV_DEST_INDEX_SHIFT)
+  | (count << MV_COUNT_SHIFT);
+const mvCardId = (mv) => mv & MV_CARD_MASK;
+const mvFromZone = (mv) => (mv >> MV_FROM_ZONE_SHIFT) & MV_FROM_ZONE_MASK;
+const mvFromIndex = (mv) => (mv >> MV_FROM_INDEX_SHIFT) & MV_FROM_INDEX_MASK;
+const mvDestZone = (mv) => (mv >> MV_DEST_ZONE_SHIFT) & MV_DEST_ZONE_MASK;
+const mvDestIndex = (mv) => (mv >> MV_DEST_INDEX_SHIFT) & MV_DEST_INDEX_MASK;
+const mvCount = (mv) => (mv >> MV_COUNT_SHIFT) & MV_COUNT_MASK;
+
+/** パック済みの手を外部向けオブジェクト形式へ変換する */
+const unpackMove = (mv) => ({
+  cardId: mvCardId(mv),
+  fromZone: ZONE_NAMES[mvFromZone(mv)],
+  fromIndex: mvFromIndex(mv),
+  destZone: ZONE_NAMES[mvDestZone(mv)],
+  destIndex: mvDestIndex(mv),
+  count: mvCount(mv),
+});
+
 /**
  * Horne's Rule に基づき、カードを土台へ送って安全か判定する。
  *
@@ -138,6 +195,7 @@ function createTranspositionTable(capacityBits = 22) {
   let probes = 0;
   let maxProbe = 0;
   let overwrites = 0;
+  let used = 0; // 使用中スロット数 (stats() で配列を全走査しないためのカウンタ)
   return {
     /** 64bit Zobrist ハッシュが一致すれば同一状態として扱う。 */
     lookup(k1, k2) {
@@ -167,6 +225,7 @@ function createTranspositionTable(capacityBits = 22) {
           h1[i] = k1;
           h2[i] = k2;
           g[i] = gg;
+          used++;
           return;
         }
         if (h1[i] === k1 && h2[i] === k2) {
@@ -177,23 +236,32 @@ function createTranspositionTable(capacityBits = 22) {
         }
         i = (i + 1) & (size - 1);
       }
-      // 満杯に近い場合は先頭スロットを上書き(枝刈り情報を失うだけで安全性は保たれる)
-      i = k1 & (size - 1);
-      overwrites++;
-      h1[i] = k1;
-      h2[i] = k2;
-      g[i] = gg;
+      // 満杯に近い場合はプローブ窓内で最も g が大きい (= 枝刈り価値が低い) エントリを
+      // 置き換える (フェーズC)。候補の g がその最大 g 以上なら挿入しない (浅い
+      // エントリを保護)。置換方針は枝刈り効率にのみ影響し、安全性には影響しない。
+      // 窓内は全て埋まっているため、空きスロットの考慮は不要。
+      const start = k1 & (size - 1);
+      let worstI = start;
+      let worstG = g[start];
+      for (let n = 1; n < MAX_PROBE; n++) {
+        const idx = (start + n) & (size - 1);
+        if (g[idx] > worstG) {
+          worstG = g[idx];
+          worstI = idx;
+        }
+      }
+      if (gg < worstG) {
+        overwrites++;
+        h1[worstI] = k1;
+        h2[worstI] = k2;
+        g[worstI] = gg;
+      }
     },
     clear() {
       g.fill(-1);
+      used = 0;
     },
     stats() {
-      let used = 0;
-      for (const value of g) {
-        if (value !== -1) {
-          used++;
-        }
-      }
       return { used, capacity: size, loadFactor: used / size, probes, maxProbe, overwrites };
     },
   };
@@ -240,7 +308,11 @@ export function formatMove(mv) {
  * 盤面を解く。
  * @param {{cascades: number[][], freeCells: (number|null)[], foundations: number[][]}} board
  * @param {{maxNodes?: number, maxTimeMs?: number, safeFoundationMoves?: boolean,
- *   disableReversePruning?: boolean, allowUnsolvable?: boolean}} options
+ *   disableReversePruning?: boolean, allowUnsolvable?: boolean,
+ *   trackCounters?: boolean}} options
+ *   `trackCounters: true` のとき、stats.profile に関数別の呼び出し回数
+ *   (getStateHash / generateMoves / moveScore / movesGenerated / ttLookup /
+ *   ttStore / makeMove / findHomeMove) を記録する (フェーズA のプロファイリング用)。
  * @returns {{solved: boolean, moves: object[], nodes: number, timeMs: number,
  *   status: "solved" | "unsolvable" | "search-exhausted" | "node-limit" | "time-limit"}}
  *   solved=true のとき moves は勝ち手順(初手→終手)。各 move は
@@ -297,6 +369,21 @@ export function solve(board, options = {}) {
     maxSearchDepth: 0,
   };
 
+  // プロファイリング用の呼び出し回数カウンタ (trackCounters 時のみ加算)。
+  // 探索ノード数が同じでも、関数ごとの呼び出し回数は CPU 時間の分布を
+  // 定量化するために有用 (フェーズA)。
+  const profileCounters = {
+    getStateHash: 0,
+    generateMoves: 0,
+    moveScore: 0,
+    movesGenerated: 0,
+    ttLookup: 0,
+    ttStore: 0,
+    makeMove: 0,
+    findHomeMove: 0,
+  };
+  const track = !!options.trackCounters;
+
   /* ---------------- Zobrist ハッシュ ---------------- */
 
   const { z1, z2 } = buildZobristTables();
@@ -337,102 +424,139 @@ export function solve(board, options = {}) {
     }
   }
 
+  // 列の並び替え用の再利用バッファ (毎ノードの Array.from + sort の
+  // アロケーションと、sort 比較器コールバックのオーバーヘッドを削減する)。
+  // 8列固定なので、毎回 [0..7] に初期化してから安定挿入ソートする。
+  const colOrder = new Array(NUM_CASCADES);
+
   function getStateHash() {
-    const order = Array.from({ length: NUM_CASCADES }, (_, i) => i);
-    order.sort((a, b) => colH1[a] - colH1[b] || colH2[a] - colH2[b]);
+    if (track) {
+      profileCounters.getStateHash++;
+    }
+    for (let i = 0; i < NUM_CASCADES; i++) {
+      colOrder[i] = i;
+    }
+    // colH1 / colH2 の昇順に安定ソート (Array.prototype.sort と同じ順序)。
+    // 8列固定のため比較回数は高々 28 回で、比較器の関数呼び出しもない。
+    for (let i = 1; i < NUM_CASCADES; i++) {
+      const key = colOrder[i];
+      const h1i = colH1[key];
+      const h2i = colH2[key];
+      let j = i - 1;
+      while (j >= 0) {
+        const cur = colOrder[j];
+        if (colH1[cur] < h1i || (colH1[cur] === h1i && colH2[cur] <= h2i)) {
+          break;
+        }
+        colOrder[j + 1] = cur;
+        j--;
+      }
+      colOrder[j + 1] = key;
+    }
     let k1 = h1 >>> 0;
     let k2 = h2 >>> 0;
-    for (const col of order) {
+    for (let i = 0; i < NUM_CASCADES; i++) {
+      const col = colOrder[i];
       k1 = (Math.imul(k1 ^ colH1[col], 0x9e3779b1) + 0x85ebca6b) >>> 0;
       k2 = (Math.imul(k2 ^ colH2[col], 0xc2b2ae35) + 0x27d4eb2f) >>> 0;
     }
-    return [k1, k2, order];
+    return [k1, k2];
   }
 
   /* ---------------- 手の適用 / 取り消し ---------------- */
 
   function doApply(mv) {
-    const cardId = mv.cardId;
-    if (mv.destZone === "home") {
+    const cardId = mvCardId(mv);
+    const destZone = mvDestZone(mv);
+    const fromZone = mvFromZone(mv);
+    const fromIndex = mvFromIndex(mv);
+    const destIndex = mvDestIndex(mv);
+    if (destZone === ZONE_HOME) {
       const suit = suitOf(cardId);
       const rank = rankOf(cardId);
-      if (mv.fromZone === "free") {
-        free[mv.fromIndex] = -1;
+      if (fromZone === ZONE_FREE) {
+        free[fromIndex] = -1;
         xorFree(cardId);
       } else {
-        cols[mv.fromIndex].pop();
-        xorCol(mv.fromIndex, cols[mv.fromIndex].length, cardId);
+        cols[fromIndex].pop();
+        xorCol(fromIndex, cols[fromIndex].length, cardId);
       }
       xorFound(suit, found[suit]);
       found[suit] = rank;
       xorFound(suit, rank);
       totalHome++;
-    } else if (mv.destZone === "free") {
-      cols[mv.fromIndex].pop();
-      xorCol(mv.fromIndex, cols[mv.fromIndex].length, cardId);
-      free[mv.destIndex] = cardId;
+    } else if (destZone === ZONE_FREE) {
+      cols[fromIndex].pop();
+      xorCol(fromIndex, cols[fromIndex].length, cardId);
+      free[destIndex] = cardId;
       xorFree(cardId);
     } else {
       // destZone === "cascade"
-      if (mv.fromZone === "free") {
-        free[mv.fromIndex] = -1;
+      if (fromZone === ZONE_FREE) {
+        free[fromIndex] = -1;
         xorFree(cardId);
-        const base = cols[mv.destIndex].length;
-        cols[mv.destIndex].push(cardId);
-        xorCol(mv.destIndex, base, cardId);
+        const base = cols[destIndex].length;
+        cols[destIndex].push(cardId);
+        xorCol(destIndex, base, cardId);
       } else {
-        const src = cols[mv.fromIndex];
-        const p = src.length - mv.count;
+        const src = cols[fromIndex];
+        const p = src.length - mvCount(mv);
         const tail = src.splice(p);
-        for (let t = 0; t < mv.count; t++) {
-          xorCol(mv.fromIndex, p + t, tail[t]);
+        const count = mvCount(mv);
+        for (let t = 0; t < count; t++) {
+          xorCol(fromIndex, p + t, tail[t]);
         }
-        const base = cols[mv.destIndex].length;
-        for (let t = 0; t < mv.count; t++) {
-          cols[mv.destIndex].push(tail[t]);
-          xorCol(mv.destIndex, base + t, tail[t]);
+        const base = cols[destIndex].length;
+        for (let t = 0; t < count; t++) {
+          cols[destIndex].push(tail[t]);
+          xorCol(destIndex, base + t, tail[t]);
         }
       }
     }
   }
 
   function doUnapply(mv) {
-    const cardId = mv.cardId;
-    if (mv.destZone === "home") {
+    const cardId = mvCardId(mv);
+    const destZone = mvDestZone(mv);
+    const fromZone = mvFromZone(mv);
+    const fromIndex = mvFromIndex(mv);
+    const destIndex = mvDestIndex(mv);
+    if (destZone === ZONE_HOME) {
       const suit = suitOf(cardId);
       const rank = rankOf(cardId);
       xorFound(suit, found[suit]);
       found[suit] = rank - 1;
       xorFound(suit, rank - 1);
       totalHome--;
-      if (mv.fromZone === "free") {
-        free[mv.fromIndex] = cardId;
+      if (fromZone === ZONE_FREE) {
+        free[fromIndex] = cardId;
         xorFree(cardId);
       } else {
-        cols[mv.fromIndex].push(cardId);
-        xorCol(mv.fromIndex, cols[mv.fromIndex].length - 1, cardId);
+        cols[fromIndex].push(cardId);
+        xorCol(fromIndex, cols[fromIndex].length - 1, cardId);
       }
-    } else if (mv.destZone === "free") {
-      free[mv.destIndex] = -1;
+    } else if (destZone === ZONE_FREE) {
+      free[destIndex] = -1;
       xorFree(cardId);
-      cols[mv.fromIndex].push(cardId);
-      xorCol(mv.fromIndex, cols[mv.fromIndex].length - 1, cardId);
+      cols[fromIndex].push(cardId);
+      xorCol(fromIndex, cols[fromIndex].length - 1, cardId);
     } else {
-      if (mv.fromZone === "free") {
-        cols[mv.destIndex].pop();
-        xorCol(mv.destIndex, cols[mv.destIndex].length, cardId);
-        free[mv.fromIndex] = cardId;
+      if (fromZone === ZONE_FREE) {
+        cols[destIndex].pop();
+        xorCol(destIndex, cols[destIndex].length, cardId);
+        free[fromIndex] = cardId;
         xorFree(cardId);
       } else {
-        const base = cols[mv.destIndex].length - mv.count;
-        const tail = cols[mv.destIndex].splice(base);
-        for (let t = 0; t < mv.count; t++) {
-          xorCol(mv.destIndex, base + t, tail[t]);
+        const base = cols[destIndex].length - mvCount(mv);
+        const tail = cols[destIndex].splice(base);
+        const count = mvCount(mv);
+        for (let t = 0; t < count; t++) {
+          xorCol(destIndex, base + t, tail[t]);
         }
-        const p = cols[mv.fromIndex].length;
-        for (let t = 0; t < mv.count; t++) {
-          cols[mv.fromIndex].push(tail[t]);
-          xorCol(mv.fromIndex, p + t, tail[t]);
+        const p = cols[fromIndex].length;
+        for (let t = 0; t < count; t++) {
+          cols[fromIndex].push(tail[t]);
+          xorCol(fromIndex, p + t, tail[t]);
         }
       }
     }
@@ -440,74 +564,72 @@ export function solve(board, options = {}) {
 
   /* ---------------- 手の生成 ---------------- */
 
-  function freeEmptyCount() {
-    let n = 0;
-    for (let f = 0; f < NUM_FREE; f++) {
-      if (free[f] === -1) {
-        n++;
-      }
-    }
-    return n;
-  }
-
-  function maxMovableTo(dest) {
-    let emptyCasc = 0;
-    for (let i = 0; i < NUM_CASCADES; i++) {
-      if (cols[i].length === 0) {
-        emptyCasc++;
-      }
-    }
-    if (cols[dest].length === 0) {
-      emptyCasc -= 1; // 移動先自身は数えない
-    }
-    return (freeEmptyCount() + 1) * (1 << emptyCasc);
-  }
+  // 移動先ごとの移動可能枚数上限 (generateMoves の冒頭で再計算する)。
+  // 手生成中は盤面が不変なので、canPlace 内で毎回空きフリーセル数と空列数を
+  // 走査し直さずに済む (フェーズB)。上限の最大値は (4+1) * 2^7 = 640 で
+  // Int16Array に収まる。
+  const maxMoveByDest = new Int16Array(NUM_CASCADES);
 
   /** カード群(先頭=最下位カード)を列 dest に置けるか。count は枚数 */
   function canPlace(bottomCard, count, dest) {
     const pile = cols[dest];
     if (pile.length === 0) {
-      return count <= maxMovableTo(dest);
+      return count <= maxMoveByDest[dest];
     }
     const top = pile[pile.length - 1];
     if (!(rankOf(top) === rankOf(bottomCard) + 1 && isRed(top) !== isRed(bottomCard))) {
       return false;
     }
-    return count <= maxMovableTo(dest);
+    return count <= maxMoveByDest[dest];
   }
 
   function moveScore(mv) {
-    if (mv.destZone === "home") {
-      return 12000 + rankOf(mv.cardId) * 500; // 実験3: ランクが高いホーム移動を優先する
+    if (track) {
+      profileCounters.moveScore++;
     }
-    if (mv.destZone === "cascade") {
-      let s = mv.count * 10000;
-      if (cols[mv.destIndex].length > 0) {
+    const destZone = mvDestZone(mv);
+    const cardId = mvCardId(mv);
+    const fromZone = mvFromZone(mv);
+    const fromIndex = mvFromIndex(mv);
+    const destIndex = mvDestIndex(mv);
+    const count = mvCount(mv);
+    if (destZone === ZONE_HOME) {
+      return 12000 + rankOf(cardId) * 500; // 実験3: ランクが高いホーム移動を優先する
+    }
+    if (destZone === ZONE_CASCADE) {
+      let s = count * 10000;
+      if (cols[destIndex].length > 0) {
         s += 5000; // 空き列より既存列への積み重ねを優先
       }
-      if (mv.fromZone === "cascade") {
-        const srcLen = cols[mv.fromIndex].length;
-        if (mv.count === srcLen) {
+      if (fromZone === ZONE_CASCADE) {
+        const srcLen = cols[fromIndex].length;
+        if (count === srcLen) {
           s += 20000; // 移動元が空になる(空き列の価値が高い)
         } else {
-          const revealed = cols[mv.fromIndex][srcLen - mv.count - 1];
-          if (found[suitOf(revealed)] === rankOf(revealed) - 1) {
+          const revealed = cols[fromIndex][srcLen - count - 1];
+          const r = rankOf(revealed);
+          if (found[suitOf(revealed)] === r - 1) {
             s += 15000; // 露出したカードが自動ホーム対象になる
+          } else if (r <= 3) {
+            s += 6000; // 低ランクの露出は将来のホーム送りに有効 (フェーズC)
           }
         }
       }
       return s;
     }
-    if (mv.destZone === "free") {
+    if (destZone === ZONE_FREE) {
       let s = 2000;
-      if (mv.fromZone === "cascade") {
-        const srcLen = cols[mv.fromIndex].length;
+      if (fromZone === ZONE_CASCADE) {
+        const srcLen = cols[fromIndex].length;
         if (srcLen === 1) {
           s += 20000; // 移動元の列が空になる
         } else {
-          const revealed = cols[mv.fromIndex][srcLen - 2];
-          if (found[suitOf(revealed)] === rankOf(revealed) - 1) {
+          const revealed = cols[fromIndex][srcLen - 2];
+          const r = rankOf(revealed);
+          if (found[suitOf(revealed)] === r - 1) {
             s += 15000; // 露出したカードが自動ホーム対象になる
+          } else if (r <= 3) {
+            s += 6000; // 低ランクの露出は将来のホーム送りに有効 (フェーズC)
           }
         }
       }
@@ -522,17 +644,20 @@ export function solve(board, options = {}) {
       return false;
     }
     return (
-      mv.fromZone === prevBranch.destZone &&
-      mv.fromIndex === prevBranch.destIndex &&
-      mv.destZone === prevBranch.fromZone &&
-      mv.destIndex === prevBranch.fromIndex &&
-      mv.cardId === prevBranch.cardId &&
-      mv.count === prevBranch.count
+      mvFromZone(mv) === mvDestZone(prevBranch) &&
+      mvFromIndex(mv) === mvDestIndex(prevBranch) &&
+      mvDestZone(mv) === mvFromZone(prevBranch) &&
+      mvDestIndex(mv) === mvFromIndex(prevBranch) &&
+      mvCardId(mv) === mvCardId(prevBranch) &&
+      mvCount(mv) === mvCount(prevBranch)
     );
   }
 
   /** ホームへ送れるカードを 1 枚探す(あれば move、無ければ null) */
   function findHomeMove() {
+    if (track) {
+      profileCounters.findHomeMove++;
+    }
     for (let f = 0; f < NUM_FREE; f++) {
       const c = free[f];
       if (
@@ -540,7 +665,7 @@ export function solve(board, options = {}) {
         && found[suitOf(c)] === rankOf(c) - 1
         && (!safeFoundationMoves || isSafeFoundationMove(c, found))
       ) {
-        return { cardId: c, fromZone: "free", fromIndex: f, destZone: "home", destIndex: suitOf(c), count: 1 };
+        return packMove(c, ZONE_FREE, f, ZONE_HOME, suitOf(c), 1);
       }
     }
     for (let i = 0; i < NUM_CASCADES; i++) {
@@ -553,7 +678,7 @@ export function solve(board, options = {}) {
         found[suitOf(c)] === rankOf(c) - 1
         && (!safeFoundationMoves || isSafeFoundationMove(c, found))
       ) {
-        return { cardId: c, fromZone: "cascade", fromIndex: i, destZone: "home", destIndex: suitOf(c), count: 1 };
+        return packMove(c, ZONE_CASCADE, i, ZONE_HOME, suitOf(c), 1);
       }
     }
     return null;
@@ -561,40 +686,68 @@ export function solve(board, options = {}) {
 
   /** 分岐手を列挙する(ホーム手は含まない。自動ホームで消化済み) */
   function generateMoves() {
+    if (track) {
+      profileCounters.generateMoves++;
+    }
+    // 手は 32bit 整数にパックして保持し、スコアは並列配列で管理する
+    // (move オブジェクト生成と sort 比較器コールバックを削減、フェーズB)。
     const moves = [];
+    const scores = [];
+
+    // 移動可能枚数の上限を移動先ごとに1回だけ計算する (canPlace が再利用)。
+    // 空きフリーセル数と空列数は手生成中は不変なので、候補ごとに走査し直さない。
+    let freeEmpty = 0;
+    for (let f = 0; f < NUM_FREE; f++) {
+      if (free[f] === -1) {
+        freeEmpty++;
+      }
+    }
+    let emptyCascTotal = 0;
+    for (let i = 0; i < NUM_CASCADES; i++) {
+      if (cols[i].length === 0) {
+        emptyCascTotal++;
+      }
+    }
+    for (let j = 0; j < NUM_CASCADES; j++) {
+      let e = emptyCascTotal;
+      if (cols[j].length === 0) {
+        e -= 1; // 移動先自身は数えない
+      }
+      maxMoveByDest[j] = (freeEmpty + 1) * (1 << e);
+    }
 
     // 安全でないホーム移動は、解に必要な場合があるため探索分岐として残す。
     // findHomeMove() が安全な移動を先に全て自動適用しているため、ここで列挙
     // されるホーム移動は常に「合法だが安全条件を満たさない」ものだけである。
     if (safeFoundationMoves) {
       for (let f = 0; f < NUM_FREE; f++) {
-      const cardId = free[f];
-      if (
-        cardId !== -1
-        && found[suitOf(cardId)] === rankOf(cardId) - 1
-        && !isSafeFoundationMove(cardId, found)
-      ) {
-        const mv = { cardId, fromZone: "free", fromIndex: f, destZone: "home", destIndex: suitOf(cardId), count: 1 };
-        mv.score = moveScore(mv);
-        moves.push(mv);
-        stats.unsafeHomeGenerated++;
-      }
+        const cardId = free[f];
+        if (
+          cardId !== -1
+          && found[suitOf(cardId)] === rankOf(cardId) - 1
+          && !isSafeFoundationMove(cardId, found)
+        ) {
+          const mv = packMove(cardId, ZONE_FREE, f, ZONE_HOME, suitOf(cardId), 1);
+          moves.push(mv);
+          scores.push(moveScore(mv));
+          stats.unsafeHomeGenerated++;
+        }
       }
       for (let i = 0; i < NUM_CASCADES; i++) {
-      const len = cols[i].length;
-      if (len === 0) {
-        continue;
-      }
-      const cardId = cols[i][len - 1];
-      if (
-        found[suitOf(cardId)] === rankOf(cardId) - 1
-        && !isSafeFoundationMove(cardId, found)
-      ) {
-        const mv = { cardId, fromZone: "cascade", fromIndex: i, destZone: "home", destIndex: suitOf(cardId), count: 1 };
-        mv.score = moveScore(mv);
-        moves.push(mv);
-        stats.unsafeHomeGenerated++;
-      }
+        const len = cols[i].length;
+        if (len === 0) {
+          continue;
+        }
+        const cardId = cols[i][len - 1];
+        if (
+          found[suitOf(cardId)] === rankOf(cardId) - 1
+          && !isSafeFoundationMove(cardId, found)
+        ) {
+          const mv = packMove(cardId, ZONE_CASCADE, i, ZONE_HOME, suitOf(cardId), 1);
+          moves.push(mv);
+          scores.push(moveScore(mv));
+          stats.unsafeHomeGenerated++;
+        }
       }
     }
 
@@ -604,6 +757,17 @@ export function solve(board, options = {}) {
     for (let j = 0; j < NUM_CASCADES; j++) {
       if (cols[j].length === 0) {
         firstEmptyCol = j;
+        break;
+      }
+    }
+
+    // フリーセルの移動先も先頭の空きスロットに正規化する (フェーズC)。
+    // フリーセルはスロット番号を状態ハッシュが区別しないため、どの空きスロットへ
+    // 動かしても同一状態になり、複数の空きスロットへ同じ手を生成する必要はない。
+    let firstEmptyFree = -1;
+    for (let f = 0; f < NUM_FREE; f++) {
+      if (free[f] === -1) {
+        firstEmptyFree = f;
         break;
       }
     }
@@ -628,36 +792,36 @@ export function solve(board, options = {}) {
           if (cols[j].length === 0 && j !== firstEmptyCol) {
             continue; // 空列の移動先は先頭の空列に正規化
           }
+          if (count === len && cols[j].length === 0) {
+            continue; // 列全体を空列へ移すのは列ラベルの入れ替え(自己対称遷移、フェーズC)
+          }
           if (!canPlace(bottom, count, j)) {
             continue;
           }
-          const mv = { cardId: bottom, fromZone: "cascade", fromIndex: i, destZone: "cascade", destIndex: j, count };
+          const mv = packMove(bottom, ZONE_CASCADE, i, ZONE_CASCADE, j, count);
           if (!disableReversePruning && isReverse(mv)) {
             continue;
           }
-          mv.score = moveScore(mv);
           moves.push(mv);
+          scores.push(moveScore(mv));
         }
       }
     }
 
-    // 列 → フリーセル
-    for (let i = 0; i < NUM_CASCADES; i++) {
-      const len = cols[i].length;
-      if (len === 0) {
-        continue;
-      }
-      const cardId = cols[i][len - 1];
-      for (let f = 0; f < NUM_FREE; f++) {
-        if (free[f] !== -1) {
+    // 列 → フリーセル (移動先は先頭の空きスロットに正規化、フェーズC)
+    if (firstEmptyFree !== -1) {
+      for (let i = 0; i < NUM_CASCADES; i++) {
+        const len = cols[i].length;
+        if (len === 0) {
           continue;
         }
-        const mv = { cardId, fromZone: "cascade", fromIndex: i, destZone: "free", destIndex: f, count: 1 };
+        const cardId = cols[i][len - 1];
+        const mv = packMove(cardId, ZONE_CASCADE, i, ZONE_FREE, firstEmptyFree, 1);
         if (!disableReversePruning && isReverse(mv)) {
           continue;
         }
-        mv.score = moveScore(mv);
         moves.push(mv);
+        scores.push(moveScore(mv));
       }
     }
 
@@ -674,16 +838,32 @@ export function solve(board, options = {}) {
         if (!canPlace(cardId, 1, j)) {
           continue;
         }
-        const mv = { cardId, fromZone: "free", fromIndex: f, destZone: "cascade", destIndex: j, count: 1 };
+        const mv = packMove(cardId, ZONE_FREE, f, ZONE_CASCADE, j, 1);
         if (!disableReversePruning && isReverse(mv)) {
           continue;
         }
-        mv.score = moveScore(mv);
         moves.push(mv);
+        scores.push(moveScore(mv));
       }
     }
 
-    moves.sort((a, b) => b.score - a.score);
+    // スコア降順の安定挿入ソート (moves と scores を連動して並べ替える)。
+    // 手数は高々数十なので、Array.prototype.sort の比較器呼び出しより安価。
+    for (let i = 1; i < moves.length; i++) {
+      const m = moves[i];
+      const s = scores[i];
+      let j = i - 1;
+      while (j >= 0 && scores[j] < s) {
+        moves[j + 1] = moves[j];
+        scores[j + 1] = scores[j];
+        j--;
+      }
+      moves[j + 1] = m;
+      scores[j + 1] = s;
+    }
+    if (track) {
+      profileCounters.movesGenerated += moves.length;
+    }
     return moves;
   }
 
@@ -700,7 +880,11 @@ export function solve(board, options = {}) {
     return totalHome === totalCards;
   }
 
-  /** 探索の閾値と手順を決める評価。最短解や完全性は保証しない。 */
+  /**
+   * 探索の閾値と手順を決める評価。最短解や完全性は保証しない。
+   * h = 未ホーム数 + Σ ceil(tailStart × 1.1)。tailStart の重み1.1倍はフェーズCの
+   * A/B 比較で採用 (難関ゲームの反復削減と通常ゲームの効率維持を両立)。
+   */
   function orderingHeuristic() {
     let h = totalCards - totalHome;
     for (const pile of cols) {
@@ -714,12 +898,15 @@ export function solve(board, options = {}) {
           break;
         }
       }
-      h += tailStart;
+      h += Math.ceil(tailStart * 1.1);
     }
     return h;
   }
 
   function makeMove(mv) {
+    if (track) {
+      profileCounters.makeMove++;
+    }
     const savedPrev = prevBranch;
     const applied = [];
     doApply(mv);
@@ -773,10 +960,16 @@ export function solve(board, options = {}) {
     }
 
     const [stateH1, stateH2] = getStateHash();
+    if (track) {
+      profileCounters.ttLookup++;
+    }
     const stored = tt.lookup(stateH1, stateH2);
     if (stored !== -1 && stored <= g) {
       stats.transpositionHits++;
       return INF; // 同等か浅い経路で既知の状態は刈る
+    }
+    if (track) {
+      profileCounters.ttStore++;
     }
     tt.store(stateH1, stateH2, g);
 
@@ -788,7 +981,7 @@ export function solve(board, options = {}) {
 
     let min = INF;
     for (const mv of moves) {
-      const unsafeHome = mv.destZone === "home" && !isSafeFoundationMove(mv.cardId, found);
+      const unsafeHome = mvDestZone(mv) === ZONE_HOME && !isSafeFoundationMove(mvCardId(mv), found);
       if (unsafeHome) {
         stats.unsafeHomeTried++;
       }
@@ -816,10 +1009,14 @@ export function solve(board, options = {}) {
   const finish = (solved, status) => ({
     solved,
     status,
-    moves: solutionMoves !== null ? solutionMoves.slice() : [],
+    moves: solutionMoves !== null ? solutionMoves.map(unpackMove) : [],
     nodes,
     timeMs: Math.round(performance.now() - startedAt),
-    stats: { ...stats, transposition: tt.stats() },
+    stats: {
+      ...stats,
+      transposition: tt.stats(),
+      ...(track ? { profile: { ...profileCounters } } : {}),
+    },
   });
 
   try {
@@ -870,6 +1067,10 @@ export function solveWithFallback(board, options = {}) {
   }
   const fastOptions = { ...SOLVER_PROFILES.fast, ...(options.fastOptions ?? {}) };
   const safeOptions = { ...SOLVER_PROFILES.safe, ...(options.safeOptions ?? {}) };
+  if (options.trackCounters) {
+    fastOptions.trackCounters = true;
+    safeOptions.trackCounters = true;
+  }
   const attempts = { fast: null, safe: null };
 
   const run = (mode, solverOptions) => {

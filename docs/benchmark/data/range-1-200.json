@@ -1,0 +1,7824 @@
+{
+  "kind": "range",
+  "start": 1,
+  "end": 200,
+  "config": {
+    "strategy": "fast-safe",
+    "fastMaxNodes": 2000000,
+    "fastMaxTimeMs": 30000,
+    "safeMaxNodes": 10000000,
+    "safeMaxTimeMs": 180000,
+    "unsafeHome": false
+  },
+  "measuredAt": "2026-08-18T15:39:11.878Z",
+  "summary": {
+    "solved": 200,
+    "nodeLimit": 0,
+    "timeLimit": 0,
+    "unsolvable": 0,
+    "totalTimeMs": 4188,
+    "medianTimeMs": 14
+  },
+  "results": [
+    {
+      "game": 1,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 4368,
+      "timeMs": 32,
+      "totalNodes": 4368,
+      "totalTimeMs": 32,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 4368,
+          "timeMs": 32
+        },
+        "safe": null
+      },
+      "moves": 99,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 174,
+        "deadEndNodes": 58,
+        "maxSearchDepth": 99,
+        "transposition": {
+          "used": 549,
+          "capacity": 4194304,
+          "loadFactor": 0.0001308917999267578,
+          "probes": 1306,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 2,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1721,
+      "timeMs": 23,
+      "totalNodes": 1721,
+      "totalTimeMs": 23,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1721,
+          "timeMs": 23
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 40,
+        "deadEndNodes": 44,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 321,
+          "capacity": 4194304,
+          "loadFactor": 0.00007653236389160156,
+          "probes": 694,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 3,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 334,
+      "timeMs": 13,
+      "totalNodes": 334,
+      "totalTimeMs": 13,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 334,
+          "timeMs": 13
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 4,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 61,
+          "capacity": 4194304,
+          "loadFactor": 0.000014543533325195312,
+          "probes": 126,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 4,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 10543,
+      "timeMs": 30,
+      "totalNodes": 10543,
+      "totalTimeMs": 30,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 10543,
+          "timeMs": 30
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 530,
+        "deadEndNodes": 132,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 1212,
+          "capacity": 4194304,
+          "loadFactor": 0.00028896331787109375,
+          "probes": 3124,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 5,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 7640,
+      "timeMs": 23,
+      "totalNodes": 7640,
+      "totalTimeMs": 23,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 7640,
+          "timeMs": 23
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 287,
+        "deadEndNodes": 2,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 627,
+          "capacity": 4194304,
+          "loadFactor": 0.0001494884490966797,
+          "probes": 1619,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 6,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1977,
+      "timeMs": 15,
+      "totalNodes": 1977,
+      "totalTimeMs": 15,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1977,
+          "timeMs": 15
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 70,
+        "deadEndNodes": 3,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 206,
+          "capacity": 4194304,
+          "loadFactor": 0.000049114227294921875,
+          "probes": 488,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 7,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 7716,
+      "timeMs": 28,
+      "totalNodes": 7716,
+      "totalTimeMs": 28,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 7716,
+          "timeMs": 28
+        },
+        "safe": null
+      },
+      "moves": 100,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 216,
+        "deadEndNodes": 16,
+        "maxSearchDepth": 100,
+        "transposition": {
+          "used": 586,
+          "capacity": 4194304,
+          "loadFactor": 0.00013971328735351562,
+          "probes": 1444,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 8,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 440,
+      "timeMs": 31,
+      "totalNodes": 440,
+      "totalTimeMs": 31,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 440,
+          "timeMs": 31
+        },
+        "safe": null
+      },
+      "moves": 94,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 5,
+        "deadEndNodes": 1,
+        "maxSearchDepth": 94,
+        "transposition": {
+          "used": 71,
+          "capacity": 4194304,
+          "loadFactor": 0.000016927719116210938,
+          "probes": 147,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 9,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 5663,
+      "timeMs": 21,
+      "totalNodes": 5663,
+      "totalTimeMs": 21,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 5663,
+          "timeMs": 21
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 444,
+        "deadEndNodes": 74,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 974,
+          "capacity": 4194304,
+          "loadFactor": 0.00023221969604492188,
+          "probes": 2424,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 10,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 15129,
+      "timeMs": 21,
+      "totalNodes": 15129,
+      "totalTimeMs": 21,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 15129,
+          "timeMs": 21
+        },
+        "safe": null
+      },
+      "moves": 97,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 2775,
+        "deadEndNodes": 728,
+        "maxSearchDepth": 97,
+        "transposition": {
+          "used": 3490,
+          "capacity": 4194304,
+          "loadFactor": 0.0008320808410644531,
+          "probes": 11435,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 11,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 14581,
+      "timeMs": 26,
+      "totalNodes": 14581,
+      "totalTimeMs": 26,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 14581,
+          "timeMs": 26
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 609,
+        "deadEndNodes": 43,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 1219,
+          "capacity": 4194304,
+          "loadFactor": 0.0002906322479248047,
+          "probes": 3201,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 12,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 2306,
+      "timeMs": 9,
+      "totalNodes": 2306,
+      "totalTimeMs": 9,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 2306,
+          "timeMs": 9
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 182,
+        "deadEndNodes": 21,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 351,
+          "capacity": 4194304,
+          "loadFactor": 0.00008368492126464844,
+          "probes": 938,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 13,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 6805,
+      "timeMs": 16,
+      "totalNodes": 6805,
+      "totalTimeMs": 16,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 6805,
+          "timeMs": 16
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 166,
+        "deadEndNodes": 2,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 411,
+          "capacity": 4194304,
+          "loadFactor": 0.00009799003601074219,
+          "probes": 1052,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 14,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 2006,
+      "timeMs": 8,
+      "totalNodes": 2006,
+      "totalTimeMs": 8,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 2006,
+          "timeMs": 8
+        },
+        "safe": null
+      },
+      "moves": 92,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 146,
+        "deadEndNodes": 49,
+        "maxSearchDepth": 92,
+        "transposition": {
+          "used": 349,
+          "capacity": 4194304,
+          "loadFactor": 0.00008320808410644531,
+          "probes": 886,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 15,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 7050,
+      "timeMs": 19,
+      "totalNodes": 7050,
+      "totalTimeMs": 19,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 7050,
+          "timeMs": 19
+        },
+        "safe": null
+      },
+      "moves": 93,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 264,
+        "deadEndNodes": 2,
+        "maxSearchDepth": 93,
+        "transposition": {
+          "used": 474,
+          "capacity": 4194304,
+          "loadFactor": 0.00011301040649414062,
+          "probes": 1214,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 16,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1661,
+      "timeMs": 7,
+      "totalNodes": 1661,
+      "totalTimeMs": 7,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1661,
+          "timeMs": 7
+        },
+        "safe": null
+      },
+      "moves": 97,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 91,
+        "deadEndNodes": 30,
+        "maxSearchDepth": 97,
+        "transposition": {
+          "used": 301,
+          "capacity": 4194304,
+          "loadFactor": 0.00007176399230957031,
+          "probes": 715,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 17,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1018,
+      "timeMs": 9,
+      "totalNodes": 1018,
+      "totalTimeMs": 9,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1018,
+          "timeMs": 9
+        },
+        "safe": null
+      },
+      "moves": 95,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 43,
+        "deadEndNodes": 42,
+        "maxSearchDepth": 95,
+        "transposition": {
+          "used": 193,
+          "capacity": 4194304,
+          "loadFactor": 0.00004601478576660156,
+          "probes": 455,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 18,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 2825,
+      "timeMs": 8,
+      "totalNodes": 2825,
+      "totalTimeMs": 8,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 2825,
+          "timeMs": 8
+        },
+        "safe": null
+      },
+      "moves": 99,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 69,
+        "deadEndNodes": 7,
+        "maxSearchDepth": 99,
+        "transposition": {
+          "used": 296,
+          "capacity": 4194304,
+          "loadFactor": 0.0000705718994140625,
+          "probes": 681,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 19,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1635,
+      "timeMs": 16,
+      "totalNodes": 1635,
+      "totalTimeMs": 16,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1635,
+          "timeMs": 16
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 40,
+        "deadEndNodes": 4,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 125,
+          "capacity": 4194304,
+          "loadFactor": 0.000029802322387695312,
+          "probes": 290,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 20,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 268,
+      "timeMs": 6,
+      "totalNodes": 268,
+      "totalTimeMs": 6,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 268,
+          "timeMs": 6
+        },
+        "safe": null
+      },
+      "moves": 92,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 4,
+        "deadEndNodes": 9,
+        "maxSearchDepth": 92,
+        "transposition": {
+          "used": 72,
+          "capacity": 4194304,
+          "loadFactor": 0.0000171661376953125,
+          "probes": 150,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 21,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 6292,
+      "timeMs": 13,
+      "totalNodes": 6292,
+      "totalTimeMs": 13,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 6292,
+          "timeMs": 13
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 630,
+        "deadEndNodes": 96,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 1008,
+          "capacity": 4194304,
+          "loadFactor": 0.000240325927734375,
+          "probes": 2968,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 22,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 2468,
+      "timeMs": 8,
+      "totalNodes": 2468,
+      "totalTimeMs": 8,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 2468,
+          "timeMs": 8
+        },
+        "safe": null
+      },
+      "moves": 99,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 43,
+        "deadEndNodes": 1,
+        "maxSearchDepth": 99,
+        "transposition": {
+          "used": 143,
+          "capacity": 4194304,
+          "loadFactor": 0.00003409385681152344,
+          "probes": 333,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 23,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 788,
+      "timeMs": 14,
+      "totalNodes": 788,
+      "totalTimeMs": 14,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 788,
+          "timeMs": 14
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 199,
+        "deadEndNodes": 18,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 171,
+          "capacity": 4194304,
+          "loadFactor": 0.00004076957702636719,
+          "probes": 759,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 24,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 2900,
+      "timeMs": 9,
+      "totalNodes": 2900,
+      "totalTimeMs": 9,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 2900,
+          "timeMs": 9
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 212,
+        "deadEndNodes": 42,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 584,
+          "capacity": 4194304,
+          "loadFactor": 0.0001392364501953125,
+          "probes": 1404,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 25,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 10703,
+      "timeMs": 15,
+      "totalNodes": 10703,
+      "totalTimeMs": 15,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 10703,
+          "timeMs": 15
+        },
+        "safe": null
+      },
+      "moves": 99,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 523,
+        "deadEndNodes": 206,
+        "maxSearchDepth": 99,
+        "transposition": {
+          "used": 1257,
+          "capacity": 4194304,
+          "loadFactor": 0.00029969215393066406,
+          "probes": 3185,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 26,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 13748,
+      "timeMs": 15,
+      "totalNodes": 13748,
+      "totalTimeMs": 15,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 13748,
+          "timeMs": 15
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 1191,
+        "deadEndNodes": 97,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 1837,
+          "capacity": 4194304,
+          "loadFactor": 0.0004379749298095703,
+          "probes": 4959,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 27,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 2235,
+      "timeMs": 14,
+      "totalNodes": 2235,
+      "totalTimeMs": 14,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 2235,
+          "timeMs": 14
+        },
+        "safe": null
+      },
+      "moves": 97,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 22,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 97,
+        "transposition": {
+          "used": 135,
+          "capacity": 4194304,
+          "loadFactor": 0.00003218650817871094,
+          "probes": 296,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 28,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 331,
+      "timeMs": 7,
+      "totalNodes": 331,
+      "totalTimeMs": 7,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 331,
+          "timeMs": 7
+        },
+        "safe": null
+      },
+      "moves": 95,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 4,
+        "deadEndNodes": 3,
+        "maxSearchDepth": 95,
+        "transposition": {
+          "used": 65,
+          "capacity": 4194304,
+          "loadFactor": 0.000015497207641601562,
+          "probes": 136,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 29,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 672,
+      "timeMs": 8,
+      "totalNodes": 672,
+      "totalTimeMs": 8,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 672,
+          "timeMs": 8
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 5,
+        "deadEndNodes": 1,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 92,
+          "capacity": 4194304,
+          "loadFactor": 0.00002193450927734375,
+          "probes": 191,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 30,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 56848,
+      "timeMs": 64,
+      "totalNodes": 56848,
+      "totalTimeMs": 64,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 56848,
+          "timeMs": 64
+        },
+        "safe": null
+      },
+      "moves": 95,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 3449,
+        "deadEndNodes": 160,
+        "maxSearchDepth": 95,
+        "transposition": {
+          "used": 4285,
+          "capacity": 4194304,
+          "loadFactor": 0.0010216236114501953,
+          "probes": 12705,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 31,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 57,
+      "timeMs": 7,
+      "totalNodes": 57,
+      "totalTimeMs": 7,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 57,
+          "timeMs": 7
+        },
+        "safe": null
+      },
+      "moves": 95,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 1,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 95,
+        "transposition": {
+          "used": 43,
+          "capacity": 4194304,
+          "loadFactor": 0.000010251998901367188,
+          "probes": 87,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 32,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 14108,
+      "timeMs": 28,
+      "totalNodes": 14108,
+      "totalTimeMs": 28,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 14108,
+          "timeMs": 28
+        },
+        "safe": null
+      },
+      "moves": 97,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 1768,
+        "deadEndNodes": 107,
+        "maxSearchDepth": 97,
+        "transposition": {
+          "used": 2162,
+          "capacity": 4194304,
+          "loadFactor": 0.0005154609680175781,
+          "probes": 6828,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 33,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 50,
+      "timeMs": 9,
+      "totalNodes": 50,
+      "totalTimeMs": 9,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 50,
+          "timeMs": 9
+        },
+        "safe": null
+      },
+      "moves": 95,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 1,
+        "deadEndNodes": 3,
+        "maxSearchDepth": 95,
+        "transposition": {
+          "used": 46,
+          "capacity": 4194304,
+          "loadFactor": 0.000010967254638671875,
+          "probes": 93,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 34,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 709,
+      "timeMs": 8,
+      "totalNodes": 709,
+      "totalTimeMs": 8,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 709,
+          "timeMs": 8
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 29,
+        "deadEndNodes": 4,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 105,
+          "capacity": 4194304,
+          "loadFactor": 0.000025033950805664062,
+          "probes": 251,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 35,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 9230,
+      "timeMs": 21,
+      "totalNodes": 9230,
+      "totalTimeMs": 21,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 9230,
+          "timeMs": 21
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 813,
+        "deadEndNodes": 74,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 1418,
+          "capacity": 4194304,
+          "loadFactor": 0.0003380775451660156,
+          "probes": 3877,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 36,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 38741,
+      "timeMs": 47,
+      "totalNodes": 38741,
+      "totalTimeMs": 47,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 38741,
+          "timeMs": 47
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 3868,
+        "deadEndNodes": 1048,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 6717,
+          "capacity": 4194304,
+          "loadFactor": 0.0016014575958251953,
+          "probes": 19333,
+          "maxProbe": 3,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 37,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1272,
+      "timeMs": 7,
+      "totalNodes": 1272,
+      "totalTimeMs": 7,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1272,
+          "timeMs": 7
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 31,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 134,
+          "capacity": 4194304,
+          "loadFactor": 0.000031948089599609375,
+          "probes": 299,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 38,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1672,
+      "timeMs": 9,
+      "totalNodes": 1672,
+      "totalTimeMs": 9,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1672,
+          "timeMs": 9
+        },
+        "safe": null
+      },
+      "moves": 97,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 23,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 97,
+        "transposition": {
+          "used": 112,
+          "capacity": 4194304,
+          "loadFactor": 0.000026702880859375,
+          "probes": 247,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 39,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 5550,
+      "timeMs": 15,
+      "totalNodes": 5550,
+      "totalTimeMs": 15,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 5550,
+          "timeMs": 15
+        },
+        "safe": null
+      },
+      "moves": 95,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 204,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 95,
+        "transposition": {
+          "used": 362,
+          "capacity": 4194304,
+          "loadFactor": 0.00008630752563476562,
+          "probes": 928,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 40,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 2137,
+      "timeMs": 17,
+      "totalNodes": 2137,
+      "totalTimeMs": 17,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 2137,
+          "timeMs": 17
+        },
+        "safe": null
+      },
+      "moves": 95,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 125,
+        "deadEndNodes": 49,
+        "maxSearchDepth": 95,
+        "transposition": {
+          "used": 413,
+          "capacity": 4194304,
+          "loadFactor": 0.00009846687316894531,
+          "probes": 1031,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 41,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 131309,
+      "timeMs": 123,
+      "totalNodes": 131309,
+      "totalTimeMs": 123,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 131309,
+          "timeMs": 123
+        },
+        "safe": null
+      },
+      "moves": 97,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 28348,
+        "deadEndNodes": 1815,
+        "maxSearchDepth": 97,
+        "transposition": {
+          "used": 19855,
+          "capacity": 4194304,
+          "loadFactor": 0.0047338008880615234,
+          "probes": 87969,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 42,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 5973,
+      "timeMs": 31,
+      "totalNodes": 5973,
+      "totalTimeMs": 31,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 5973,
+          "timeMs": 31
+        },
+        "safe": null
+      },
+      "moves": 95,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 431,
+        "deadEndNodes": 174,
+        "maxSearchDepth": 95,
+        "transposition": {
+          "used": 1019,
+          "capacity": 4194304,
+          "loadFactor": 0.0002429485321044922,
+          "probes": 2687,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 43,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 337,
+      "timeMs": 15,
+      "totalNodes": 337,
+      "totalTimeMs": 15,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 337,
+          "timeMs": 15
+        },
+        "safe": null
+      },
+      "moves": 93,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 1,
+        "deadEndNodes": 3,
+        "maxSearchDepth": 93,
+        "transposition": {
+          "used": 80,
+          "capacity": 4194304,
+          "loadFactor": 0.000019073486328125,
+          "probes": 161,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 44,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 929,
+      "timeMs": 7,
+      "totalNodes": 929,
+      "totalTimeMs": 7,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 929,
+          "timeMs": 7
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 44,
+        "deadEndNodes": 5,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 163,
+          "capacity": 4194304,
+          "loadFactor": 0.00003886222839355469,
+          "probes": 370,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 45,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 538,
+      "timeMs": 13,
+      "totalNodes": 538,
+      "totalTimeMs": 13,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 538,
+          "timeMs": 13
+        },
+        "safe": null
+      },
+      "moves": 95,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 13,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 95,
+        "transposition": {
+          "used": 75,
+          "capacity": 4194304,
+          "loadFactor": 0.000017881393432617188,
+          "probes": 163,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 46,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 529,
+      "timeMs": 7,
+      "totalNodes": 529,
+      "totalTimeMs": 7,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 529,
+          "timeMs": 7
+        },
+        "safe": null
+      },
+      "moves": 94,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 7,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 94,
+        "transposition": {
+          "used": 65,
+          "capacity": 4194304,
+          "loadFactor": 0.000015497207641601562,
+          "probes": 139,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 47,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 8335,
+      "timeMs": 13,
+      "totalNodes": 8335,
+      "totalTimeMs": 13,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 8335,
+          "timeMs": 13
+        },
+        "safe": null
+      },
+      "moves": 94,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 173,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 94,
+        "transposition": {
+          "used": 449,
+          "capacity": 4194304,
+          "loadFactor": 0.00010704994201660156,
+          "probes": 1105,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 48,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1124,
+      "timeMs": 7,
+      "totalNodes": 1124,
+      "totalTimeMs": 7,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1124,
+          "timeMs": 7
+        },
+        "safe": null
+      },
+      "moves": 97,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 24,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 97,
+        "transposition": {
+          "used": 163,
+          "capacity": 4194304,
+          "loadFactor": 0.00003886222839355469,
+          "probes": 356,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 49,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1472,
+      "timeMs": 14,
+      "totalNodes": 1472,
+      "totalTimeMs": 14,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1472,
+          "timeMs": 14
+        },
+        "safe": null
+      },
+      "moves": 97,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 26,
+        "deadEndNodes": 1,
+        "maxSearchDepth": 97,
+        "transposition": {
+          "used": 135,
+          "capacity": 4194304,
+          "loadFactor": 0.00003218650817871094,
+          "probes": 300,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 50,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 95,
+      "timeMs": 6,
+      "totalNodes": 95,
+      "totalTimeMs": 6,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 95,
+          "timeMs": 6
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 0,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 47,
+          "capacity": 4194304,
+          "loadFactor": 0.000011205673217773438,
+          "probes": 94,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 51,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 2279,
+      "timeMs": 12,
+      "totalNodes": 2279,
+      "totalTimeMs": 12,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 2279,
+          "timeMs": 12
+        },
+        "safe": null
+      },
+      "moves": 100,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 138,
+        "deadEndNodes": 30,
+        "maxSearchDepth": 100,
+        "transposition": {
+          "used": 388,
+          "capacity": 4194304,
+          "loadFactor": 0.00009250640869140625,
+          "probes": 914,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 52,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1507,
+      "timeMs": 8,
+      "totalNodes": 1507,
+      "totalTimeMs": 8,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1507,
+          "timeMs": 8
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 29,
+        "deadEndNodes": 15,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 208,
+          "capacity": 4194304,
+          "loadFactor": 0.000049591064453125,
+          "probes": 451,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 53,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 7764,
+      "timeMs": 16,
+      "totalNodes": 7764,
+      "totalTimeMs": 16,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 7764,
+          "timeMs": 16
+        },
+        "safe": null
+      },
+      "moves": 94,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 330,
+        "deadEndNodes": 26,
+        "maxSearchDepth": 94,
+        "transposition": {
+          "used": 539,
+          "capacity": 4194304,
+          "loadFactor": 0.0001285076141357422,
+          "probes": 1472,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 54,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 26651,
+      "timeMs": 35,
+      "totalNodes": 26651,
+      "totalTimeMs": 35,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 26651,
+          "timeMs": 35
+        },
+        "safe": null
+      },
+      "moves": 97,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 2328,
+        "deadEndNodes": 156,
+        "maxSearchDepth": 97,
+        "transposition": {
+          "used": 3202,
+          "capacity": 4194304,
+          "loadFactor": 0.0007634162902832031,
+          "probes": 9562,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 55,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 814,
+      "timeMs": 13,
+      "totalNodes": 814,
+      "totalTimeMs": 13,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 814,
+          "timeMs": 13
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 21,
+        "deadEndNodes": 5,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 105,
+          "capacity": 4194304,
+          "loadFactor": 0.000025033950805664062,
+          "probes": 233,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 56,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 821,
+      "timeMs": 8,
+      "totalNodes": 821,
+      "totalTimeMs": 8,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 821,
+          "timeMs": 8
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 9,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 80,
+          "capacity": 4194304,
+          "loadFactor": 0.000019073486328125,
+          "probes": 169,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 57,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1621,
+      "timeMs": 8,
+      "totalNodes": 1621,
+      "totalTimeMs": 8,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1621,
+          "timeMs": 8
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 139,
+        "deadEndNodes": 42,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 424,
+          "capacity": 4194304,
+          "loadFactor": 0.0001010894775390625,
+          "probes": 1123,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 58,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 784,
+      "timeMs": 16,
+      "totalNodes": 784,
+      "totalTimeMs": 16,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 784,
+          "timeMs": 16
+        },
+        "safe": null
+      },
+      "moves": 90,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 13,
+        "deadEndNodes": 12,
+        "maxSearchDepth": 90,
+        "transposition": {
+          "used": 106,
+          "capacity": 4194304,
+          "loadFactor": 0.000025272369384765625,
+          "probes": 229,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 59,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1189,
+      "timeMs": 13,
+      "totalNodes": 1189,
+      "totalTimeMs": 13,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1189,
+          "timeMs": 13
+        },
+        "safe": null
+      },
+      "moves": 93,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 33,
+        "deadEndNodes": 1,
+        "maxSearchDepth": 93,
+        "transposition": {
+          "used": 115,
+          "capacity": 4194304,
+          "loadFactor": 0.000027418136596679688,
+          "probes": 271,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 60,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1905,
+      "timeMs": 7,
+      "totalNodes": 1905,
+      "totalTimeMs": 7,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1905,
+          "timeMs": 7
+        },
+        "safe": null
+      },
+      "moves": 93,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 135,
+        "deadEndNodes": 71,
+        "maxSearchDepth": 93,
+        "transposition": {
+          "used": 456,
+          "capacity": 4194304,
+          "loadFactor": 0.0001087188720703125,
+          "probes": 1067,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 61,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 2394,
+      "timeMs": 9,
+      "totalNodes": 2394,
+      "totalTimeMs": 9,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 2394,
+          "timeMs": 9
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 32,
+        "deadEndNodes": 21,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 220,
+          "capacity": 4194304,
+          "loadFactor": 0.00005245208740234375,
+          "probes": 472,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 62,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 32232,
+      "timeMs": 29,
+      "totalNodes": 32232,
+      "totalTimeMs": 29,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 32232,
+          "timeMs": 29
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 2112,
+        "deadEndNodes": 92,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 3260,
+          "capacity": 4194304,
+          "loadFactor": 0.0007772445678710938,
+          "probes": 9132,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 63,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 3400,
+      "timeMs": 20,
+      "totalNodes": 3400,
+      "totalTimeMs": 20,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 3400,
+          "timeMs": 20
+        },
+        "safe": null
+      },
+      "moves": 94,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 465,
+        "deadEndNodes": 216,
+        "maxSearchDepth": 94,
+        "transposition": {
+          "used": 1047,
+          "capacity": 4194304,
+          "loadFactor": 0.00024962425231933594,
+          "probes": 2863,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 64,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 4780,
+      "timeMs": 9,
+      "totalNodes": 4780,
+      "totalTimeMs": 9,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 4780,
+          "timeMs": 9
+        },
+        "safe": null
+      },
+      "moves": 93,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 168,
+        "deadEndNodes": 36,
+        "maxSearchDepth": 93,
+        "transposition": {
+          "used": 452,
+          "capacity": 4194304,
+          "loadFactor": 0.00010776519775390625,
+          "probes": 1116,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 65,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 2029,
+      "timeMs": 9,
+      "totalNodes": 2029,
+      "totalTimeMs": 9,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 2029,
+          "timeMs": 9
+        },
+        "safe": null
+      },
+      "moves": 93,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 275,
+        "deadEndNodes": 80,
+        "maxSearchDepth": 93,
+        "transposition": {
+          "used": 559,
+          "capacity": 4194304,
+          "loadFactor": 0.00013327598571777344,
+          "probes": 1409,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 66,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 9510,
+      "timeMs": 12,
+      "totalNodes": 9510,
+      "totalTimeMs": 12,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 9510,
+          "timeMs": 12
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 322,
+        "deadEndNodes": 5,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 907,
+          "capacity": 4194304,
+          "loadFactor": 0.0002162456512451172,
+          "probes": 2210,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 67,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 5214,
+      "timeMs": 16,
+      "totalNodes": 5214,
+      "totalTimeMs": 16,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 5214,
+          "timeMs": 16
+        },
+        "safe": null
+      },
+      "moves": 94,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 255,
+        "deadEndNodes": 43,
+        "maxSearchDepth": 94,
+        "transposition": {
+          "used": 642,
+          "capacity": 4194304,
+          "loadFactor": 0.00015306472778320312,
+          "probes": 1601,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 68,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 7386,
+      "timeMs": 12,
+      "totalNodes": 7386,
+      "totalTimeMs": 12,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 7386,
+          "timeMs": 12
+        },
+        "safe": null
+      },
+      "moves": 93,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 327,
+        "deadEndNodes": 39,
+        "maxSearchDepth": 93,
+        "transposition": {
+          "used": 840,
+          "capacity": 4194304,
+          "loadFactor": 0.0002002716064453125,
+          "probes": 2131,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 69,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 6563,
+      "timeMs": 14,
+      "totalNodes": 6563,
+      "totalTimeMs": 14,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 6563,
+          "timeMs": 14
+        },
+        "safe": null
+      },
+      "moves": 94,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 662,
+        "deadEndNodes": 86,
+        "maxSearchDepth": 94,
+        "transposition": {
+          "used": 1070,
+          "capacity": 4194304,
+          "loadFactor": 0.0002551078796386719,
+          "probes": 2840,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 70,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 38777,
+      "timeMs": 29,
+      "totalNodes": 38777,
+      "totalTimeMs": 29,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 38777,
+          "timeMs": 29
+        },
+        "safe": null
+      },
+      "moves": 100,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 1652,
+        "deadEndNodes": 12,
+        "maxSearchDepth": 100,
+        "transposition": {
+          "used": 3501,
+          "capacity": 4194304,
+          "loadFactor": 0.0008347034454345703,
+          "probes": 9072,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 71,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 329,
+      "timeMs": 11,
+      "totalNodes": 329,
+      "totalTimeMs": 11,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 329,
+          "timeMs": 11
+        },
+        "safe": null
+      },
+      "moves": 95,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 4,
+        "deadEndNodes": 5,
+        "maxSearchDepth": 95,
+        "transposition": {
+          "used": 91,
+          "capacity": 4194304,
+          "loadFactor": 0.000021696090698242188,
+          "probes": 186,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 72,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 54530,
+      "timeMs": 38,
+      "totalNodes": 54530,
+      "totalTimeMs": 38,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 54530,
+          "timeMs": 38
+        },
+        "safe": null
+      },
+      "moves": 97,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 2415,
+        "deadEndNodes": 78,
+        "maxSearchDepth": 97,
+        "transposition": {
+          "used": 3411,
+          "capacity": 4194304,
+          "loadFactor": 0.0008132457733154297,
+          "probes": 9713,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 73,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 330,
+      "timeMs": 7,
+      "totalNodes": 330,
+      "totalTimeMs": 7,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 330,
+          "timeMs": 7
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 0,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 56,
+          "capacity": 4194304,
+          "loadFactor": 0.0000133514404296875,
+          "probes": 114,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 74,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 60049,
+      "timeMs": 49,
+      "totalNodes": 60049,
+      "totalTimeMs": 49,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 60049,
+          "timeMs": 49
+        },
+        "safe": null
+      },
+      "moves": 95,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 4231,
+        "deadEndNodes": 74,
+        "maxSearchDepth": 95,
+        "transposition": {
+          "used": 4939,
+          "capacity": 4194304,
+          "loadFactor": 0.0011775493621826172,
+          "probes": 15392,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 75,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 832,
+      "timeMs": 22,
+      "totalNodes": 832,
+      "totalTimeMs": 22,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 832,
+          "timeMs": 22
+        },
+        "safe": null
+      },
+      "moves": 93,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 20,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 93,
+        "transposition": {
+          "used": 95,
+          "capacity": 4194304,
+          "loadFactor": 0.000022649765014648438,
+          "probes": 210,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 76,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 3008,
+      "timeMs": 9,
+      "totalNodes": 3008,
+      "totalTimeMs": 9,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 3008,
+          "timeMs": 9
+        },
+        "safe": null
+      },
+      "moves": 94,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 418,
+        "deadEndNodes": 76,
+        "maxSearchDepth": 94,
+        "transposition": {
+          "used": 904,
+          "capacity": 4194304,
+          "loadFactor": 0.0002155303955078125,
+          "probes": 2244,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 77,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 206,
+      "timeMs": 13,
+      "totalNodes": 206,
+      "totalTimeMs": 13,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 206,
+          "timeMs": 13
+        },
+        "safe": null
+      },
+      "moves": 94,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 0,
+        "deadEndNodes": 1,
+        "maxSearchDepth": 94,
+        "transposition": {
+          "used": 46,
+          "capacity": 4194304,
+          "loadFactor": 0.000010967254638671875,
+          "probes": 92,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 78,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 5458,
+      "timeMs": 34,
+      "totalNodes": 5458,
+      "totalTimeMs": 34,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 5458,
+          "timeMs": 34
+        },
+        "safe": null
+      },
+      "moves": 86,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 1105,
+        "deadEndNodes": 345,
+        "maxSearchDepth": 86,
+        "transposition": {
+          "used": 1253,
+          "capacity": 4194304,
+          "loadFactor": 0.0002987384796142578,
+          "probes": 4739,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 79,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 5275,
+      "timeMs": 14,
+      "totalNodes": 5275,
+      "totalTimeMs": 14,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 5275,
+          "timeMs": 14
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 193,
+        "deadEndNodes": 12,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 421,
+          "capacity": 4194304,
+          "loadFactor": 0.00010037422180175781,
+          "probes": 1077,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 80,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 7685,
+      "timeMs": 24,
+      "totalNodes": 7685,
+      "totalTimeMs": 24,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 7685,
+          "timeMs": 24
+        },
+        "safe": null
+      },
+      "moves": 93,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 1234,
+        "deadEndNodes": 112,
+        "maxSearchDepth": 93,
+        "transposition": {
+          "used": 1606,
+          "capacity": 4194304,
+          "loadFactor": 0.0003829002380371094,
+          "probes": 4842,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 81,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 737,
+      "timeMs": 13,
+      "totalNodes": 737,
+      "totalTimeMs": 13,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 737,
+          "timeMs": 13
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 7,
+        "deadEndNodes": 2,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 92,
+          "capacity": 4194304,
+          "loadFactor": 0.00002193450927734375,
+          "probes": 193,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 82,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 134,
+      "timeMs": 13,
+      "totalNodes": 134,
+      "totalTimeMs": 13,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 134,
+          "timeMs": 13
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 0,
+        "deadEndNodes": 8,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 66,
+          "capacity": 4194304,
+          "loadFactor": 0.000015735626220703125,
+          "probes": 132,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 83,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 5010,
+      "timeMs": 17,
+      "totalNodes": 5010,
+      "totalTimeMs": 17,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 5010,
+          "timeMs": 17
+        },
+        "safe": null
+      },
+      "moves": 97,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 465,
+        "deadEndNodes": 12,
+        "maxSearchDepth": 97,
+        "transposition": {
+          "used": 825,
+          "capacity": 4194304,
+          "loadFactor": 0.00019669532775878906,
+          "probes": 2213,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 84,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 5504,
+      "timeMs": 19,
+      "totalNodes": 5504,
+      "totalTimeMs": 19,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 5504,
+          "timeMs": 19
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 207,
+        "deadEndNodes": 2,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 514,
+          "capacity": 4194304,
+          "loadFactor": 0.00012254714965820312,
+          "probes": 1297,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 85,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 475,
+      "timeMs": 6,
+      "totalNodes": 475,
+      "totalTimeMs": 6,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 475,
+          "timeMs": 6
+        },
+        "safe": null
+      },
+      "moves": 99,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 10,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 99,
+        "transposition": {
+          "used": 97,
+          "capacity": 4194304,
+          "loadFactor": 0.000023126602172851562,
+          "probes": 204,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 86,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 123222,
+      "timeMs": 115,
+      "totalNodes": 123222,
+      "totalTimeMs": 115,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 123222,
+          "timeMs": 115
+        },
+        "safe": null
+      },
+      "moves": 97,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 19781,
+        "deadEndNodes": 1619,
+        "maxSearchDepth": 97,
+        "transposition": {
+          "used": 21245,
+          "capacity": 4194304,
+          "loadFactor": 0.005065202713012695,
+          "probes": 72802,
+          "maxProbe": 3,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 87,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 68443,
+      "timeMs": 52,
+      "totalNodes": 68443,
+      "totalTimeMs": 52,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 68443,
+          "timeMs": 52
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 4996,
+        "deadEndNodes": 6,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 4232,
+          "capacity": 4194304,
+          "loadFactor": 0.0010089874267578125,
+          "probes": 13844,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 88,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 30314,
+      "timeMs": 35,
+      "totalNodes": 30314,
+      "totalTimeMs": 35,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 30314,
+          "timeMs": 35
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 1934,
+        "deadEndNodes": 73,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 2211,
+          "capacity": 4194304,
+          "loadFactor": 0.0005271434783935547,
+          "probes": 6758,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 89,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 3735,
+      "timeMs": 16,
+      "totalNodes": 3735,
+      "totalTimeMs": 16,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 3735,
+          "timeMs": 16
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 143,
+        "deadEndNodes": 23,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 519,
+          "capacity": 4194304,
+          "loadFactor": 0.00012373924255371094,
+          "probes": 1307,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 90,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 6393,
+      "timeMs": 9,
+      "totalNodes": 6393,
+      "totalTimeMs": 9,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 6393,
+          "timeMs": 9
+        },
+        "safe": null
+      },
+      "moves": 94,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 228,
+        "deadEndNodes": 5,
+        "maxSearchDepth": 94,
+        "transposition": {
+          "used": 422,
+          "capacity": 4194304,
+          "loadFactor": 0.00010061264038085938,
+          "probes": 1102,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 91,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 121,
+      "timeMs": 15,
+      "totalNodes": 121,
+      "totalTimeMs": 15,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 121,
+          "timeMs": 15
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 0,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 46,
+          "capacity": 4194304,
+          "loadFactor": 0.000010967254638671875,
+          "probes": 92,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 92,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 18009,
+      "timeMs": 29,
+      "totalNodes": 18009,
+      "totalTimeMs": 29,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 18009,
+          "timeMs": 29
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 1516,
+        "deadEndNodes": 174,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 2391,
+          "capacity": 4194304,
+          "loadFactor": 0.0005700588226318359,
+          "probes": 6999,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 93,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1127,
+      "timeMs": 7,
+      "totalNodes": 1127,
+      "totalTimeMs": 7,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1127,
+          "timeMs": 7
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 14,
+        "deadEndNodes": 2,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 98,
+          "capacity": 4194304,
+          "loadFactor": 0.000023365020751953125,
+          "probes": 214,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 94,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 2294,
+      "timeMs": 13,
+      "totalNodes": 2294,
+      "totalTimeMs": 13,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 2294,
+          "timeMs": 13
+        },
+        "safe": null
+      },
+      "moves": 99,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 109,
+        "deadEndNodes": 4,
+        "maxSearchDepth": 99,
+        "transposition": {
+          "used": 229,
+          "capacity": 4194304,
+          "loadFactor": 0.00005459785461425781,
+          "probes": 587,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 95,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 4925,
+      "timeMs": 10,
+      "totalNodes": 4925,
+      "totalTimeMs": 10,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 4925,
+          "timeMs": 10
+        },
+        "safe": null
+      },
+      "moves": 92,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 610,
+        "deadEndNodes": 426,
+        "maxSearchDepth": 92,
+        "transposition": {
+          "used": 1398,
+          "capacity": 4194304,
+          "loadFactor": 0.0003333091735839844,
+          "probes": 3708,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 96,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 471,
+      "timeMs": 7,
+      "totalNodes": 471,
+      "totalTimeMs": 7,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 471,
+          "timeMs": 7
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 15,
+        "deadEndNodes": 7,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 116,
+          "capacity": 4194304,
+          "loadFactor": 0.00002765655517578125,
+          "probes": 249,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 97,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 890,
+      "timeMs": 12,
+      "totalNodes": 890,
+      "totalTimeMs": 12,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 890,
+          "timeMs": 12
+        },
+        "safe": null
+      },
+      "moves": 97,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 13,
+        "deadEndNodes": 1,
+        "maxSearchDepth": 97,
+        "transposition": {
+          "used": 77,
+          "capacity": 4194304,
+          "loadFactor": 0.000018358230590820312,
+          "probes": 167,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 98,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 301,
+      "timeMs": 13,
+      "totalNodes": 301,
+      "totalTimeMs": 13,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 301,
+          "timeMs": 13
+        },
+        "safe": null
+      },
+      "moves": 95,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 3,
+        "deadEndNodes": 2,
+        "maxSearchDepth": 95,
+        "transposition": {
+          "used": 59,
+          "capacity": 4194304,
+          "loadFactor": 0.000014066696166992188,
+          "probes": 121,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 99,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1261,
+      "timeMs": 14,
+      "totalNodes": 1261,
+      "totalTimeMs": 14,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1261,
+          "timeMs": 14
+        },
+        "safe": null
+      },
+      "moves": 95,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 18,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 95,
+        "transposition": {
+          "used": 111,
+          "capacity": 4194304,
+          "loadFactor": 0.000026464462280273438,
+          "probes": 244,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 100,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 8802,
+      "timeMs": 25,
+      "totalNodes": 8802,
+      "totalTimeMs": 25,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 8802,
+          "timeMs": 25
+        },
+        "safe": null
+      },
+      "moves": 93,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 604,
+        "deadEndNodes": 142,
+        "maxSearchDepth": 93,
+        "transposition": {
+          "used": 1305,
+          "capacity": 4194304,
+          "loadFactor": 0.00031113624572753906,
+          "probes": 3530,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 101,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1434,
+      "timeMs": 8,
+      "totalNodes": 1434,
+      "totalTimeMs": 8,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1434,
+          "timeMs": 8
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 90,
+        "deadEndNodes": 12,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 243,
+          "capacity": 4194304,
+          "loadFactor": 0.00005793571472167969,
+          "probes": 614,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 102,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 269,
+      "timeMs": 10,
+      "totalNodes": 269,
+      "totalTimeMs": 10,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 269,
+          "timeMs": 10
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 3,
+        "deadEndNodes": 3,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 56,
+          "capacity": 4194304,
+          "loadFactor": 0.0000133514404296875,
+          "probes": 115,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 103,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 2426,
+      "timeMs": 7,
+      "totalNodes": 2426,
+      "totalTimeMs": 7,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 2426,
+          "timeMs": 7
+        },
+        "safe": null
+      },
+      "moves": 94,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 33,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 94,
+        "transposition": {
+          "used": 207,
+          "capacity": 4194304,
+          "loadFactor": 0.00004935264587402344,
+          "probes": 461,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 104,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 187,
+      "timeMs": 6,
+      "totalNodes": 187,
+      "totalTimeMs": 6,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 187,
+          "timeMs": 6
+        },
+        "safe": null
+      },
+      "moves": 100,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 0,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 100,
+        "transposition": {
+          "used": 50,
+          "capacity": 4194304,
+          "loadFactor": 0.000011920928955078125,
+          "probes": 100,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 105,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 5180,
+      "timeMs": 12,
+      "totalNodes": 5180,
+      "totalTimeMs": 12,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 5180,
+          "timeMs": 12
+        },
+        "safe": null
+      },
+      "moves": 99,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 148,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 99,
+        "transposition": {
+          "used": 338,
+          "capacity": 4194304,
+          "loadFactor": 0.00008058547973632812,
+          "probes": 824,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 106,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 13894,
+      "timeMs": 15,
+      "totalNodes": 13894,
+      "totalTimeMs": 15,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 13894,
+          "timeMs": 15
+        },
+        "safe": null
+      },
+      "moves": 95,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 786,
+        "deadEndNodes": 38,
+        "maxSearchDepth": 95,
+        "transposition": {
+          "used": 1437,
+          "capacity": 4194304,
+          "loadFactor": 0.0003426074981689453,
+          "probes": 3906,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 107,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 479,
+      "timeMs": 22,
+      "totalNodes": 479,
+      "totalTimeMs": 22,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 479,
+          "timeMs": 22
+        },
+        "safe": null
+      },
+      "moves": 94,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 6,
+        "deadEndNodes": 3,
+        "maxSearchDepth": 94,
+        "transposition": {
+          "used": 83,
+          "capacity": 4194304,
+          "loadFactor": 0.000019788742065429688,
+          "probes": 178,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 108,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 3410,
+      "timeMs": 13,
+      "totalNodes": 3410,
+      "totalTimeMs": 13,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 3410,
+          "timeMs": 13
+        },
+        "safe": null
+      },
+      "moves": 93,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 223,
+        "deadEndNodes": 22,
+        "maxSearchDepth": 93,
+        "transposition": {
+          "used": 399,
+          "capacity": 4194304,
+          "loadFactor": 0.00009512901306152344,
+          "probes": 1069,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 109,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 7230,
+      "timeMs": 18,
+      "totalNodes": 7230,
+      "totalTimeMs": 18,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 7230,
+          "timeMs": 18
+        },
+        "safe": null
+      },
+      "moves": 97,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 263,
+        "deadEndNodes": 31,
+        "maxSearchDepth": 97,
+        "transposition": {
+          "used": 585,
+          "capacity": 4194304,
+          "loadFactor": 0.00013947486877441406,
+          "probes": 1497,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 110,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 32423,
+      "timeMs": 25,
+      "totalNodes": 32423,
+      "totalTimeMs": 25,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 32423,
+          "timeMs": 25
+        },
+        "safe": null
+      },
+      "moves": 99,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 2725,
+        "deadEndNodes": 192,
+        "maxSearchDepth": 99,
+        "transposition": {
+          "used": 3235,
+          "capacity": 4194304,
+          "loadFactor": 0.0007712841033935547,
+          "probes": 9743,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 111,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 4482,
+      "timeMs": 26,
+      "totalNodes": 4482,
+      "totalTimeMs": 26,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 4482,
+          "timeMs": 26
+        },
+        "safe": null
+      },
+      "moves": 94,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 205,
+        "deadEndNodes": 5,
+        "maxSearchDepth": 94,
+        "transposition": {
+          "used": 368,
+          "capacity": 4194304,
+          "loadFactor": 0.000087738037109375,
+          "probes": 967,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 112,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 6749,
+      "timeMs": 18,
+      "totalNodes": 6749,
+      "totalTimeMs": 18,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 6749,
+          "timeMs": 18
+        },
+        "safe": null
+      },
+      "moves": 97,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 316,
+        "deadEndNodes": 77,
+        "maxSearchDepth": 97,
+        "transposition": {
+          "used": 619,
+          "capacity": 4194304,
+          "loadFactor": 0.0001475811004638672,
+          "probes": 1664,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 113,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 673,
+      "timeMs": 6,
+      "totalNodes": 673,
+      "totalTimeMs": 6,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 673,
+          "timeMs": 6
+        },
+        "safe": null
+      },
+      "moves": 97,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 4,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 97,
+        "transposition": {
+          "used": 72,
+          "capacity": 4194304,
+          "loadFactor": 0.0000171661376953125,
+          "probes": 150,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 114,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 49516,
+      "timeMs": 62,
+      "totalNodes": 49516,
+      "totalTimeMs": 62,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 49516,
+          "timeMs": 62
+        },
+        "safe": null
+      },
+      "moves": 97,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 5535,
+        "deadEndNodes": 606,
+        "maxSearchDepth": 97,
+        "transposition": {
+          "used": 7271,
+          "capacity": 4194304,
+          "loadFactor": 0.001733541488647461,
+          "probes": 22251,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 115,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 12334,
+      "timeMs": 14,
+      "totalNodes": 12334,
+      "totalTimeMs": 14,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 12334,
+          "timeMs": 14
+        },
+        "safe": null
+      },
+      "moves": 94,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 645,
+        "deadEndNodes": 7,
+        "maxSearchDepth": 94,
+        "transposition": {
+          "used": 1098,
+          "capacity": 4194304,
+          "loadFactor": 0.0002617835998535156,
+          "probes": 3041,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 116,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 971,
+      "timeMs": 7,
+      "totalNodes": 971,
+      "totalTimeMs": 7,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 971,
+          "timeMs": 7
+        },
+        "safe": null
+      },
+      "moves": 99,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 48,
+        "deadEndNodes": 19,
+        "maxSearchDepth": 99,
+        "transposition": {
+          "used": 151,
+          "capacity": 4194304,
+          "loadFactor": 0.00003600120544433594,
+          "probes": 420,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 117,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 14427,
+      "timeMs": 19,
+      "totalNodes": 14427,
+      "totalTimeMs": 19,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 14427,
+          "timeMs": 19
+        },
+        "safe": null
+      },
+      "moves": 92,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 891,
+        "deadEndNodes": 38,
+        "maxSearchDepth": 92,
+        "transposition": {
+          "used": 1164,
+          "capacity": 4194304,
+          "loadFactor": 0.00027751922607421875,
+          "probes": 3381,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 118,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1420,
+      "timeMs": 8,
+      "totalNodes": 1420,
+      "totalTimeMs": 8,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1420,
+          "timeMs": 8
+        },
+        "safe": null
+      },
+      "moves": 97,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 77,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 97,
+        "transposition": {
+          "used": 146,
+          "capacity": 4194304,
+          "loadFactor": 0.000034809112548828125,
+          "probes": 369,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 119,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 103691,
+      "timeMs": 72,
+      "totalNodes": 103691,
+      "totalTimeMs": 72,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 103691,
+          "timeMs": 72
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 7802,
+        "deadEndNodes": 183,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 9696,
+          "capacity": 4194304,
+          "loadFactor": 0.00231170654296875,
+          "probes": 28800,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 120,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 157574,
+      "timeMs": 109,
+      "totalNodes": 157574,
+      "totalTimeMs": 109,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 157574,
+          "timeMs": 109
+        },
+        "safe": null
+      },
+      "moves": 97,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 8801,
+        "deadEndNodes": 487,
+        "maxSearchDepth": 97,
+        "transposition": {
+          "used": 13435,
+          "capacity": 4194304,
+          "loadFactor": 0.003203153610229492,
+          "probes": 38040,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 121,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 3119,
+      "timeMs": 9,
+      "totalNodes": 3119,
+      "totalTimeMs": 9,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 3119,
+          "timeMs": 9
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 80,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 206,
+          "capacity": 4194304,
+          "loadFactor": 0.000049114227294921875,
+          "probes": 500,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 122,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 7854,
+      "timeMs": 11,
+      "totalNodes": 7854,
+      "totalTimeMs": 11,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 7854,
+          "timeMs": 11
+        },
+        "safe": null
+      },
+      "moves": 97,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 227,
+        "deadEndNodes": 2,
+        "maxSearchDepth": 97,
+        "transposition": {
+          "used": 494,
+          "capacity": 4194304,
+          "loadFactor": 0.00011777877807617188,
+          "probes": 1249,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 123,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 16962,
+      "timeMs": 25,
+      "totalNodes": 16962,
+      "totalTimeMs": 25,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 16962,
+          "timeMs": 25
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 1192,
+        "deadEndNodes": 1,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 1023,
+          "capacity": 4194304,
+          "loadFactor": 0.00024390220642089844,
+          "probes": 3374,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 124,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 42388,
+      "timeMs": 31,
+      "totalNodes": 42388,
+      "totalTimeMs": 31,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 42388,
+          "timeMs": 31
+        },
+        "safe": null
+      },
+      "moves": 100,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 2695,
+        "deadEndNodes": 30,
+        "maxSearchDepth": 100,
+        "transposition": {
+          "used": 2863,
+          "capacity": 4194304,
+          "loadFactor": 0.0006825923919677734,
+          "probes": 8959,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 125,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1996,
+      "timeMs": 18,
+      "totalNodes": 1996,
+      "totalTimeMs": 18,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1996,
+          "timeMs": 18
+        },
+        "safe": null
+      },
+      "moves": 94,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 50,
+        "deadEndNodes": 2,
+        "maxSearchDepth": 94,
+        "transposition": {
+          "used": 184,
+          "capacity": 4194304,
+          "loadFactor": 0.0000438690185546875,
+          "probes": 428,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 126,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 84012,
+      "timeMs": 91,
+      "totalNodes": 84012,
+      "totalTimeMs": 91,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 84012,
+          "timeMs": 91
+        },
+        "safe": null
+      },
+      "moves": 100,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 15808,
+        "deadEndNodes": 914,
+        "maxSearchDepth": 100,
+        "transposition": {
+          "used": 12078,
+          "capacity": 4194304,
+          "loadFactor": 0.002879619598388672,
+          "probes": 47969,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 127,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 29522,
+      "timeMs": 48,
+      "totalNodes": 29522,
+      "totalTimeMs": 48,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 29522,
+          "timeMs": 48
+        },
+        "safe": null
+      },
+      "moves": 95,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 8311,
+        "deadEndNodes": 698,
+        "maxSearchDepth": 95,
+        "transposition": {
+          "used": 5483,
+          "capacity": 4194304,
+          "loadFactor": 0.0013072490692138672,
+          "probes": 26127,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 128,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 153,
+      "timeMs": 6,
+      "totalNodes": 153,
+      "totalTimeMs": 6,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 153,
+          "timeMs": 6
+        },
+        "safe": null
+      },
+      "moves": 95,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 0,
+        "deadEndNodes": 4,
+        "maxSearchDepth": 95,
+        "transposition": {
+          "used": 51,
+          "capacity": 4194304,
+          "loadFactor": 0.000012159347534179688,
+          "probes": 102,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 129,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 22780,
+      "timeMs": 25,
+      "totalNodes": 22780,
+      "totalTimeMs": 25,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 22780,
+          "timeMs": 25
+        },
+        "safe": null
+      },
+      "moves": 97,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 2808,
+        "deadEndNodes": 261,
+        "maxSearchDepth": 97,
+        "transposition": {
+          "used": 3940,
+          "capacity": 4194304,
+          "loadFactor": 0.0009393692016601562,
+          "probes": 11324,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 130,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1033,
+      "timeMs": 7,
+      "totalNodes": 1033,
+      "totalTimeMs": 7,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1033,
+          "timeMs": 7
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 20,
+        "deadEndNodes": 20,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 130,
+          "capacity": 4194304,
+          "loadFactor": 0.000030994415283203125,
+          "probes": 286,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 131,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 21071,
+      "timeMs": 36,
+      "totalNodes": 21071,
+      "totalTimeMs": 36,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 21071,
+          "timeMs": 36
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 1823,
+        "deadEndNodes": 173,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 3046,
+          "capacity": 4194304,
+          "loadFactor": 0.0007262229919433594,
+          "probes": 8684,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 132,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 52506,
+      "timeMs": 38,
+      "totalNodes": 52506,
+      "totalTimeMs": 38,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 52506,
+          "timeMs": 38
+        },
+        "safe": null
+      },
+      "moves": 97,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 4638,
+        "deadEndNodes": 369,
+        "maxSearchDepth": 97,
+        "transposition": {
+          "used": 5477,
+          "capacity": 4194304,
+          "loadFactor": 0.0013058185577392578,
+          "probes": 16451,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 133,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1411,
+      "timeMs": 12,
+      "totalNodes": 1411,
+      "totalTimeMs": 12,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1411,
+          "timeMs": 12
+        },
+        "safe": null
+      },
+      "moves": 97,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 96,
+        "deadEndNodes": 92,
+        "maxSearchDepth": 97,
+        "transposition": {
+          "used": 346,
+          "capacity": 4194304,
+          "loadFactor": 0.00008249282836914062,
+          "probes": 854,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 134,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 3047,
+      "timeMs": 8,
+      "totalNodes": 3047,
+      "totalTimeMs": 8,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 3047,
+          "timeMs": 8
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 104,
+        "deadEndNodes": 37,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 323,
+          "capacity": 4194304,
+          "loadFactor": 0.00007700920104980469,
+          "probes": 806,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 135,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 17969,
+      "timeMs": 33,
+      "totalNodes": 17969,
+      "totalTimeMs": 33,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 17969,
+          "timeMs": 33
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 1706,
+        "deadEndNodes": 532,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 2991,
+          "capacity": 4194304,
+          "loadFactor": 0.0007131099700927734,
+          "probes": 8704,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 136,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 318,
+      "timeMs": 7,
+      "totalNodes": 318,
+      "totalTimeMs": 7,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 318,
+          "timeMs": 7
+        },
+        "safe": null
+      },
+      "moves": 99,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 6,
+        "deadEndNodes": 92,
+        "maxSearchDepth": 99,
+        "transposition": {
+          "used": 185,
+          "capacity": 4194304,
+          "loadFactor": 0.00004410743713378906,
+          "probes": 414,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 137,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 7841,
+      "timeMs": 12,
+      "totalNodes": 7841,
+      "totalTimeMs": 12,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 7841,
+          "timeMs": 12
+        },
+        "safe": null
+      },
+      "moves": 94,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 541,
+        "deadEndNodes": 10,
+        "maxSearchDepth": 94,
+        "transposition": {
+          "used": 586,
+          "capacity": 4194304,
+          "loadFactor": 0.00013971328735351562,
+          "probes": 1853,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 138,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1606,
+      "timeMs": 7,
+      "totalNodes": 1606,
+      "totalTimeMs": 7,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1606,
+          "timeMs": 7
+        },
+        "safe": null
+      },
+      "moves": 94,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 42,
+        "deadEndNodes": 1,
+        "maxSearchDepth": 94,
+        "transposition": {
+          "used": 122,
+          "capacity": 4194304,
+          "loadFactor": 0.000029087066650390625,
+          "probes": 294,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 139,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 94166,
+      "timeMs": 85,
+      "totalNodes": 94166,
+      "totalTimeMs": 85,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 94166,
+          "timeMs": 85
+        },
+        "safe": null
+      },
+      "moves": 95,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 7283,
+        "deadEndNodes": 318,
+        "maxSearchDepth": 95,
+        "transposition": {
+          "used": 8165,
+          "capacity": 4194304,
+          "loadFactor": 0.0019466876983642578,
+          "probes": 25909,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 140,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 3740,
+      "timeMs": 8,
+      "totalNodes": 3740,
+      "totalTimeMs": 8,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 3740,
+          "timeMs": 8
+        },
+        "safe": null
+      },
+      "moves": 99,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 177,
+        "deadEndNodes": 50,
+        "maxSearchDepth": 99,
+        "transposition": {
+          "used": 624,
+          "capacity": 4194304,
+          "loadFactor": 0.000148773193359375,
+          "probes": 1475,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 141,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 13909,
+      "timeMs": 20,
+      "totalNodes": 13909,
+      "totalTimeMs": 20,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 13909,
+          "timeMs": 20
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 1321,
+        "deadEndNodes": 83,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 1887,
+          "capacity": 4194304,
+          "loadFactor": 0.00044989585876464844,
+          "probes": 5293,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 142,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 30217,
+      "timeMs": 22,
+      "totalNodes": 30217,
+      "totalTimeMs": 22,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 30217,
+          "timeMs": 22
+        },
+        "safe": null
+      },
+      "moves": 94,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 2107,
+        "deadEndNodes": 115,
+        "maxSearchDepth": 94,
+        "transposition": {
+          "used": 3249,
+          "capacity": 4194304,
+          "loadFactor": 0.0007746219635009766,
+          "probes": 9336,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 143,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 5517,
+      "timeMs": 16,
+      "totalNodes": 5517,
+      "totalTimeMs": 16,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 5517,
+          "timeMs": 16
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 179,
+        "deadEndNodes": 2,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 335,
+          "capacity": 4194304,
+          "loadFactor": 0.00007987022399902344,
+          "probes": 893,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 144,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 97865,
+      "timeMs": 67,
+      "totalNodes": 97865,
+      "totalTimeMs": 67,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 97865,
+          "timeMs": 67
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 7941,
+        "deadEndNodes": 328,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 8539,
+          "capacity": 4194304,
+          "loadFactor": 0.002035856246948242,
+          "probes": 27902,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 145,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 7879,
+      "timeMs": 12,
+      "totalNodes": 7879,
+      "totalTimeMs": 12,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 7879,
+          "timeMs": 12
+        },
+        "safe": null
+      },
+      "moves": 93,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 808,
+        "deadEndNodes": 74,
+        "maxSearchDepth": 93,
+        "transposition": {
+          "used": 1070,
+          "capacity": 4194304,
+          "loadFactor": 0.0002551078796386719,
+          "probes": 3094,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 146,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 2731,
+      "timeMs": 8,
+      "totalNodes": 2731,
+      "totalTimeMs": 8,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 2731,
+          "timeMs": 8
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 218,
+        "deadEndNodes": 76,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 510,
+          "capacity": 4194304,
+          "loadFactor": 0.00012159347534179688,
+          "probes": 1334,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 147,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 54621,
+      "timeMs": 57,
+      "totalNodes": 54621,
+      "totalTimeMs": 57,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 54621,
+          "timeMs": 57
+        },
+        "safe": null
+      },
+      "moves": 94,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 4337,
+        "deadEndNodes": 26,
+        "maxSearchDepth": 94,
+        "transposition": {
+          "used": 4311,
+          "capacity": 4194304,
+          "loadFactor": 0.001027822494506836,
+          "probes": 13153,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 148,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 432,
+      "timeMs": 6,
+      "totalNodes": 432,
+      "totalTimeMs": 6,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 432,
+          "timeMs": 6
+        },
+        "safe": null
+      },
+      "moves": 100,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 3,
+        "deadEndNodes": 1,
+        "maxSearchDepth": 100,
+        "transposition": {
+          "used": 66,
+          "capacity": 4194304,
+          "loadFactor": 0.000015735626220703125,
+          "probes": 137,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 149,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 4794,
+      "timeMs": 12,
+      "totalNodes": 4794,
+      "totalTimeMs": 12,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 4794,
+          "timeMs": 12
+        },
+        "safe": null
+      },
+      "moves": 95,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 407,
+        "deadEndNodes": 112,
+        "maxSearchDepth": 95,
+        "transposition": {
+          "used": 795,
+          "capacity": 4194304,
+          "loadFactor": 0.0001895427703857422,
+          "probes": 2155,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 150,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 2195,
+      "timeMs": 7,
+      "totalNodes": 2195,
+      "totalTimeMs": 7,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 2195,
+          "timeMs": 7
+        },
+        "safe": null
+      },
+      "moves": 95,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 35,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 95,
+        "transposition": {
+          "used": 130,
+          "capacity": 4194304,
+          "loadFactor": 0.000030994415283203125,
+          "probes": 299,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 151,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 780,
+      "timeMs": 12,
+      "totalNodes": 780,
+      "totalTimeMs": 12,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 780,
+          "timeMs": 12
+        },
+        "safe": null
+      },
+      "moves": 92,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 3,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 92,
+        "transposition": {
+          "used": 75,
+          "capacity": 4194304,
+          "loadFactor": 0.000017881393432617188,
+          "probes": 153,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 152,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 7077,
+      "timeMs": 19,
+      "totalNodes": 7077,
+      "totalTimeMs": 19,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 7077,
+          "timeMs": 19
+        },
+        "safe": null
+      },
+      "moves": 95,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 409,
+        "deadEndNodes": 183,
+        "maxSearchDepth": 95,
+        "transposition": {
+          "used": 1045,
+          "capacity": 4194304,
+          "loadFactor": 0.0002491474151611328,
+          "probes": 2659,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 153,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 11361,
+      "timeMs": 16,
+      "totalNodes": 11361,
+      "totalTimeMs": 16,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 11361,
+          "timeMs": 16
+        },
+        "safe": null
+      },
+      "moves": 99,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 676,
+        "deadEndNodes": 65,
+        "maxSearchDepth": 99,
+        "transposition": {
+          "used": 1371,
+          "capacity": 4194304,
+          "loadFactor": 0.0003268718719482422,
+          "probes": 3656,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 154,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 767,
+      "timeMs": 11,
+      "totalNodes": 767,
+      "totalTimeMs": 11,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 767,
+          "timeMs": 11
+        },
+        "safe": null
+      },
+      "moves": 99,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 20,
+        "deadEndNodes": 19,
+        "maxSearchDepth": 99,
+        "transposition": {
+          "used": 133,
+          "capacity": 4194304,
+          "loadFactor": 0.00003170967102050781,
+          "probes": 290,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 155,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1799,
+      "timeMs": 13,
+      "totalNodes": 1799,
+      "totalTimeMs": 13,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1799,
+          "timeMs": 13
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 38,
+        "deadEndNodes": 9,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 180,
+          "capacity": 4194304,
+          "loadFactor": 0.00004291534423828125,
+          "probes": 400,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 156,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 148,
+      "timeMs": 6,
+      "totalNodes": 148,
+      "totalTimeMs": 6,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 148,
+          "timeMs": 6
+        },
+        "safe": null
+      },
+      "moves": 101,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 6,
+        "deadEndNodes": 5,
+        "maxSearchDepth": 101,
+        "transposition": {
+          "used": 61,
+          "capacity": 4194304,
+          "loadFactor": 0.000014543533325195312,
+          "probes": 140,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 157,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 5035,
+      "timeMs": 27,
+      "totalNodes": 5035,
+      "totalTimeMs": 27,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 5035,
+          "timeMs": 27
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 691,
+        "deadEndNodes": 128,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 1084,
+          "capacity": 4194304,
+          "loadFactor": 0.00025844573974609375,
+          "probes": 3040,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 158,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 2778,
+      "timeMs": 17,
+      "totalNodes": 2778,
+      "totalTimeMs": 17,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 2778,
+          "timeMs": 17
+        },
+        "safe": null
+      },
+      "moves": 93,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 96,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 93,
+        "transposition": {
+          "used": 193,
+          "capacity": 4194304,
+          "loadFactor": 0.00004601478576660156,
+          "probes": 488,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 159,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1257,
+      "timeMs": 7,
+      "totalNodes": 1257,
+      "totalTimeMs": 7,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1257,
+          "timeMs": 7
+        },
+        "safe": null
+      },
+      "moves": 94,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 28,
+        "deadEndNodes": 17,
+        "maxSearchDepth": 94,
+        "transposition": {
+          "used": 182,
+          "capacity": 4194304,
+          "loadFactor": 0.000043392181396484375,
+          "probes": 412,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 160,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 10070,
+      "timeMs": 20,
+      "totalNodes": 10070,
+      "totalTimeMs": 20,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 10070,
+          "timeMs": 20
+        },
+        "safe": null
+      },
+      "moves": 101,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 399,
+        "deadEndNodes": 39,
+        "maxSearchDepth": 101,
+        "transposition": {
+          "used": 771,
+          "capacity": 4194304,
+          "loadFactor": 0.0001838207244873047,
+          "probes": 1963,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 161,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 2038,
+      "timeMs": 8,
+      "totalNodes": 2038,
+      "totalTimeMs": 8,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 2038,
+          "timeMs": 8
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 145,
+        "deadEndNodes": 48,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 327,
+          "capacity": 4194304,
+          "loadFactor": 0.00007796287536621094,
+          "probes": 857,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 162,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 11961,
+      "timeMs": 15,
+      "totalNodes": 11961,
+      "totalTimeMs": 15,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 11961,
+          "timeMs": 15
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 342,
+        "deadEndNodes": 12,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 948,
+          "capacity": 4194304,
+          "loadFactor": 0.00022602081298828125,
+          "probes": 2322,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 163,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 2043,
+      "timeMs": 7,
+      "totalNodes": 2043,
+      "totalTimeMs": 7,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 2043,
+          "timeMs": 7
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 100,
+        "deadEndNodes": 3,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 285,
+          "capacity": 4194304,
+          "loadFactor": 0.00006794929504394531,
+          "probes": 676,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 164,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 12747,
+      "timeMs": 24,
+      "totalNodes": 12747,
+      "totalTimeMs": 24,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 12747,
+          "timeMs": 24
+        },
+        "safe": null
+      },
+      "moves": 99,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 714,
+        "deadEndNodes": 14,
+        "maxSearchDepth": 99,
+        "transposition": {
+          "used": 1295,
+          "capacity": 4194304,
+          "loadFactor": 0.00030875205993652344,
+          "probes": 3451,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 165,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 202,
+      "timeMs": 6,
+      "totalNodes": 202,
+      "totalTimeMs": 6,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 202,
+          "timeMs": 6
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 0,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 50,
+          "capacity": 4194304,
+          "loadFactor": 0.000011920928955078125,
+          "probes": 100,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 166,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 63,
+      "timeMs": 7,
+      "totalNodes": 63,
+      "totalTimeMs": 7,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 63,
+          "timeMs": 7
+        },
+        "safe": null
+      },
+      "moves": 93,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 0,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 93,
+        "transposition": {
+          "used": 41,
+          "capacity": 4194304,
+          "loadFactor": 0.000009775161743164062,
+          "probes": 82,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 167,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 4409,
+      "timeMs": 16,
+      "totalNodes": 4409,
+      "totalTimeMs": 16,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 4409,
+          "timeMs": 16
+        },
+        "safe": null
+      },
+      "moves": 91,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 257,
+        "deadEndNodes": 70,
+        "maxSearchDepth": 91,
+        "transposition": {
+          "used": 458,
+          "capacity": 4194304,
+          "loadFactor": 0.00010919570922851562,
+          "probes": 1221,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 168,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1235,
+      "timeMs": 16,
+      "totalNodes": 1235,
+      "totalTimeMs": 16,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1235,
+          "timeMs": 16
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 28,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 93,
+          "capacity": 4194304,
+          "loadFactor": 0.000022172927856445312,
+          "probes": 218,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 169,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 44883,
+      "timeMs": 61,
+      "totalNodes": 44883,
+      "totalTimeMs": 61,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 44883,
+          "timeMs": 61
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 2498,
+        "deadEndNodes": 203,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 2988,
+          "capacity": 4194304,
+          "loadFactor": 0.0007123947143554688,
+          "probes": 9240,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 170,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1298,
+      "timeMs": 13,
+      "totalNodes": 1298,
+      "totalTimeMs": 13,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1298,
+          "timeMs": 13
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 43,
+        "deadEndNodes": 27,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 206,
+          "capacity": 4194304,
+          "loadFactor": 0.000049114227294921875,
+          "probes": 473,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 171,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 2714,
+      "timeMs": 8,
+      "totalNodes": 2714,
+      "totalTimeMs": 8,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 2714,
+          "timeMs": 8
+        },
+        "safe": null
+      },
+      "moves": 89,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 549,
+        "deadEndNodes": 88,
+        "maxSearchDepth": 89,
+        "transposition": {
+          "used": 687,
+          "capacity": 4194304,
+          "loadFactor": 0.00016379356384277344,
+          "probes": 2129,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 172,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 3894,
+      "timeMs": 16,
+      "totalNodes": 3894,
+      "totalTimeMs": 16,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 3894,
+          "timeMs": 16
+        },
+        "safe": null
+      },
+      "moves": 97,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 113,
+        "deadEndNodes": 31,
+        "maxSearchDepth": 97,
+        "transposition": {
+          "used": 436,
+          "capacity": 4194304,
+          "loadFactor": 0.00010395050048828125,
+          "probes": 1025,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 173,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 245,
+      "timeMs": 6,
+      "totalNodes": 245,
+      "totalTimeMs": 6,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 245,
+          "timeMs": 6
+        },
+        "safe": null
+      },
+      "moves": 92,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 0,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 92,
+        "transposition": {
+          "used": 49,
+          "capacity": 4194304,
+          "loadFactor": 0.000011682510375976562,
+          "probes": 98,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 174,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 616,
+      "timeMs": 24,
+      "totalNodes": 616,
+      "totalTimeMs": 24,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 616,
+          "timeMs": 24
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 9,
+        "deadEndNodes": 7,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 99,
+          "capacity": 4194304,
+          "loadFactor": 0.000023603439331054688,
+          "probes": 207,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 175,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 4346,
+      "timeMs": 16,
+      "totalNodes": 4346,
+      "totalTimeMs": 16,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 4346,
+          "timeMs": 16
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 160,
+        "deadEndNodes": 1,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 455,
+          "capacity": 4194304,
+          "loadFactor": 0.00010848045349121094,
+          "probes": 1088,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 176,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1488,
+      "timeMs": 7,
+      "totalNodes": 1488,
+      "totalTimeMs": 7,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1488,
+          "timeMs": 7
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 21,
+        "deadEndNodes": 2,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 174,
+          "capacity": 4194304,
+          "loadFactor": 0.000041484832763671875,
+          "probes": 375,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 177,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 5438,
+      "timeMs": 16,
+      "totalNodes": 5438,
+      "totalTimeMs": 16,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 5438,
+          "timeMs": 16
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 319,
+        "deadEndNodes": 4,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 391,
+          "capacity": 4194304,
+          "loadFactor": 0.00009322166442871094,
+          "probes": 1141,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 178,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 155860,
+      "timeMs": 124,
+      "totalNodes": 155860,
+      "totalTimeMs": 124,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 155860,
+          "timeMs": 124
+        },
+        "safe": null
+      },
+      "moves": 97,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 35040,
+        "deadEndNodes": 3837,
+        "maxSearchDepth": 97,
+        "transposition": {
+          "used": 27473,
+          "capacity": 4194304,
+          "loadFactor": 0.0065500736236572266,
+          "probes": 103225,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 179,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 628,
+      "timeMs": 9,
+      "totalNodes": 628,
+      "totalTimeMs": 9,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 628,
+          "timeMs": 9
+        },
+        "safe": null
+      },
+      "moves": 97,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 2,
+        "deadEndNodes": 1,
+        "maxSearchDepth": 97,
+        "transposition": {
+          "used": 71,
+          "capacity": 4194304,
+          "loadFactor": 0.000016927719116210938,
+          "probes": 146,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 180,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 59629,
+      "timeMs": 43,
+      "totalNodes": 59629,
+      "totalTimeMs": 43,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 59629,
+          "timeMs": 43
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 2510,
+        "deadEndNodes": 4,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 3471,
+          "capacity": 4194304,
+          "loadFactor": 0.0008275508880615234,
+          "probes": 9882,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 181,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 33084,
+      "timeMs": 53,
+      "totalNodes": 33084,
+      "totalTimeMs": 53,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 33084,
+          "timeMs": 53
+        },
+        "safe": null
+      },
+      "moves": 97,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 5228,
+        "deadEndNodes": 1463,
+        "maxSearchDepth": 97,
+        "transposition": {
+          "used": 6722,
+          "capacity": 4194304,
+          "loadFactor": 0.0016026496887207031,
+          "probes": 21553,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 182,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 4217,
+      "timeMs": 8,
+      "totalNodes": 4217,
+      "totalTimeMs": 8,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 4217,
+          "timeMs": 8
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 220,
+        "deadEndNodes": 53,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 587,
+          "capacity": 4194304,
+          "loadFactor": 0.0001399517059326172,
+          "probes": 1440,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 183,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 7058,
+      "timeMs": 11,
+      "totalNodes": 7058,
+      "totalTimeMs": 11,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 7058,
+          "timeMs": 11
+        },
+        "safe": null
+      },
+      "moves": 101,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 204,
+        "deadEndNodes": 14,
+        "maxSearchDepth": 101,
+        "transposition": {
+          "used": 734,
+          "capacity": 4194304,
+          "loadFactor": 0.00017499923706054688,
+          "probes": 1684,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 184,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 4578,
+      "timeMs": 9,
+      "totalNodes": 4578,
+      "totalTimeMs": 9,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 4578,
+          "timeMs": 9
+        },
+        "safe": null
+      },
+      "moves": 90,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 448,
+        "deadEndNodes": 90,
+        "maxSearchDepth": 90,
+        "transposition": {
+          "used": 807,
+          "capacity": 4194304,
+          "loadFactor": 0.00019240379333496094,
+          "probes": 2338,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 185,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1721,
+      "timeMs": 13,
+      "totalNodes": 1721,
+      "totalTimeMs": 13,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1721,
+          "timeMs": 13
+        },
+        "safe": null
+      },
+      "moves": 95,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 43,
+        "deadEndNodes": 20,
+        "maxSearchDepth": 95,
+        "transposition": {
+          "used": 252,
+          "capacity": 4194304,
+          "loadFactor": 0.00006008148193359375,
+          "probes": 573,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 186,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 229,
+      "timeMs": 6,
+      "totalNodes": 229,
+      "totalTimeMs": 6,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 229,
+          "timeMs": 6
+        },
+        "safe": null
+      },
+      "moves": 97,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 2,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 97,
+        "transposition": {
+          "used": 50,
+          "capacity": 4194304,
+          "loadFactor": 0.000011920928955078125,
+          "probes": 102,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 187,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 19909,
+      "timeMs": 20,
+      "totalNodes": 19909,
+      "totalTimeMs": 20,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 19909,
+          "timeMs": 20
+        },
+        "safe": null
+      },
+      "moves": 100,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 1353,
+        "deadEndNodes": 342,
+        "maxSearchDepth": 100,
+        "transposition": {
+          "used": 3178,
+          "capacity": 4194304,
+          "loadFactor": 0.0007576942443847656,
+          "probes": 7893,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 188,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1329,
+      "timeMs": 7,
+      "totalNodes": 1329,
+      "totalTimeMs": 7,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1329,
+          "timeMs": 7
+        },
+        "safe": null
+      },
+      "moves": 94,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 39,
+        "deadEndNodes": 8,
+        "maxSearchDepth": 94,
+        "transposition": {
+          "used": 137,
+          "capacity": 4194304,
+          "loadFactor": 0.00003266334533691406,
+          "probes": 341,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 189,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 155063,
+      "timeMs": 121,
+      "totalNodes": 155063,
+      "totalTimeMs": 121,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 155063,
+          "timeMs": 121
+        },
+        "safe": null
+      },
+      "moves": 93,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 9759,
+        "deadEndNodes": 160,
+        "maxSearchDepth": 93,
+        "transposition": {
+          "used": 13033,
+          "capacity": 4194304,
+          "loadFactor": 0.003107309341430664,
+          "probes": 37437,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 190,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 29644,
+      "timeMs": 22,
+      "totalNodes": 29644,
+      "totalTimeMs": 22,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 29644,
+          "timeMs": 22
+        },
+        "safe": null
+      },
+      "moves": 102,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 1593,
+        "deadEndNodes": 34,
+        "maxSearchDepth": 102,
+        "transposition": {
+          "used": 2534,
+          "capacity": 4194304,
+          "loadFactor": 0.0006041526794433594,
+          "probes": 7259,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 191,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 570,
+      "timeMs": 7,
+      "totalNodes": 570,
+      "totalTimeMs": 7,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 570,
+          "timeMs": 7
+        },
+        "safe": null
+      },
+      "moves": 92,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 52,
+        "deadEndNodes": 4,
+        "maxSearchDepth": 92,
+        "transposition": {
+          "used": 164,
+          "capacity": 4194304,
+          "loadFactor": 0.00003910064697265625,
+          "probes": 382,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 192,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 289,
+      "timeMs": 12,
+      "totalNodes": 289,
+      "totalTimeMs": 12,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 289,
+          "timeMs": 12
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 3,
+        "deadEndNodes": 20,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 90,
+          "capacity": 4194304,
+          "loadFactor": 0.000021457672119140625,
+          "probes": 185,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 193,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 45523,
+      "timeMs": 32,
+      "totalNodes": 45523,
+      "totalTimeMs": 32,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 45523,
+          "timeMs": 32
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 2390,
+        "deadEndNodes": 10,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 2740,
+          "capacity": 4194304,
+          "loadFactor": 0.0006532669067382812,
+          "probes": 8458,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 194,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 16224,
+      "timeMs": 22,
+      "totalNodes": 16224,
+      "totalTimeMs": 22,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 16224,
+          "timeMs": 22
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 3679,
+        "deadEndNodes": 797,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 3774,
+          "capacity": 4194304,
+          "loadFactor": 0.0008997917175292969,
+          "probes": 14153,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 195,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1116,
+      "timeMs": 11,
+      "totalNodes": 1116,
+      "totalTimeMs": 11,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1116,
+          "timeMs": 11
+        },
+        "safe": null
+      },
+      "moves": 89,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 20,
+        "deadEndNodes": 7,
+        "maxSearchDepth": 89,
+        "transposition": {
+          "used": 119,
+          "capacity": 4194304,
+          "loadFactor": 0.000028371810913085938,
+          "probes": 260,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 196,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1540,
+      "timeMs": 14,
+      "totalNodes": 1540,
+      "totalTimeMs": 14,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1540,
+          "timeMs": 14
+        },
+        "safe": null
+      },
+      "moves": 97,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 81,
+        "deadEndNodes": 8,
+        "maxSearchDepth": 97,
+        "transposition": {
+          "used": 306,
+          "capacity": 4194304,
+          "loadFactor": 0.00007295608520507812,
+          "probes": 715,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 197,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 111881,
+      "timeMs": 74,
+      "totalNodes": 111881,
+      "totalTimeMs": 74,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 111881,
+          "timeMs": 74
+        },
+        "safe": null
+      },
+      "moves": 98,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 7478,
+        "deadEndNodes": 70,
+        "maxSearchDepth": 98,
+        "transposition": {
+          "used": 7827,
+          "capacity": 4194304,
+          "loadFactor": 0.0018661022186279297,
+          "probes": 25277,
+          "maxProbe": 2,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 198,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 1033,
+      "timeMs": 26,
+      "totalNodes": 1033,
+      "totalTimeMs": 26,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 1033,
+          "timeMs": 26
+        },
+        "safe": null
+      },
+      "moves": 93,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 139,
+        "deadEndNodes": 14,
+        "maxSearchDepth": 93,
+        "transposition": {
+          "used": 251,
+          "capacity": 4194304,
+          "loadFactor": 0.00005984306335449219,
+          "probes": 661,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 199,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 130,
+      "timeMs": 13,
+      "totalNodes": 130,
+      "totalTimeMs": 13,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 130,
+          "timeMs": 13
+        },
+        "safe": null
+      },
+      "moves": 96,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 2,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 96,
+        "transposition": {
+          "used": 44,
+          "capacity": 4194304,
+          "loadFactor": 0.00001049041748046875,
+          "probes": 90,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    },
+    {
+      "game": 200,
+      "strategy": "fast-safe",
+      "status": "solved",
+      "solved": true,
+      "nodes": 559,
+      "timeMs": 8,
+      "totalNodes": 559,
+      "totalTimeMs": 8,
+      "finalMode": "fast",
+      "fallbackUsed": false,
+      "attempts": {
+        "fast": {
+          "status": "solved",
+          "solved": true,
+          "nodes": 559,
+          "timeMs": 8
+        },
+        "safe": null
+      },
+      "moves": 100,
+      "stats": {
+        "unsafeHomeGenerated": 0,
+        "unsafeHomeTried": 0,
+        "unsafeHomeSolved": 0,
+        "unsafeHomeDeadEnds": 0,
+        "transpositionHits": 6,
+        "deadEndNodes": 0,
+        "maxSearchDepth": 100,
+        "transposition": {
+          "used": 72,
+          "capacity": 4194304,
+          "loadFactor": 0.0000171661376953125,
+          "probes": 150,
+          "maxProbe": 1,
+          "overwrites": 0
+        }
+      }
+    }
+  ]
+}
