@@ -144,7 +144,7 @@ IDA\* は正しい順で手を試すほど早く解に到達する。自動ホ�
 
 ### 4.4 置換表容量・上限の調整
 
-- `createTranspositionTable(capacityBits = 21)` (2^21 = 約 209 万スロット)。
+- `createTranspositionTable(capacityBits = 22)` (2^22 = 約 419 万スロット)。
   列正規化でヒット率が上がると、容量不足による上書きが増える可能性がある。
   メモリに余裕があれば 22〜23 へ引き上げる。
 - `maxNodes` (既定 2,000,000) / `maxTimeMs` (既定 60,000) は、ゲーム UI の

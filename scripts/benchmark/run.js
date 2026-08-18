@@ -203,9 +203,11 @@ function measureGame(game, args) {
       safeFoundationMoves: !args.unsafeHome && SOLVER_PROFILES.fast.safeFoundationMoves,
     },
     safeOptions: {
+      ...SOLVER_PROFILES.safe,
       maxNodes: args.safeMaxNodes,
       maxTimeMs: args.safeMaxTimeMs,
       safeFoundationMoves: SOLVER_PROFILES.safe.safeFoundationMoves,
+      disableReversePruning: SOLVER_PROFILES.safe.disableReversePruning,
     },
   });
   return {

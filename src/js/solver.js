@@ -22,15 +22,13 @@ export const SOLVER_PROFILES = Object.freeze({
     maxTimeMs: 30_000,
     safeFoundationMoves: false,
     allowUnsolvable: false,
-    useAdmissibleBound: false,
   }),
   safe: Object.freeze({
     maxNodes: 10_000_000,
     maxTimeMs: 180_000,
     safeFoundationMoves: true,
     allowUnsolvable: true,
-    useAdmissibleBound: true,
-    disableReversePruning: true,
+    disableReversePruning: false,
   }),
 });
 
@@ -48,7 +46,6 @@ const isRed = (id) => (id & 3) === 1 || (id & 3) === 2;
  * foundationRanks は各スートの現在の先頭ランク(0〜13)を受け取る。
  */
 export function isSafeFoundationMove(cardId, foundationRanks) {
-  const suit = suitOf(cardId);
   const rank = rankOf(cardId);
   if (rank <= 1) {
     return true;
@@ -243,8 +240,7 @@ export function formatMove(mv) {
  * 盤面を解く。
  * @param {{cascades: number[][], freeCells: (number|null)[], foundations: number[][]}} board
  * @param {{maxNodes?: number, maxTimeMs?: number, safeFoundationMoves?: boolean,
- *   disableReversePruning?: boolean, allowUnsolvable?: boolean,
- *   useAdmissibleBound?: boolean}} options
+ *   disableReversePruning?: boolean, allowUnsolvable?: boolean}} options
  * @returns {{solved: boolean, moves: object[], nodes: number, timeMs: number,
  *   status: "solved" | "unsolvable" | "search-exhausted" | "node-limit" | "time-limit"}}
  *   solved=true のとき moves は勝ち手順(初手→終手)。各 move は
@@ -259,7 +255,6 @@ export function solve(board, options = {}) {
   const safeFoundationMoves = options.safeFoundationMoves ?? true;
   const disableReversePruning = options.disableReversePruning ?? false;
   const allowUnsolvable = options.allowUnsolvable ?? true;
-  const useAdmissibleBound = options.useAdmissibleBound ?? false;
   // Date.now() は VirtualBox Guest Additions などによる時刻補正で逆行し得る。
   // performance.now() は単調増加する経過時間用タイマーなので、探索時間の測定に使う。
   const startedAt = performance.now();
@@ -300,7 +295,6 @@ export function solve(board, options = {}) {
     transpositionHits: 0,
     deadEndNodes: 0,
     maxSearchDepth: 0,
-    transposition: null,
   };
 
   /* ---------------- Zobrist ハッシュ ---------------- */
@@ -532,7 +526,8 @@ export function solve(board, options = {}) {
       mv.fromIndex === prevBranch.destIndex &&
       mv.destZone === prevBranch.fromZone &&
       mv.destIndex === prevBranch.fromIndex &&
-      mv.cardId === prevBranch.cardId
+      mv.cardId === prevBranch.cardId &&
+      mv.count === prevBranch.count
     );
   }
 
@@ -705,12 +700,7 @@ export function solve(board, options = {}) {
     return totalHome === totalCards;
   }
 
-  /** 安全な下限。各未ホームカードは少なくとも一度ホームへ移動する。 */
-  function lowerBound() {
-    return totalCards - totalHome;
-  }
-
-  /** 探索順を改善する従来ヒューリスティック。安全モードの下限には使用しない。 */
+  /** 探索の閾値と手順を決める評価。最短解や完全性は保証しない。 */
   function orderingHeuristic() {
     let h = totalCards - totalHome;
     for (const pile of cols) {
@@ -736,12 +726,17 @@ export function solve(board, options = {}) {
     applied.push(mv);
     path.push(mv);
     prevBranch = mv;
+    let autoHomed = false;
     let home = findHomeMove();
     while (home) {
+      autoHomed = true;
       doApply(home);
       applied.push(home);
       path.push(home);
       home = findHomeMove();
+    }
+    if (autoHomed) {
+      prevBranch = null;
     }
     return { moves: applied, prev: savedPrev };
   }
@@ -768,7 +763,7 @@ export function solve(board, options = {}) {
       throw ABORT;
     }
 
-    const f = g + (useAdmissibleBound ? lowerBound() : orderingHeuristic());
+    const f = g + orderingHeuristic();
     if (f > bound) {
       return f;
     }
@@ -841,7 +836,7 @@ export function solve(board, options = {}) {
     }
 
     let g0 = path.length;
-    let bound = g0 + (useAdmissibleBound ? lowerBound() : orderingHeuristic());
+    let bound = g0 + orderingHeuristic();
     while (true) {
       // 置換表の「最小 g で刈る」最適化は同一イテレーション内でのみ正しい。
       // イテレーション(閾値)が上がると過去に浅い g で刈った状態も再展開が

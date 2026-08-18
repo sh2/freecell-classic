@@ -1,0 +1,359 @@
+{
+  "kind": "verify-previous-node-limit-all",
+  "measuredAt": "2026-08-18T11:26:28.233Z",
+  "config": {
+    "maxNodes": 10000000,
+    "maxTimeMs": 180000,
+    "safeFoundationMoves": true,
+    "allowUnsolvable": true,
+    "useAdmissibleBound": true,
+    "disableReversePruning": false
+  },
+  "summary": {
+    "total": 26,
+    "solved": 0,
+    "nodeLimit": 26,
+    "timeLimit": 0,
+    "unsolvable": 0
+  },
+  "results": [
+    {
+      "game": 1941,
+      "original": {
+        "status": "node-limit",
+        "nodes": 10000000,
+        "timeMs": 13328
+      },
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 10000000,
+      "timeMs": 12957,
+      "moves": 0
+    },
+    {
+      "game": 3670,
+      "original": {
+        "status": "node-limit",
+        "nodes": 10000000,
+        "timeMs": 11970
+      },
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 10000000,
+      "timeMs": 12796,
+      "moves": 0
+    },
+    {
+      "game": 4016,
+      "original": {
+        "status": "node-limit",
+        "nodes": 10000000,
+        "timeMs": 9927
+      },
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 10000000,
+      "timeMs": 11173,
+      "moves": 0
+    },
+    {
+      "game": 4828,
+      "original": {
+        "status": "node-limit",
+        "nodes": 10000000,
+        "timeMs": 12545
+      },
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 10000000,
+      "timeMs": 12937,
+      "moves": 0
+    },
+    {
+      "game": 5495,
+      "original": {
+        "status": "node-limit",
+        "nodes": 10000000,
+        "timeMs": 11598
+      },
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 10000000,
+      "timeMs": 11921,
+      "moves": 0
+    },
+    {
+      "game": 6240,
+      "original": {
+        "status": "node-limit",
+        "nodes": 10000000,
+        "timeMs": 13608
+      },
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 10000000,
+      "timeMs": 15231,
+      "moves": 0
+    },
+    {
+      "game": 9781,
+      "original": {
+        "status": "node-limit",
+        "nodes": 10000000,
+        "timeMs": 13228
+      },
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 10000000,
+      "timeMs": 13551,
+      "moves": 0
+    },
+    {
+      "game": 10692,
+      "original": {
+        "status": "node-limit",
+        "nodes": 10000000,
+        "timeMs": 13212
+      },
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 10000000,
+      "timeMs": 14763,
+      "moves": 0
+    },
+    {
+      "game": 11552,
+      "original": {
+        "status": "node-limit",
+        "nodes": 10000000,
+        "timeMs": 11097
+      },
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 10000000,
+      "timeMs": 11660,
+      "moves": 0
+    },
+    {
+      "game": 11982,
+      "original": {
+        "status": "node-limit",
+        "nodes": 10000000,
+        "timeMs": 14529
+      },
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 10000000,
+      "timeMs": 16021,
+      "moves": 0
+    },
+    {
+      "game": 12475,
+      "original": {
+        "status": "node-limit",
+        "nodes": 10000000,
+        "timeMs": 11021
+      },
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 10000000,
+      "timeMs": 11507,
+      "moves": 0
+    },
+    {
+      "game": 13701,
+      "original": {
+        "status": "node-limit",
+        "nodes": 10000000,
+        "timeMs": 10418
+      },
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 10000000,
+      "timeMs": 10979,
+      "moves": 0
+    },
+    {
+      "game": 13705,
+      "original": {
+        "status": "node-limit",
+        "nodes": 10000000,
+        "timeMs": 11565
+      },
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 10000000,
+      "timeMs": 12164,
+      "moves": 0
+    },
+    {
+      "game": 13777,
+      "original": {
+        "status": "node-limit",
+        "nodes": 10000000,
+        "timeMs": 10184
+      },
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 10000000,
+      "timeMs": 10383,
+      "moves": 0
+    },
+    {
+      "game": 14212,
+      "original": {
+        "status": "node-limit",
+        "nodes": 10000000,
+        "timeMs": 12097
+      },
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 10000000,
+      "timeMs": 12044,
+      "moves": 0
+    },
+    {
+      "game": 17432,
+      "original": {
+        "status": "node-limit",
+        "nodes": 10000000,
+        "timeMs": 11684
+      },
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 10000000,
+      "timeMs": 12228,
+      "moves": 0
+    },
+    {
+      "game": 17880,
+      "original": {
+        "status": "node-limit",
+        "nodes": 10000000,
+        "timeMs": 10721
+      },
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 10000000,
+      "timeMs": 11203,
+      "moves": 0
+    },
+    {
+      "game": 18783,
+      "original": {
+        "status": "node-limit",
+        "nodes": 10000000,
+        "timeMs": 9878
+      },
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 10000000,
+      "timeMs": 10327,
+      "moves": 0
+    },
+    {
+      "game": 19975,
+      "original": {
+        "status": "node-limit",
+        "nodes": 10000000,
+        "timeMs": 10629
+      },
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 10000000,
+      "timeMs": 11167,
+      "moves": 0
+    },
+    {
+      "game": 21491,
+      "original": {
+        "status": "node-limit",
+        "nodes": 10000000,
+        "timeMs": 14403
+      },
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 10000000,
+      "timeMs": 14787,
+      "moves": 0
+    },
+    {
+      "game": 24327,
+      "original": {
+        "status": "node-limit",
+        "nodes": 10000000,
+        "timeMs": 9880
+      },
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 10000000,
+      "timeMs": 9741,
+      "moves": 0
+    },
+    {
+      "game": 25315,
+      "original": {
+        "status": "node-limit",
+        "nodes": 10000000,
+        "timeMs": 13239
+      },
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 10000000,
+      "timeMs": 13911,
+      "moves": 0
+    },
+    {
+      "game": 26334,
+      "original": {
+        "status": "node-limit",
+        "nodes": 10000000,
+        "timeMs": 12311
+      },
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 10000000,
+      "timeMs": 12520,
+      "moves": 0
+    },
+    {
+      "game": 27101,
+      "original": {
+        "status": "node-limit",
+        "nodes": 10000000,
+        "timeMs": 9837
+      },
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 10000000,
+      "timeMs": 9387,
+      "moves": 0
+    },
+    {
+      "game": 31433,
+      "original": {
+        "status": "node-limit",
+        "nodes": 10000000,
+        "timeMs": 11393
+      },
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 10000000,
+      "timeMs": 11602,
+      "moves": 0
+    },
+    {
+      "game": 31465,
+      "original": {
+        "status": "node-limit",
+        "nodes": 10000000,
+        "timeMs": 14231
+      },
+      "status": "node-limit",
+      "solved": false,
+      "nodes": 10000000,
+      "timeMs": 14622,
+      "moves": 0
+    }
+  ]
+}

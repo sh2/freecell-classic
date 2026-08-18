@@ -337,7 +337,6 @@ describe("solve: 解けない盤面と上限", () => {
     };
     const res = solve(board, {
       safeFoundationMoves: true,
-      useAdmissibleBound: true,
       allowUnsolvable: true,
       maxNodes: 20000,
       maxTimeMs: 60000,
