@@ -21,11 +21,16 @@ export const SOLVER_PROFILES = Object.freeze({
     maxNodes: 2_000_000,
     maxTimeMs: 30_000,
     safeFoundationMoves: false,
+    allowUnsolvable: false,
+    useAdmissibleBound: false,
   }),
   safe: Object.freeze({
     maxNodes: 10_000_000,
     maxTimeMs: 180_000,
     safeFoundationMoves: true,
+    allowUnsolvable: true,
+    useAdmissibleBound: true,
+    disableReversePruning: true,
   }),
 });
 
@@ -133,11 +138,16 @@ function createTranspositionTable(capacityBits = 22) {
   const g = new Int32Array(size);
   g.fill(-1); // -1 = 空
   const MAX_PROBE = 40;
+  let probes = 0;
+  let maxProbe = 0;
+  let overwrites = 0;
   return {
-    /** 見つかれば最小 g を返す。無ければ -1 */
+    /** 64bit Zobrist ハッシュが一致すれば同一状態として扱う。 */
     lookup(k1, k2) {
       let i = k1 & (size - 1);
       for (let n = 0; n < MAX_PROBE; n++) {
+        probes++;
+        maxProbe = Math.max(maxProbe, n + 1);
         const gh = g[i];
         if (gh === -1) {
           return -1;
@@ -153,6 +163,8 @@ function createTranspositionTable(capacityBits = 22) {
     store(k1, k2, gg) {
       let i = k1 & (size - 1);
       for (let n = 0; n < MAX_PROBE; n++) {
+        probes++;
+        maxProbe = Math.max(maxProbe, n + 1);
         const gh = g[i];
         if (gh === -1) {
           h1[i] = k1;
@@ -170,12 +182,22 @@ function createTranspositionTable(capacityBits = 22) {
       }
       // 満杯に近い場合は先頭スロットを上書き(枝刈り情報を失うだけで安全性は保たれる)
       i = k1 & (size - 1);
+      overwrites++;
       h1[i] = k1;
       h2[i] = k2;
       g[i] = gg;
     },
     clear() {
       g.fill(-1);
+    },
+    stats() {
+      let used = 0;
+      for (const value of g) {
+        if (value !== -1) {
+          used++;
+        }
+      }
+      return { used, capacity: size, loadFactor: used / size, probes, maxProbe, overwrites };
     },
   };
 }
@@ -220,16 +242,24 @@ export function formatMove(mv) {
 /**
  * 盤面を解く。
  * @param {{cascades: number[][], freeCells: (number|null)[], foundations: number[][]}} board
- * @param {{maxNodes?: number, maxTimeMs?: number}} options
- * @returns {{solved: boolean, moves: object[], nodes: number, timeMs: number, status: string}}
+ * @param {{maxNodes?: number, maxTimeMs?: number, safeFoundationMoves?: boolean,
+ *   disableReversePruning?: boolean, allowUnsolvable?: boolean,
+ *   useAdmissibleBound?: boolean}} options
+ * @returns {{solved: boolean, moves: object[], nodes: number, timeMs: number,
+ *   status: "solved" | "unsolvable" | "search-exhausted" | "node-limit" | "time-limit"}}
  *   solved=true のとき moves は勝ち手順(初手→終手)。各 move は
  *   { cardId, fromZone, fromIndex, destZone, destIndex, count }。
- *   solved=false のとき status は "unsolvable" | "node-limit" | "time-limit"。
+ *   `unsolvable` は64bit Zobristハッシュの衝突を無視した探索上の解なしであり、
+ *   数学的な完全証明ではない。`allowUnsolvable: false` の場合は同じ結果を
+ *   `search-exhausted` として返す。
  */
 export function solve(board, options = {}) {
   const maxNodes = options.maxNodes ?? 2000000;
   const maxTimeMs = options.maxTimeMs ?? 60000;
   const safeFoundationMoves = options.safeFoundationMoves ?? true;
+  const disableReversePruning = options.disableReversePruning ?? false;
+  const allowUnsolvable = options.allowUnsolvable ?? true;
+  const useAdmissibleBound = options.useAdmissibleBound ?? false;
   // Date.now() は VirtualBox Guest Additions などによる時刻補正で逆行し得る。
   // performance.now() は単調増加する経過時間用タイマーなので、探索時間の測定に使う。
   const startedAt = performance.now();
@@ -270,6 +300,7 @@ export function solve(board, options = {}) {
     transpositionHits: 0,
     deadEndNodes: 0,
     maxSearchDepth: 0,
+    transposition: null,
   };
 
   /* ---------------- Zobrist ハッシュ ---------------- */
@@ -321,7 +352,7 @@ export function solve(board, options = {}) {
       k1 = (Math.imul(k1 ^ colH1[col], 0x9e3779b1) + 0x85ebca6b) >>> 0;
       k2 = (Math.imul(k2 ^ colH2[col], 0xc2b2ae35) + 0x27d4eb2f) >>> 0;
     }
-    return [k1, k2];
+    return [k1, k2, order];
   }
 
   /* ---------------- 手の適用 / 取り消し ---------------- */
@@ -606,7 +637,7 @@ export function solve(board, options = {}) {
             continue;
           }
           const mv = { cardId: bottom, fromZone: "cascade", fromIndex: i, destZone: "cascade", destIndex: j, count };
-          if (isReverse(mv)) {
+          if (!disableReversePruning && isReverse(mv)) {
             continue;
           }
           mv.score = moveScore(mv);
@@ -627,7 +658,7 @@ export function solve(board, options = {}) {
           continue;
         }
         const mv = { cardId, fromZone: "cascade", fromIndex: i, destZone: "free", destIndex: f, count: 1 };
-        if (isReverse(mv)) {
+        if (!disableReversePruning && isReverse(mv)) {
           continue;
         }
         mv.score = moveScore(mv);
@@ -649,7 +680,7 @@ export function solve(board, options = {}) {
           continue;
         }
         const mv = { cardId, fromZone: "free", fromIndex: f, destZone: "cascade", destIndex: j, count: 1 };
-        if (isReverse(mv)) {
+        if (!disableReversePruning && isReverse(mv)) {
           continue;
         }
         mv.score = moveScore(mv);
@@ -674,19 +705,16 @@ export function solve(board, options = {}) {
     return totalHome === totalCards;
   }
 
-  /** ヒューリスティック: 残りカード数 + 各列の「可動末尾より下」のカード数。
-   *  列の先頭から連続した降順交互列(スーパームーブで動かせる範囲)より下の
-   *  カードは、上を退けてからでないと動かせないため 1 手分を加算する。
-   *  (やや過大評価になり得るが、解を「最短でなくても見つける」用途では有効) */
-  function heuristic() {
+  /** 安全な下限。各未ホームカードは少なくとも一度ホームへ移動する。 */
+  function lowerBound() {
+    return totalCards - totalHome;
+  }
+
+  /** 探索順を改善する従来ヒューリスティック。安全モードの下限には使用しない。 */
+  function orderingHeuristic() {
     let h = totalCards - totalHome;
-    for (let i = 0; i < NUM_CASCADES; i++) {
-      const pile = cols[i];
-      const n = pile.length;
-      if (n <= 1) {
-        continue;
-      }
-      let tailStart = n - 1;
+    for (const pile of cols) {
+      let tailStart = pile.length - 1;
       while (tailStart > 0) {
         const a = pile[tailStart - 1];
         const b = pile[tailStart];
@@ -696,7 +724,7 @@ export function solve(board, options = {}) {
           break;
         }
       }
-      h += tailStart; // 可動末尾より下にあるカード
+      h += tailStart;
     }
     return h;
   }
@@ -740,7 +768,7 @@ export function solve(board, options = {}) {
       throw ABORT;
     }
 
-    const f = g + heuristic();
+    const f = g + (useAdmissibleBound ? lowerBound() : orderingHeuristic());
     if (f > bound) {
       return f;
     }
@@ -796,7 +824,7 @@ export function solve(board, options = {}) {
     moves: solutionMoves !== null ? solutionMoves.slice() : [],
     nodes,
     timeMs: Math.round(performance.now() - startedAt),
-    stats: { ...stats },
+    stats: { ...stats, transposition: tt.stats() },
   });
 
   try {
@@ -813,7 +841,7 @@ export function solve(board, options = {}) {
     }
 
     let g0 = path.length;
-    let bound = g0 + heuristic();
+    let bound = g0 + (useAdmissibleBound ? lowerBound() : orderingHeuristic());
     while (true) {
       // 置換表の「最小 g で刈る」最適化は同一イテレーション内でのみ正しい。
       // イテレーション(閾値)が上がると過去に浅い g で刈った状態も再展開が
@@ -824,7 +852,7 @@ export function solve(board, options = {}) {
         return finish(true, "solved");
       }
       if (t >= INF) {
-        return finish(false, "unsolvable");
+        return finish(false, allowUnsolvable ? "unsolvable" : "search-exhausted");
       }
       bound = t;
     }

@@ -265,6 +265,28 @@ describe("solve: 分岐手(退避)が必要な盤面", () => {
     expect(branchMoves.length).toBeGreaterThanOrEqual(1);
     replayAndVerify(board, res.moves);
   });
+
+  it("逆手除外の有効・無効で小規模盤面の解決可能性が一致する", () => {
+    const board = {
+      cascades: [[3, 10], [6, 11]],
+      freeCells: [7, 2, null, null],
+      foundations: [],
+    };
+    const pruned = solve(board, {
+      maxNodes: 20000,
+      maxTimeMs: 60000,
+      disableReversePruning: false,
+    });
+    const unpruned = solve(board, {
+      maxNodes: 20000,
+      maxTimeMs: 60000,
+      disableReversePruning: true,
+    });
+    expect(unpruned.solved).toBe(pruned.solved);
+    if (unpruned.solved) {
+      replayAndVerify(board, unpruned.moves);
+    }
+  });
 });
 
 describe("solve: 実ゲーム", () => {
@@ -305,6 +327,36 @@ describe("solve: 解けない盤面と上限", () => {
     const res = solve(board, { maxNodes: 1000, maxTimeMs: 60000 });
     expect(res.solved).toBe(false);
     expect(res.status).toBe("node-limit");
+  });
+
+  it("安全モードの unsolvable はハッシュ衝突を無視した探索結果である", () => {
+    const board = {
+      cascades: [[5, 3]],
+      freeCells: [],
+      foundations: [],
+    };
+    const res = solve(board, {
+      safeFoundationMoves: true,
+      useAdmissibleBound: true,
+      allowUnsolvable: true,
+      maxNodes: 20000,
+      maxTimeMs: 60000,
+    });
+    expect(res.solved).toBe(false);
+    expect(res.status).toBe("unsolvable");
+  });
+
+  it("置換表の状態照合と探索統計を記録する", () => {
+    const res = solve({ cascades: [[0]], freeCells: [], foundations: [] });
+    expect(res.stats.transposition).toEqual(
+      expect.objectContaining({
+        capacity: expect.any(Number),
+        used: expect.any(Number),
+        loadFactor: expect.any(Number),
+        maxProbe: expect.any(Number),
+        overwrites: expect.any(Number),
+      }),
+    );
   });
 });
 
