@@ -163,6 +163,7 @@ describe("solveWithFallback: 二段階探索", () => {
     const res = solveWithFallback(board, {
       fastOptions: { maxNodes: 1, maxTimeMs: 60000 },
       safeOptions: { maxNodes: 1, maxTimeMs: 60000 },
+      safeRetry: false, // このテストは fast→safe のフォールバックに焦点を当てる
       onStageChange: (stage) => stages.push(stage),
     });
     expect(stages).toEqual(["fast", "safe"]);
@@ -170,6 +171,27 @@ describe("solveWithFallback: 二段階探索", () => {
     expect(res.finalMode).toBe("safe");
     expect(res.totalNodes).toBe(res.attempts.fast.nodes + res.attempts.safe.nodes);
     expect(res.totalTimeMs).toBe(res.attempts.fast.timeMs + res.attempts.safe.timeMs);
+  });
+
+  it("safe が失敗したら safe2 で再試行する", () => {
+    const stages = [];
+    const board = {
+      cascades: [[4]],
+      freeCells: [],
+      foundations: [],
+    };
+    const res = solveWithFallback(board, {
+      fastOptions: { maxNodes: 1, maxTimeMs: 60000 },
+      safeOptions: { maxNodes: 1, maxTimeMs: 60000 },
+      safeRetryOptions: { maxNodes: 1, maxTimeMs: 60000 }, // 再試行も即失敗させる
+      onStageChange: (stage) => stages.push(stage),
+    });
+    expect(stages).toEqual(["fast", "safe", "safe2"]);
+    expect(res.fallbackUsed).toBe(true);
+    expect(res.finalMode).toBe("safe2");
+    expect(res.totalNodes).toBe(
+      res.attempts.fast.nodes + res.attempts.safe.nodes + res.attempts.safe2.nodes,
+    );
   });
 
   it("安全モード単独ではフォールバック扱いにしない", () => {
@@ -202,15 +224,19 @@ describe("solveWithFallback: 二段階探索", () => {
     ]);
 
     messages.length = 0;
+    // モックは solveWithFallback 全体を置き換えるため、fast→safe→safe2 の
+    // 段階通知を自前で発行してから node-limit を返す。
     const stagedHandler = createSolverWorkerHandler((message) => messages.push(message), (_board, options) => {
       options.onStageChange("fast");
       options.onStageChange("safe");
+      options.onStageChange("safe2");
       return { solved: false, status: "node-limit", moves: [], nodes: 4, timeMs: 5 };
     });
     stagedHandler({ data: { requestId: 7, board: solvedBoard, strategy: "fast-safe" } });
     expect(messages[0]).toEqual({ type: "stage", requestId: 7, stage: "fast" });
     expect(messages[1]).toEqual({ type: "stage", requestId: 7, stage: "safe" });
-    expect(messages[2].type).toBe("result");
+    expect(messages[2]).toEqual({ type: "stage", requestId: 7, stage: "safe2" });
+    expect(messages[3].type).toBe("result");
   });
 });
 

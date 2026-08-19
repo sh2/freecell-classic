@@ -29,6 +29,17 @@ export const SOLVER_PROFILES = Object.freeze({
     safeFoundationMoves: true,
     allowUnsolvable: true,
     disableReversePruning: false,
+    tailStartWeight: 1.1,
+  }),
+  // safe が上限で打ち切られたときの再試行。tailStart 重みを強めて解を探す
+  // (#10353 / #13331 のような難関はこの設定で少ないノードで解ける)。
+  safeRetry: Object.freeze({
+    maxNodes: 2_000_000,
+    maxTimeMs: 60_000,
+    safeFoundationMoves: true,
+    allowUnsolvable: true,
+    disableReversePruning: false,
+    tailStartWeight: 1.5,
   }),
 });
 
@@ -327,6 +338,9 @@ export function solve(board, options = {}) {
   const safeFoundationMoves = options.safeFoundationMoves ?? true;
   const disableReversePruning = options.disableReversePruning ?? false;
   const allowUnsolvable = options.allowUnsolvable ?? true;
+  // ヒューリスティックの tailStart 重み (A/B 比較で fast=1.1 を採用)。
+  // 難関ゲームの safe 探索では大きめの重みで反復を減らせる。
+  const tailStartWeight = options.tailStartWeight ?? 1.1;
   // Date.now() は VirtualBox Guest Additions などによる時刻補正で逆行し得る。
   // performance.now() は単調増加する経過時間用タイマーなので、探索時間の測定に使う。
   const startedAt = performance.now();
@@ -882,8 +896,9 @@ export function solve(board, options = {}) {
 
   /**
    * 探索の閾値と手順を決める評価。最短解や完全性は保証しない。
-   * h = 未ホーム数 + Σ ceil(tailStart × 1.1)。tailStart の重み1.1倍はフェーズCの
-   * A/B 比較で採用 (難関ゲームの反復削減と通常ゲームの効率維持を両立)。
+   * h = 未ホーム数 + Σ ceil(tailStart × tailStartWeight)。tailStart の重みは
+   * フェーズC の A/B 比較で fast=1.1 を採用。難関ゲームの safe 探索では
+   * 大きめの重みで反復を減らせる (options.tailStartWeight)。
    */
   function orderingHeuristic() {
     let h = totalCards - totalHome;
@@ -898,7 +913,7 @@ export function solve(board, options = {}) {
           break;
         }
       }
-      h += Math.ceil(tailStart * 1.1);
+      h += Math.ceil(tailStart * tailStartWeight);
     }
     return h;
   }
@@ -1067,11 +1082,16 @@ export function solveWithFallback(board, options = {}) {
   }
   const fastOptions = { ...SOLVER_PROFILES.fast, ...(options.fastOptions ?? {}) };
   const safeOptions = { ...SOLVER_PROFILES.safe, ...(options.safeOptions ?? {}) };
+  // safe 再試行の設定。safe が上限で打ち切られた場合に、より強いヒューリスティックで
+  // 解を探す (フェーズC の改善の応用)。明示的に無効化できる。
+  const retryEnabled = options.safeRetry ?? true;
+  const retryOptions = { ...SOLVER_PROFILES.safeRetry, ...(options.safeRetryOptions ?? {}) };
   if (options.trackCounters) {
     fastOptions.trackCounters = true;
     safeOptions.trackCounters = true;
+    retryOptions.trackCounters = true;
   }
-  const attempts = { fast: null, safe: null };
+  const attempts = { fast: null, safe: null, safe2: null };
 
   const run = (mode, solverOptions) => {
     options.onStageChange?.(mode);
@@ -1093,12 +1113,20 @@ export function solveWithFallback(board, options = {}) {
   } else if (strategy === "safe") {
     finalMode = "safe";
     result = run("safe", safeOptions);
+    if (!result.solved && retryEnabled) {
+      result = run("safe2", retryOptions);
+      finalMode = "safe2";
+    }
   } else {
     result = run("fast", fastOptions);
     finalMode = "fast";
     if (!result.solved) {
       result = run("safe", safeOptions);
       finalMode = "safe";
+    }
+    if (!result.solved && retryEnabled) {
+      result = run("safe2", retryOptions);
+      finalMode = "safe2";
     }
   }
 
@@ -1108,7 +1136,7 @@ export function solveWithFallback(board, options = {}) {
     ...result,
     finalMode,
     strategy,
-    fallbackUsed: strategy === "fast-safe" && attempts.safe !== null,
+    fallbackUsed: strategy === "fast-safe" && (attempts.safe !== null || attempts.safe2 !== null),
     totalNodes,
     totalTimeMs,
     attempts,

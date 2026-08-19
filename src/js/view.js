@@ -564,7 +564,11 @@ export function createView() {
   function setSolverStage(stage) {
     const solveBtn = document.getElementById("solve-btn");
     if (solveBtn) {
-      solveBtn.textContent = stage === "safe" ? "安全探索中…" : "高速探索中…";
+      if (stage === "safe" || stage === "safe2") {
+        solveBtn.textContent = "安全探索中…";
+      } else {
+        solveBtn.textContent = "高速探索中…";
+      }
     }
   }
 
