@@ -45,6 +45,8 @@ export function createSolverClient({ app, view }) {
 
   /** ソルバーUIのbusy状態を mode(hint/auto)付きで view へ伝える */
   function setBusy(busy) {
+    // finishAutoSolve 直後は autoSolving が false のため "hint" に倒れるのを防ぐ
+    // → 自動解答の終了時は呼び出し側で view.setSolverBusy(false,"auto") を直接呼ぶ
     const mode = (activeRequest && activeRequest.autoPlay) || autoSolving ? "auto" : "hint";
     view.setSolverBusy(busy, mode);
   }
@@ -59,7 +61,6 @@ export function createSolverClient({ app, view }) {
   function finishAutoSolve() {
     autoSolving = false;
     app.setAutoSolving(false);
-    setBusy(false);
     // トグルをOFFに戻す
     const toggle = document.getElementById("auto-solve-toggle");
     if (toggle) {
@@ -67,6 +68,7 @@ export function createSolverClient({ app, view }) {
     }
     // 自動ホーム送りを元に戻す
     app.setAutoMoveEnabled(savedAutoMoveEnabled);
+    view.setSolverBusy(false, "auto");
     clearReplayTimer();
     replayMoves = null;
   }
@@ -75,27 +77,42 @@ export function createSolverClient({ app, view }) {
     clearReplayTimer();
     replayMoves = null;
     replayIndex = 0;
-    if (autoSolving) {
-      finishAutoSolve();
-    }
   }
 
   /** トグルOFFや新規ゲームで自動解答を中断する */
   function cancelAutoSolve() {
-    cancelReplay();
+    // 再生中 → ラベル復元を含め finishAutoSolve で一括終了
+    if (autoSolving && !activeRequest) {
+      clearReplayTimer();
+      replayMoves = null;
+      replayIndex = 0;
+      finishAutoSolve();
+      return;
+    }
+    // 計算中に再生が始まっていた場合の保険（通常は到達しない）
+    if (autoSolving && activeRequest && activeRequest.autoPlay) {
+      clearReplayTimer();
+      replayMoves = null;
+      replayIndex = 0;
+    }
     if (activeRequest && activeRequest.autoPlay) {
       activeRequest = null;
       stopWorker();
-      setBusy(false);
       const toggle = document.getElementById("auto-solve-toggle");
       if (toggle) {
         toggle.checked = false;
       }
       if (autoSolving) {
         finishAutoSolve();
+      } else {
+        view.setSolverBusy(false, "auto");
       }
     } else if (autoSolving) {
       finishAutoSolve();
+    } else {
+      clearReplayTimer();
+      replayMoves = null;
+      replayIndex = 0;
     }
   }
 
@@ -147,9 +164,8 @@ export function createSolverClient({ app, view }) {
     }
     replayMoves = moves;
     replayIndex = 0;
-    // 自動ホーム送りは無効化してソルバーの手順通りに進める
-    savedAutoMoveEnabled = true;
-    // app の autoMoveEnabled を取得できないため、ひとまず無効化して終了時に有効化
+    // 自動ホーム送りは無効化してソルバーの手順通りに進める（元の設定を保存）
+    savedAutoMoveEnabled = typeof app.getAutoMoveEnabled === "function" ? app.getAutoMoveEnabled() : true;
     app.setAutoMoveEnabled(false);
     autoSolving = true;
     app.setAutoSolving(true);
@@ -208,6 +224,9 @@ export function createSolverClient({ app, view }) {
     const board = boardFromState();
     const requestId = nextRequestId++;
     activeRequest = { requestId, snapshot: boardSnapshot(board), autoPlay };
+    if (autoPlay) {
+      savedAutoMoveEnabled = typeof app.getAutoMoveEnabled === "function" ? app.getAutoMoveEnabled() : true;
+    }
     setBusy(true);
     if (autoPlay) {
       autoSolving = true;
@@ -216,7 +235,6 @@ export function createSolverClient({ app, view }) {
       if (toggle) {
         toggle.checked = true;
       }
-      savedAutoMoveEnabled = true;
     }
     worker = new Worker(new URL("./solver.worker.js", import.meta.url), { type: "module" });
     worker.onmessage = (e) => {
@@ -284,13 +302,17 @@ export function createSolverClient({ app, view }) {
   }
 
   function cancel() {
-    cancelReplay();
+    if (autoSolving) {
+      cancelAutoSolve();
+      return;
+    }
+    const wasAuto = Boolean(activeRequest && activeRequest.autoPlay);
+    clearReplayTimer();
+    replayMoves = null;
+    replayIndex = 0;
     activeRequest = null;
     stopWorker();
-    setBusy(false);
-    if (autoSolving) {
-      finishAutoSolve();
-    }
+    view.setSolverBusy(false, wasAuto ? "auto" : "hint");
   }
 
   function isAutoSolving() {

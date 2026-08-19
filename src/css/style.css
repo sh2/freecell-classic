@@ -54,7 +54,24 @@ body {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
+  gap: 10px 14px;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
+  padding: 4px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.control-group--info {
+  background: transparent;
+  border-color: transparent;
+  padding-inline: 2px;
 }
 
 .controls button {
@@ -83,6 +100,15 @@ body {
   opacity: 0.45;
   cursor: default;
   transform: none;
+}
+
+.auto-toggle:has(input:disabled) {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.seed-label:has(input:disabled) {
+  opacity: 0.45;
 }
 
 .seed-label {

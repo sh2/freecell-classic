@@ -344,10 +344,72 @@ export function createView() {
     }
   }
 
+  /* ---------------- コントロール Enable/Disable の一元管理 ---------------- */
+
+  let _lastState = null;
+  let _autoSolvingFlag = false;
+  let _solverBusyFlag = false;
+
+  /** 状態表(docs/ui-state-matrix.md 4章)に準拠してツールバーの disabled を同期する */
+  function syncControls() {
+    const won = _lastState ? _lastState.won : false;
+    const hasHistory = _lastState ? _lastState.historyStack.length > 0 : false;
+    const hasAutoMove = _lastState ? gameState.hasAutoMove(_lastState) : false;
+    const busyHint = solverMode === "hint" && _solverBusyFlag;
+    const busyAuto = solverMode === "auto" && _solverBusyFlag;
+    const autoSolving = _autoSolvingFlag || busyAuto;
+
+    const newGameBtn = document.getElementById("new-game-btn");
+    const restartBtn = document.getElementById("restart-btn");
+    const undoBtn = document.getElementById("undo-btn");
+    const autoMoveBtn = document.getElementById("auto-move-btn");
+    const hintBtn = document.getElementById("hint-btn");
+    const autoToggle = document.getElementById("auto-solve-toggle");
+    const autoMoveToggle = document.getElementById("auto-move-toggle");
+    const seedInput = document.getElementById("seed-input");
+    const startBtn = document.getElementById("start-game-btn");
+
+    const disableNewGameRelated = autoSolving;
+    if (newGameBtn) {
+      newGameBtn.disabled = disableNewGameRelated;
+    }
+    if (restartBtn) {
+      restartBtn.disabled = disableNewGameRelated;
+    }
+    if (seedInput) {
+      seedInput.disabled = disableNewGameRelated;
+    }
+    if (startBtn) {
+      startBtn.disabled = disableNewGameRelated;
+    }
+
+    if (undoBtn) {
+      undoBtn.disabled = won || !hasHistory || autoSolving;
+    }
+    if (autoMoveBtn) {
+      autoMoveBtn.disabled = won || autoSolving || busyHint || !hasAutoMove;
+    }
+    if (hintBtn) {
+      hintBtn.disabled = won || busyHint || busyAuto;
+    }
+    if (autoToggle) {
+      if (won) {
+        autoToggle.disabled = true;
+      } else if (busyHint) {
+        autoToggle.disabled = true;
+      } else {
+        autoToggle.disabled = false;
+      }
+    }
+    if (autoMoveToggle) {
+      autoMoveToggle.disabled = won || autoSolving;
+    }
+  }
+
   function updateStatus(state) {
+    _lastState = state;
     document.getElementById("move-counter").textContent = `手数: ${state.moveCount}`;
-    // クリア済みは元に戻せない(操作不可になるため)。詰み時は戻せる
-    document.getElementById("undo-btn").disabled = state.historyStack.length === 0 || state.won;
+    syncControls();
   }
 
   /* ---------------- タイマー表示 ---------------- */
@@ -586,10 +648,12 @@ export function createView() {
   }
 
   function setAutoSolving(solving) {
+    _autoSolvingFlag = solving;
     const gameEl = document.getElementById("game");
     if (gameEl) {
       gameEl.classList.toggle("auto-solving", solving);
     }
+    syncControls();
   }
 
   /** ソルバー計算中のUI状態を制御する。
@@ -597,38 +661,28 @@ export function createView() {
    *   (OFFでキャンセルできる)。テキスト幅はCSSで固定しているため位置は動かない。
    *  mode="hint": ヒント。ラベルは変更せず、トグルを無効化(自動解答開始を防ぐ)。 */
   function setSolverBusy(busy, mode) {
-    const hintBtn = document.getElementById("hint-btn");
-    const toggle = document.getElementById("auto-solve-toggle");
-    const label = document.getElementById("auto-solve-label");
-    if (hintBtn) {
-      hintBtn.disabled = busy;
-    }
     if (mode === "auto") {
       solverMode = busy ? "auto" : null;
-      if (toggle) {
-        // 自動解答中はトグルを有効に保ち、OFF操作でキャンセルできるようにする
-        toggle.disabled = false;
-      }
+      _solverBusyFlag = busy;
+      const label = document.getElementById("auto-solve-label");
       if (label) {
         if (busy) {
           if (label.dataset.prevText === undefined) {
             label.dataset.prevText = label.textContent;
           }
           label.textContent = "計算中…";
-        } else if (label.dataset.prevText !== undefined) {
-          label.textContent = label.dataset.prevText;
-          delete label.dataset.prevText;
         } else {
+          // 完了・キャンセル時は必ず「自動解答」に戻す
           label.textContent = "自動解答";
+          delete label.dataset.prevText;
         }
       }
     } else {
       // ヒント計算中: ラベルは変えず、トグルのみ無効化
       solverMode = busy ? "hint" : null;
-      if (toggle) {
-        toggle.disabled = busy;
-      }
+      _solverBusyFlag = busy;
     }
+    syncControls();
   }
 
   /** ソルバーの現在段階を表示する(自動解答中のみ。ヒント中はラベルを変えない) */

@@ -221,6 +221,10 @@ export function createApp({ view, deps = {} }) {
     }
   }
 
+  function getAutoMoveEnabled() {
+    return autoMoveEnabled;
+  }
+
   /** カード移動アニメーションの有効/無効を切り替える(テスト API 用) */
   function setAnimationsEnabled(enabled) {
     view.setAnimationsEnabled(enabled);
@@ -536,6 +540,7 @@ export function createApp({ view, deps = {} }) {
     autoMoveHome,
     dblClickAutoMove,
     setAutoMoveEnabled,
+    getAutoMoveEnabled,
     setAnimationsEnabled,
     startGame,
     newGameFromInput,

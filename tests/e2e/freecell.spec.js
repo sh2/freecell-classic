@@ -391,11 +391,10 @@ test.describe("自動移動", () => {
     expect(s.cascades[0]).toEqual([8]); // 3C は残る
   });
 
-  test("移動できるカードがなければトーストが表示される", async ({ page }) => {
+  test("移動できるカードがなければボタンは無効化される", async ({ page }) => {
     await h.openGame(page, 1);
-    await page.click("#auto-move-btn");
+    await expect(page.locator("#auto-move-btn")).toBeDisabled();
     expect((await h.state(page)).moveCount).toBe(0);
-    await expect(page.locator("#toast")).toHaveText("ホームへ移動できるカードはありません");
   });
 });
 

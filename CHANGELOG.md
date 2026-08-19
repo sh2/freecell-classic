@@ -2,6 +2,12 @@
 
 ## 2026-08-20
 
+### ドキュメント
+
+- **`docs/ui-state-matrix.md` を追加**。ゲーム状態を3層に整理し、
+  状態遷移図（Mermaid）、全コントロール一覧、状態 × コントロール対応表、
+  既知の不整合、推奨ポリシー、今後の修正方針を定義した。
+
 ### 修正
 
 - **クリア済みゲームは元に戻せないように修正**
@@ -18,6 +24,33 @@
   （`src/js/solver-client.js` / `src/js/view.js`）。自動解答（探索中・再生中）
   はトグルを有効のまま保ち、OFF操作で `cancelAutoSolve` により計算/再生を
   中断してトグルをOFFに戻す。盤面ブロック（`#game.auto-solving`）は維持。
+- **UI状態表に基づく Enable/Disable の一貫性を改善**
+  （`src/js/view.js` / `src/js/solver-client.js` / `src/js/app.js` /
+  `src/css/style.css` / `tests/e2e/freecell.spec.js`）。
+  `docs/ui-state-matrix.md` の「あるべき姿」に準拠して以下を修正した。
+  - `view.js` に `syncControls()` を新設し、`updateStatus()` /
+    `setAutoSolving()` / `setSolverBusy()` から呼び出して有効/無効を一元管理。
+    自動解答 計算中・再生中は「新しいゲーム」「やり直す」「開始」「No.入力」
+    「元に戻す」「自動移動」「自動でホームへ送る」を無効化し、勝利時は
+    該当コントロールを無効化、詰み時は自動移動を無効化する。
+    `setSolverBusy()` のラベル復元は `dataset.prevText` の有無に依存せず
+    必ず「自動解答」に戻すように修正。
+  - `solver-client.js` で `finishAutoSolve()` は
+    `view.setSolverBusy(false,"auto")` を直接呼んでラベル復元を確実化し、
+    `cancelAutoSolve()` / `cancel()` の全パスでモードを明示。
+    `startAnimatedReplay()` と `requestSolution({autoPlay:true})` で
+    元の `autoMoveEnabled` を保存し終了時に復元する（`true` 固定を廃止）。
+    `app.getAutoMoveEnabled()` を追加。
+  - `style.css` で `disabled` のトグルラベルに透過スタイルを追加。
+  - `freecell.spec.js` で「移動できるカードがなければトースト」テストを
+    「ボタンは無効化される」へ更新（状態表で `auto-move-btn` は
+    送れるカードがなければ無効化されるため）。
+- **ツールバーのグループ化と「ホームへ送る」への改名**
+  （`index.html` / `src/css/style.css`）。5つの `control-group` に分割し、
+  「新しいゲーム」/「やり直しとアンドゥ」/「ホーム回収」/
+  「ヒントと自動解答」/「情報」で視覚的に区別した。「自動移動」→
+  「ホームへ送る」、「自動でホームへ送る」→「自動で送る」に改名し、
+  対で意味が通るようにした。
 
 ## 2026-08-19
 
