@@ -512,6 +512,20 @@ test.describe("勝利", () => {
     expect(s.moveCount).toBe(0);
     await expect(page.locator("#overlay")).toHaveClass(/hidden/);
   });
+
+  test("クリア済みゲームは元に戻せない(Undoボタンが無効)", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setWinBoard(page);
+    // オーバーレイを閉じてもツールバーの Undo は無効のまま
+    await page.click("#overlay", { position: { x: 10, y: 10 } });
+    await expect(page.locator("#overlay")).toHaveClass(/hidden/);
+    expect(await page.locator("#undo-btn").isDisabled()).toBe(true);
+    // Ctrl+Z でも状態は変わらない
+    await page.keyboard.press("Control+z");
+    const s = await h.state(page);
+    expect(s.won).toBe(true);
+    expect(s.moveCount).toBe(52);
+  });
 });
 
 test.describe("詰み", () => {
@@ -875,18 +889,25 @@ test.describe("ソルバー", () => {
       void NativeWorker;
     });
     await h.openGame(page, 1);
-    await page.click("#hint-btn");
-    await expect(page.locator("#solve-btn")).toHaveText("安全探索中…");
+    // 段階表示は自動解答(トグル)でのみ行われる。ヒントではラベルは変わらない
+    await page.locator("#auto-solve-toggle").check();
+    await expect(page.locator("#auto-solve-label")).toHaveText("安全探索中…");
     await expect(page.locator("#toast")).toContainText("探索上限内では解答を発見できませんでした", { timeout: 1000 });
+    // 終了後はトグルがOFFに戻る
+    await expect(page.locator("#auto-solve-toggle")).not.toBeChecked({ timeout: 2000 });
   });
 
-  test("ヒント: 解答手順パネルが表示され、盤面は変わらない", async ({ page }) => {
+  test("ヒント: 次の一手だけハイライトとトーストで表示され、盤面は変わらない", async ({ page }) => {
     await h.openGame(page, 1);
     await h.setBoard(page, nearWinBoard());
     await page.click("#hint-btn");
-    await expect(page.locator("#solution-panel")).toBeVisible({ timeout: 10000 });
-    await expect(page.locator("#solution-list li")).toHaveCount(1);
-    await expect(page.locator("#solution-summary")).toHaveText("全 1 手");
+    await expect(page.locator("#toast")).toContainText("ヒント", { timeout: 10000 });
+    await expect(page.locator("#solution-panel")).toBeHidden();
+    // ヒント中は自動解答ラベルが変化しない(ボタン位置のチカチカ防止)
+    await expect(page.locator("#auto-solve-label")).toHaveText("自動解答");
+    // ヒントハイライトが付く(移動元カードと移動先スロット)
+    await expect(page.locator("#game .card.hint-source")).toBeVisible({ timeout: 2000 });
+    await expect(page.locator(".slot.hint-target")).toBeVisible();
     // ヒントは手を進めない(♠K はフリーセルのまま)
     const s = await h.state(page);
     expect(s.moveCount).toBe(0);
@@ -894,21 +915,62 @@ test.describe("ソルバー", () => {
     expect(s.won).toBe(false);
   });
 
-  test("自動解答: 盤面を解いて勝利オーバーレイを表示する", async ({ page }) => {
+  test("自動解答: トグルで1手ずつアニメーションし、完了後に全手順パネルとトグルOFFを表示する", async ({ page }) => {
     await h.openGame(page, 1);
     await h.setBoard(page, nearWinBoard());
-    await page.click("#solve-btn");
+    await page.locator("#auto-solve-toggle").check();
     await expect(page.locator("#overlay")).toBeVisible({ timeout: 10000 });
     await expect(page.locator("#overlay-title")).toHaveText("🎉 クリア！");
+    // 完了後は全手順パネルが表示され、トグルはOFFに戻る
+    await expect(page.locator("#solution-panel")).toBeVisible({ timeout: 2000 });
+    await expect(page.locator("#solution-list li")).toHaveCount(1);
+    await expect(page.locator("#auto-solve-toggle")).not.toBeChecked();
     const s = await h.state(page);
     expect(s.won).toBe(true);
     expect(s.foundations[3]).toHaveLength(13);
   });
 
-  test("解答パネルは閉じるボタンで閉じられる", async ({ page }) => {
+  test("自動解答: トグルON中は盤面操作がブロックされる", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__solverDelayMs = 300;
+      const NativeWorker = window.Worker;
+      window.Worker = class DelayedWorker {
+        constructor(url, opts) {
+          this._inner = new NativeWorker(url, opts);
+          this.onmessage = null;
+          this.onerror = null;
+          this._inner.onmessage = (e) => {
+            const d = e.data;
+            if (d && d.type === "result") {
+              setTimeout(() => this.onmessage?.(e), window.__solverDelayMs);
+            } else {
+              this.onmessage?.(e);
+            }
+          };
+          this._inner.onerror = (e) => this.onerror?.(e);
+        }
+        postMessage(m) {
+          this._inner.postMessage(m);
+        }
+        terminate() {
+          this._inner.terminate();
+        }
+      };
+    });
     await h.openGame(page, 1);
     await h.setBoard(page, nearWinBoard());
-    await page.click("#hint-btn");
+    await page.locator("#auto-solve-toggle").check();
+    // 計算中は #game に auto-solving クラスが付く(操作ブロックの目印)
+    await expect(page.locator("#game.auto-solving")).toBeVisible({ timeout: 2000 });
+    // オーバーレイ/パネルを閉じて再検証の前に少し待つ
+    await expect(page.locator("#overlay")).toBeVisible({ timeout: 10000 });
+    await expect(page.locator("#auto-solve-toggle")).not.toBeChecked({ timeout: 2000 });
+  });
+
+  test("解答パネルは閉じるボタンで閉じられる(自動解答完了後)", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setBoard(page, nearWinBoard());
+    await page.locator("#auto-solve-toggle").check();
     await expect(page.locator("#solution-panel")).toBeVisible({ timeout: 10000 });
     await page.click("#solution-close-btn");
     await expect(page.locator("#solution-panel")).toBeHidden();

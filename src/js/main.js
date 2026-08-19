@@ -26,18 +26,36 @@ export function init() {
   document.getElementById("hint-btn").addEventListener("click", () => {
     solverClient.requestSolution({ autoPlay: false });
   });
-  document.getElementById("solve-btn").addEventListener("click", () => {
-    solverClient.requestSolution({ autoPlay: true });
-  });
+  const autoToggle = document.getElementById("auto-solve-toggle");
+  if (autoToggle) {
+    autoToggle.addEventListener("change", () => {
+      if (autoToggle.checked) {
+        solverClient.requestSolution({ autoPlay: true });
+      } else {
+        solverClient.cancelAutoSolve();
+      }
+    });
+  }
   document.getElementById("solution-close-btn").addEventListener("click", () => {
     view.hideSolution();
   });
 
-  // 新しいゲームを開始したら古い解答パネルを閉じる
+  // 新しいゲームを開始したら古い解答パネル・ヒント・自動解答をリセットする
   const clearSolutionOnNewGame = () => {
     solverClient.cancel();
+    if (typeof solverClient.cancelAutoSolve === "function") {
+      solverClient.cancelAutoSolve();
+    }
+    const t = document.getElementById("auto-solve-toggle");
+    if (t) {
+      t.checked = false;
+    }
+    app.setAutoSolving(false);
     solverClient.clearSolution();
     view.hideSolution();
+    if (view.clearHint) {
+      view.clearHint();
+    }
   };
   document.getElementById("new-game-btn").addEventListener("click", clearSolutionOnNewGame);
   document.getElementById("restart-btn").addEventListener("click", clearSolutionOnNewGame);
@@ -61,6 +79,12 @@ export function getTestApi() {
     requestSolution: (autoPlay) => solverClient.requestSolution({ autoPlay: Boolean(autoPlay) }),
     replaySolution: () => solverClient.replaySolution(),
     hasSolverSolution: () => solverClient.hasSolution(),
+    isAutoSolving: () => (typeof solverClient.isAutoSolving === "function" ? solverClient.isAutoSolving() : false),
+    cancelAutoSolve: () => {
+      if (typeof solverClient.cancelAutoSolve === "function") {
+        solverClient.cancelAutoSolve();
+      }
+    },
   };
 }
 

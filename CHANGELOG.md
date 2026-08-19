@@ -1,6 +1,38 @@
 # 変更履歴
 
+## 2026-08-20
+
+### 修正
+
+- **クリア済みゲームは元に戻せないように修正**
+  （`src/js/app.js` / `src/js/view.js`）。勝利後、`state.won` が残ったまま
+  `undo` すると盤面は戻るが操作不能になる不具合があった。クリア済みは
+  `undo` を無効化（`app.undo` で `state.won` 時に早期 return）、ツールバーの
+  Undo ボタンも `won` 時に disabled にした。詰み時の「1手戻す」は従来通り有効。
+- **ヒント押下時の自動解答ラベルのチカチカを解消**
+  （`src/js/view.js` / `src/css/style.css`）。ヒント計算中は自動解答ラベル
+  （`#auto-solve-label`）を変更せず、トグルのみ無効化する。ラベル幅は
+  `min-width: 6em` で固定し、自動解答中の状態表示（計算中…/高速探索中…/
+  安全探索中…/自動解答中…）でボタン位置が動かないようにした。
+- **自動解答中にトグルをOFFへ戻せるように修正**
+  （`src/js/solver-client.js` / `src/js/view.js`）。自動解答（探索中・再生中）
+  はトグルを有効のまま保ち、OFF操作で `cancelAutoSolve` により計算/再生を
+  中断してトグルをOFFに戻す。盤面ブロック（`#game.auto-solving`）は維持。
+
 ## 2026-08-19
+
+### 機能
+
+- **ヒントを「次の一手だけ」に変更**（`src/js/solver-client.js` / `src/js/view.js` / `index.html`）。探索後に解答パネルは出さず、次の一手の移動元カード（`hint-source`）と移動先スロット（`hint-target`）をハイライトし、トーストで手順を表示する。手動操作でハイライトは自動解除される。
+- **自動解答をトグル化し、1手ずつアニメーションで再生**
+  （`src/js/solver-client.js` / `src/js/app.js` / `src/js/view.js` /
+  `src/js/main.js` / `src/js/interactions.js` / `index.html` /
+  `src/css/style.css`）。`#solve-btn` をチェックボックス型の
+  `auto-solve-toggle` に置換。ONで解を探索し、1手ずつ飛行アニメーション
+  （完了後250ms待機）で自動再生する。解き終わったら全解答手順パネルを表示し、
+  トグルは自動でOFFに戻る。自動解答中（探索中・再生中）は盤面操作
+  （クリック/ドラッグ/`undo`/`autoMove`）をブロックし、`#game.auto-solving`
+  で視覚的に示す。新しいゲーム/やり直しで自動解答・ヒント・パネルをリセットする。
 
 ### リファクタリング
 

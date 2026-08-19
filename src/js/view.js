@@ -346,7 +346,8 @@ export function createView() {
 
   function updateStatus(state) {
     document.getElementById("move-counter").textContent = `手数: ${state.moveCount}`;
-    document.getElementById("undo-btn").disabled = state.historyStack.length === 0;
+    // クリア済みは元に戻せない(操作不可になるため)。詰み時は戻せる
+    document.getElementById("undo-btn").disabled = state.historyStack.length === 0 || state.won;
   }
 
   /* ---------------- タイマー表示 ---------------- */
@@ -547,27 +548,102 @@ export function createView() {
 
   /* ---------------- ソルバー UI ---------------- */
 
-  /** ソルバー計算中はヒント/自動解答ボタンを無効化する */
-  function setSolverBusy(busy) {
-    const hintBtn = document.getElementById("hint-btn");
-    const solveBtn = document.getElementById("solve-btn");
-    if (hintBtn) {
-      hintBtn.disabled = busy;
+  let hintEls = [];
+  let solverMode = null; // "hint" | "auto" | null(ラベル書き換えの対象を限定)
+
+  function clearHint() {
+    for (const el of hintEls) {
+      el.classList.remove("hint-source", "hint-target");
     }
-    if (solveBtn) {
-      solveBtn.disabled = busy;
-      solveBtn.textContent = busy ? "計算中…" : "自動解答";
+    hintEls = [];
+  }
+
+  function showHint(move) {
+    clearHint();
+    const srcEl = cardElById(move.cardId);
+    if (srcEl) {
+      srcEl.classList.add("hint-source");
+      hintEls.push(srcEl);
+    }
+    let targetEl = null;
+    if (move.destZone === "free") {
+      targetEl = freeSlotEls[move.destIndex] ?? null;
+    } else if (move.destZone === "home") {
+      targetEl = homeSlotEls[move.destIndex] ?? null;
+    } else if (move.destZone === "cascade") {
+      const pile = document.querySelectorAll("#game .cascade")[move.destIndex];
+      if (pile) {
+        const topCardEl = pile.querySelector(".card:last-child");
+        targetEl = topCardEl ?? pile.querySelector(".slot");
+      }
+    }
+    if (targetEl) {
+      targetEl.classList.add("hint-target");
+      hintEls.push(targetEl);
+    }
+    // 次の描画でハイライトが updateHighlights に消されないよう、render 後に再適用が必要なら
+    // clearHint は手動操作時に app 側から呼ばれる
+  }
+
+  function setAutoSolving(solving) {
+    const gameEl = document.getElementById("game");
+    if (gameEl) {
+      gameEl.classList.toggle("auto-solving", solving);
     }
   }
 
-  /** ソルバーの現在段階を表示する */
+  /** ソルバー計算中のUI状態を制御する。
+   *  mode="auto": 自動解答。ラベルに状態を表示するが、トグルは有効のまま
+   *   (OFFでキャンセルできる)。テキスト幅はCSSで固定しているため位置は動かない。
+   *  mode="hint": ヒント。ラベルは変更せず、トグルを無効化(自動解答開始を防ぐ)。 */
+  function setSolverBusy(busy, mode) {
+    const hintBtn = document.getElementById("hint-btn");
+    const toggle = document.getElementById("auto-solve-toggle");
+    const label = document.getElementById("auto-solve-label");
+    if (hintBtn) {
+      hintBtn.disabled = busy;
+    }
+    if (mode === "auto") {
+      solverMode = busy ? "auto" : null;
+      if (toggle) {
+        // 自動解答中はトグルを有効に保ち、OFF操作でキャンセルできるようにする
+        toggle.disabled = false;
+      }
+      if (label) {
+        if (busy) {
+          if (label.dataset.prevText === undefined) {
+            label.dataset.prevText = label.textContent;
+          }
+          label.textContent = "計算中…";
+        } else if (label.dataset.prevText !== undefined) {
+          label.textContent = label.dataset.prevText;
+          delete label.dataset.prevText;
+        } else {
+          label.textContent = "自動解答";
+        }
+      }
+    } else {
+      // ヒント計算中: ラベルは変えず、トグルのみ無効化
+      solverMode = busy ? "hint" : null;
+      if (toggle) {
+        toggle.disabled = busy;
+      }
+    }
+  }
+
+  /** ソルバーの現在段階を表示する(自動解答中のみ。ヒント中はラベルを変えない) */
   function setSolverStage(stage) {
-    const solveBtn = document.getElementById("solve-btn");
-    if (solveBtn) {
+    if (solverMode !== "auto") {
+      return;
+    }
+    const label = document.getElementById("auto-solve-label");
+    if (label) {
       if (stage === "safe" || stage === "safe2") {
-        solveBtn.textContent = "安全探索中…";
+        label.textContent = "安全探索中…";
+      } else if (stage === "replay") {
+        label.textContent = "自動解答中…";
       } else {
-        solveBtn.textContent = "高速探索中…";
+        label.textContent = "高速探索中…";
       }
     }
   }
@@ -618,6 +694,9 @@ export function createView() {
     cardElById,
     setAnimationsEnabled,
     setNextRenderAnimation,
+    showHint,
+    clearHint,
+    setAutoSolving,
     runAfterAnimations,
     getCardRects,
     getDragCardRects,

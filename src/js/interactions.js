@@ -32,7 +32,14 @@ export function createInteractions({ view, app }) {
     return { zone: z.dataset.zone, index: Number(z.dataset.index), el: z };
   }
 
+  function isBlocked() {
+    return typeof app.isAutoSolving === "function" && app.isAutoSolving();
+  }
+
   function handleClick(targetEl) {
+    if (isBlocked()) {
+      return;
+    }
     const state = app.getState();
     if (state.won) {
       return;
@@ -114,6 +121,9 @@ export function createInteractions({ view, app }) {
    * ========================================================= */
 
   function handlePointerDown(e) {
+    if (isBlocked()) {
+      return;
+    }
     const state = app.getState();
     if (e.button !== 0 && e.pointerType === "mouse") {
       return;
@@ -266,6 +276,9 @@ export function createInteractions({ view, app }) {
   }
 
   function handlePointerMove(e) {
+    if (isBlocked()) {
+      return;
+    }
     if (!dragState || !dragState.from) {
       return;
     }
@@ -282,6 +295,14 @@ export function createInteractions({ view, app }) {
   }
 
   function handlePointerUp(e) {
+    if (isBlocked() && dragState && dragState.active) {
+      // 自動解答中はドラッグをキャンセル扱い
+      view.clearDropHints();
+      view.clearDropTargets();
+      dragState = null;
+      view.hideDragLayer();
+      return;
+    }
     if (!dragState) {
       return;
     }

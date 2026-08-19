@@ -23,6 +23,7 @@ export function createApp({ view, deps = {} }) {
   let timerHandle = null;
   let interactions = null; // mount() で登録される入力層
   let autoMoveEnabled = true; // 成功手の直後に安全なカードを自動でホームへ送るか
+  let autoSolving = false; // 自動解答中は手動操作をブロックする
 
   /* ---------------- タイマー ---------------- */
 
@@ -122,6 +123,13 @@ export function createApp({ view, deps = {} }) {
   /** 移動を試みる。成功時は {ok:true}、失敗時は {ok:false, reason}。
    *  opts.fromDrag が true のときは移動元をドラッグレイヤーの現在位置とする */
   function attemptMove(from, destZone, destIndex, opts = {}) {
+    if (autoSolving) {
+      return { ok: false, reason: "auto-solving" };
+    }
+    // ヒントのハイライトは手動操作で消す
+    if (view.clearHint) {
+      view.clearHint();
+    }
     // 移動後の state ではカードが from に残らないため、移動前にカード群を控える
     const groupIds = gameState.groupFrom(state, from).map((c) => c.id);
     const res = gameState.attemptMove(state, from, destZone, destIndex);
@@ -144,7 +152,42 @@ export function createApp({ view, deps = {} }) {
     return res;
   }
 
+  /** 解答再生用に1手ずつアニメーション付きで適用する。成功時は飛行を予約して描画する */
+  function applyMoveAnimated(from, destZone, destIndex) {
+    const groupIds = gameState.groupFrom(state, from).map((c) => c.id);
+    const res = gameState.attemptMove(state, from, destZone, destIndex);
+    if (res.ok) {
+      const origins = view.getCardRects(groupIds);
+      view.setNextRenderAnimation([{ cardIds: groupIds, origins }]);
+      onMoveSucceeded();
+    }
+    return res;
+  }
+
+  function isAutoSolving() {
+    return autoSolving;
+  }
+
+  function setAutoSolving(solving) {
+    autoSolving = solving;
+    view.setAutoSolving(solving);
+    // ヒントのハイライトは自動解答開始時に消す
+    if (solving && view.clearHint) {
+      view.clearHint();
+    }
+  }
+
   function undo() {
+    if (autoSolving) {
+      return;
+    }
+    if (view.clearHint) {
+      view.clearHint();
+    }
+    // クリア済みのゲームは元に戻さない(戻しても won が残り操作不可になるため)
+    if (state.won) {
+      return;
+    }
     if (gameState.undo(state)) {
       view.hideOverlay();
       view.render(state);
@@ -153,9 +196,15 @@ export function createApp({ view, deps = {} }) {
 
   /** 自動移動ボタン(手動)。送れるカードが無ければトーストを出す */
   function autoMoveHome() {
+    if (autoSolving) {
+      return false;
+    }
     if (!gameState.hasAutoMove(state)) {
       view.showToast("ホームへ移動できるカードはありません");
       return false;
+    }
+    if (view.clearHint) {
+      view.clearHint();
     }
     chainAutoNext();
     return true;
@@ -179,12 +228,18 @@ export function createApp({ view, deps = {} }) {
 
   /** ダブルクリック時の自動移動。移動できたら true を返す */
   function dblClickAutoMove(loc) {
+    if (autoSolving) {
+      return false;
+    }
     // 移動前のカード矩形(アニメーションの移動元)。groupFrom は先頭 1 枚のみ返す
     const dblCardIds = gameState.groupFrom(state, loc).map((c) => c.id);
     const dblOrigins = view.getCardRects(dblCardIds);
     const moved = gameState.dblClickAutoMove(state, loc);
     if (!moved) {
       return false;
+    }
+    if (view.clearHint) {
+      view.clearHint();
     }
     commitMove([{ cardIds: dblCardIds, origins: dblOrigins }]);
     return true;
@@ -311,6 +366,7 @@ export function createApp({ view, deps = {} }) {
     view.buildBoard();
     // 最初のゲームはランダム番号で開始する(startGame が seedInput.value を設定する)
     startGame(randomGameNumber());
+    // ヒントは選択変更で消えるように、render 後に委譲
   }
 
   /* =========================================================
@@ -473,6 +529,9 @@ export function createApp({ view, deps = {} }) {
     getState,
     attemptMove,
     applyMoveInstant,
+    applyMoveAnimated,
+    isAutoSolving,
+    setAutoSolving,
     undo,
     autoMoveHome,
     dblClickAutoMove,
