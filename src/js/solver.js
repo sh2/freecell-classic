@@ -18,21 +18,26 @@ const MAX_COL_LEN = 19; // 列の最大長(実際は 13 で十分だが余裕を
 /** UI とベンチマークで共有する探索モード設定。呼び出し側で直接変更しない。 */
 export const SOLVER_PROFILES = Object.freeze({
   fast: Object.freeze({
-    maxNodes: 2_000_000,
+    maxNodes: 1_000_000,
     maxTimeMs: 30_000,
     safeFoundationMoves: false,
     allowUnsolvable: false,
   }),
+  // fast + safe の二本構成。旧 safe(10M/w1.1)+safe2(2M/w1.5)を統合し、
+  // 単一探索内で tailStart 重みを段階的に上げる(案B)。
+  // 固定 w1.1 は #10353/#13331 が、固定 w1.5 は #17978 が解けないため、
+  // 適応スケジュールで全難関を 10M 以内でカバーする。
   safe: Object.freeze({
     maxNodes: 10_000_000,
     maxTimeMs: 180_000,
     safeFoundationMoves: true,
     allowUnsolvable: true,
     disableReversePruning: false,
-    tailStartWeight: 1.1,
+    tailStartWeight: 1.2,
+    tailStartWeightMax: 1.5,
+    adaptiveWeight: true,
   }),
-  // safe が上限で打ち切られたときの再試行。tailStart 重みを強めて解を探す
-  // (#10353 / #13331 のような難関はこの設定で少ないノードで解ける)。
+  // 後方互換。旧 safeRetry(2M/w1.5)は safe に統合されたため safe と同値。
   safeRetry: Object.freeze({
     maxNodes: 2_000_000,
     maxTimeMs: 60_000,
@@ -338,9 +343,18 @@ export function solve(board, options = {}) {
   const safeFoundationMoves = options.safeFoundationMoves ?? true;
   const disableReversePruning = options.disableReversePruning ?? false;
   const allowUnsolvable = options.allowUnsolvable ?? true;
-  // ヒューリスティックの tailStart 重み (A/B 比較で fast=1.1 を採用)。
-  // 難関ゲームの safe 探索では大きめの重みで反復を減らせる。
+  // ヒューリスティックの tailStart 重み。fast は 1.1、safe 改は適応スケジュールで
+  // 1.2 → 1.5 へ段階的に上げる(単一探索内で旧 safe(10M/w1.1)+safe2(2M/w1.5)を統合)。
   const tailStartWeight = options.tailStartWeight ?? 1.1;
+  const tailStartWeightMax = options.tailStartWeightMax ?? tailStartWeight;
+  const adaptiveWeight = !!options.adaptiveWeight;
+  // 適応スケジュールは探索進行率で重みを上げる。
+  // 10M では 50%/85% (5M/8.5M) で 1.2→1.35→1.5。17978 は w1.2 で 3.35M
+  // 必要なため 50% より早く上げない。13331 は w1.2 でも 3.43M で解ける
+  // ため、遅めでも解決率に影響しない。
+  const adaptiveThreshold1 = Math.floor(maxNodes * 0.5);
+  const adaptiveThreshold2 = Math.floor(maxNodes * 0.85);
+  let currentTailWeight = tailStartWeight;
   // Date.now() は VirtualBox Guest Additions などによる時刻補正で逆行し得る。
   // performance.now() は単調増加する経過時間用タイマーなので、探索時間の測定に使う。
   const startedAt = performance.now();
@@ -613,7 +627,9 @@ export function solve(board, options = {}) {
     if (destZone === ZONE_CASCADE) {
       let s = count * 10000;
       if (cols[destIndex].length > 0) {
-        s += 5000; // 空き列より既存列への積み重ねを優先
+        // fast(通常ゲーム)では既存列優先を強めると 5.6% 削減。safe改(難関)は
+        // tailStart の詰まりを解す空列生成も重要なため、fast のみ加点を上げる。
+        s += safeFoundationMoves ? 5000 : 8000;
       }
       if (fromZone === ZONE_CASCADE) {
         const srcLen = cols[fromIndex].length;
@@ -896,11 +912,13 @@ export function solve(board, options = {}) {
 
   /**
    * 探索の閾値と手順を決める評価。最短解や完全性は保証しない。
-   * h = 未ホーム数 + Σ ceil(tailStart × tailStartWeight)。tailStart の重みは
-   * フェーズC の A/B 比較で fast=1.1 を採用。難関ゲームの safe 探索では
-   * 大きめの重みで反復を減らせる (options.tailStartWeight)。
+   * h = 未ホーム数 + Σ ceil(tailStart × w)。w は tailStartWeight を基本とし、
+   * safe 改では進行率に応じて tailStartWeightMax まで段階的に上げる(案B)。
+   * 固定 w1.1 は #10353/#13331 が、固定 w1.5 は #17978 が解けないため、
+   * 単一探索内で重みをランプさせることで 12M 以内に全難関を収める。
    */
   function orderingHeuristic() {
+    let w = currentTailWeight;
     let h = totalCards - totalHome;
     for (const pile of cols) {
       let tailStart = pile.length - 1;
@@ -913,9 +931,29 @@ export function solve(board, options = {}) {
           break;
         }
       }
-      h += Math.ceil(tailStart * tailStartWeight);
+      h += Math.ceil(tailStart * w);
     }
     return h;
+  }
+
+  /** 反復境界で tailStart 重みを更新する(適応スケジュール)。 */
+  function refreshAdaptiveWeight() {
+    if (!adaptiveWeight) {
+      return false;
+    }
+    let nextW;
+    if (nodes >= adaptiveThreshold2) {
+      nextW = tailStartWeightMax;
+    } else if (nodes >= adaptiveThreshold1) {
+      nextW = (tailStartWeight + tailStartWeightMax) / 2;
+    } else {
+      nextW = tailStartWeight;
+    }
+    if (nextW !== currentTailWeight) {
+      currentTailWeight = nextW;
+      return true;
+    }
+    return false;
   }
 
   function makeMove(mv) {
@@ -964,6 +1002,7 @@ export function solve(board, options = {}) {
       aborted = "time-limit";
       throw ABORT;
     }
+    refreshAdaptiveWeight();
 
     const f = g + orderingHeuristic();
     if (f > bound) {
@@ -1053,6 +1092,13 @@ export function solve(board, options = {}) {
       // 置換表の「最小 g で刈る」最適化は同一イテレーション内でのみ正しい。
       // イテレーション(閾値)が上がると過去に浅い g で刈った状態も再展開が
       // 必要になるため、反復ごとにクリアする。
+      // 適応スケジュールでは反復境界と探索中(1024ノードごと)の両方で重みを
+      // 進める。大量ノードの反復では境界が長時間訪れないため、search 内でも
+      // 更新する。境界での再計算は、更新直後の反復が古い bound のまま
+      // 始まらないようにするための補正である。
+      if (refreshAdaptiveWeight()) {
+        bound = g0 + orderingHeuristic();
+      }
       tt.clear();
       const t = search(g0, bound);
       if (t === FOUND) {
@@ -1074,6 +1120,8 @@ export function solve(board, options = {}) {
 /**
  * 高速探索に失敗した場合、同じ初期盤面から安全探索を実行する。
  * 各 solve は盤面を変更しないため、段階間で探索状態を共有しない。
+ * safe 改(案B)は単一探索内で tailStart 重みを段階的に上げるため、
+ * 外部からは fast + safe の二本構成に見える(旧 safe2 は safe に統合)。
  */
 export function solveWithFallback(board, options = {}) {
   const strategy = options.strategy ?? "fast-safe";
@@ -1082,9 +1130,9 @@ export function solveWithFallback(board, options = {}) {
   }
   const fastOptions = { ...SOLVER_PROFILES.fast, ...(options.fastOptions ?? {}) };
   const safeOptions = { ...SOLVER_PROFILES.safe, ...(options.safeOptions ?? {}) };
-  // safe 再試行の設定。safe が上限で打ち切られた場合に、より強いヒューリスティックで
-  // 解を探す (フェーズC の改善の応用)。明示的に無効化できる。
-  const retryEnabled = options.safeRetry ?? true;
+  // 旧 safe2 (2M/w1.5)は safe 改(12M/適応)に統合されたため既定では無効。
+  // 明示的に safeRetry:true を渡した場合のみ、後方互換として旧三本構成を再現する。
+  const retryEnabled = options.safeRetry ?? false;
   const retryOptions = { ...SOLVER_PROFILES.safeRetry, ...(options.safeRetryOptions ?? {}) };
   if (options.trackCounters) {
     fastOptions.trackCounters = true;

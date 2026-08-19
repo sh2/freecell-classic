@@ -183,6 +183,7 @@ describe("solveWithFallback: 二段階探索", () => {
     const res = solveWithFallback(board, {
       fastOptions: { maxNodes: 1, maxTimeMs: 60000 },
       safeOptions: { maxNodes: 1, maxTimeMs: 60000 },
+      safeRetry: true, // 旧三本構成の後方互換。既定は fast+safe 二本
       safeRetryOptions: { maxNodes: 1, maxTimeMs: 60000 }, // 再試行も即失敗させる
       onStageChange: (stage) => stages.push(stage),
     });
@@ -192,6 +193,23 @@ describe("solveWithFallback: 二段階探索", () => {
     expect(res.totalNodes).toBe(
       res.attempts.fast.nodes + res.attempts.safe.nodes + res.attempts.safe2.nodes,
     );
+  });
+
+  it("既定では fast+safe の二本構成で safe2 は実行しない", () => {
+    const stages = [];
+    const board = {
+      cascades: [[4]],
+      freeCells: [],
+      foundations: [],
+    };
+    const res = solveWithFallback(board, {
+      fastOptions: { maxNodes: 1, maxTimeMs: 60000 },
+      safeOptions: { maxNodes: 1, maxTimeMs: 60000 },
+      onStageChange: (stage) => stages.push(stage),
+    });
+    expect(stages).toEqual(["fast", "safe"]);
+    expect(res.finalMode).toBe("safe");
+    expect(res.attempts.safe2).toBeNull();
   });
 
   it("安全モード単独ではフォールバック扱いにしない", () => {
