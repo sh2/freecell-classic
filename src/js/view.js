@@ -631,7 +631,39 @@ export function createView() {
     if (move.destZone === "free") {
       targetEl = freeSlotEls[move.destIndex] ?? null;
     } else if (move.destZone === "home") {
-      targetEl = homeSlotEls[move.destIndex] ?? null;
+      // solverは destIndex をスート固定(0=♣,1=♦,2=♥,3=♠)で返すが、UIの
+      // foundations/homeSlotEls は置かれた順(スロット順)のため、スートから
+      // 実際のスロットを探す。game-state.js:113-119 と同様の補正を表示でも行う。
+      const suit = move.cardId & 3;
+      let slot = null;
+      // 同スートの山があるスロットを探す
+      for (const s of homeSlotEls) {
+        const top = s.querySelector(".card:last-child");
+        if (top) {
+          const topId = Number(top.dataset.cardId);
+          if ((topId & 3) === suit) {
+            slot = s;
+            break;
+          }
+        }
+      }
+      // なければ空きスロット( A の移動先 )
+      if (!slot) {
+        for (const s of homeSlotEls) {
+          if (!s.querySelector(".card")) {
+            slot = s;
+            break;
+          }
+        }
+      }
+      // フォールバック(従来の slot順 destIndex)
+      if (!slot) {
+        slot = homeSlotEls[move.destIndex] ?? null;
+      }
+      if (slot) {
+        const topCardEl = slot.querySelector(".card:last-child");
+        targetEl = topCardEl ?? slot;
+      }
     } else if (move.destZone === "cascade") {
       const pile = document.querySelectorAll("#game .cascade")[move.destIndex];
       if (pile) {

@@ -532,8 +532,15 @@ body {
   box-shadow: 0 0 14px 3px rgba(111, 240, 154, 0.75);
 }
 
+.card.hint-target {
+  outline: 3px dashed #6ff09a;
+  outline-offset: 1px;
+  box-shadow: 0 0 14px 3px rgba(111, 240, 154, 0.75);
+}
+
 .slot.hint-target {
   border-color: #6ff09a;
+  border-style: dashed;
   box-shadow: 0 0 12px 2px rgba(111, 240, 154, 0.6);
   background: rgba(111, 240, 154, 0.18);
 }

@@ -904,9 +904,9 @@ test.describe("ソルバー", () => {
     await expect(page.locator("#solution-panel")).toBeHidden();
     // ヒント中は自動解答ラベルが変化しない(ボタン位置のチカチカ防止)
     await expect(page.locator("#auto-solve-label")).toHaveText("自動解答");
-    // ヒントハイライトが付く(移動元カードと移動先スロット)
+    // ヒントハイライトが付く(移動元カードと移動先(ホームは山の最上段カード))
     await expect(page.locator("#game .card.hint-source")).toBeVisible({ timeout: 2000 });
-    await expect(page.locator(".slot.hint-target")).toBeVisible();
+    await expect(page.locator("#game .card.hint-target")).toBeVisible();
     // ヒントは手を進めない(♠K はフリーセルのまま)
     const s = await h.state(page);
     expect(s.moveCount).toBe(0);
