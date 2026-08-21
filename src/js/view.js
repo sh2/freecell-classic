@@ -611,9 +611,15 @@ export function createView() {
   /* ---------------- ソルバー UI ---------------- */
 
   let hintEls = [];
+  let hintTimer = null;
+  const HINT_AUTO_HIDE_MS = 10000;
   let solverMode = null; // "hint" | "auto" | null(ラベル書き換えの対象を限定)
 
   function clearHint() {
+    if (hintTimer !== null) {
+      clearTimeout(hintTimer);
+      hintTimer = null;
+    }
     for (const el of hintEls) {
       el.classList.remove("hint-source", "hint-target");
     }
@@ -675,8 +681,14 @@ export function createView() {
       targetEl.classList.add("hint-target");
       hintEls.push(targetEl);
     }
+    if (hintEls.length > 0) {
+      if (hintTimer !== null) {
+        clearTimeout(hintTimer);
+      }
+      hintTimer = setTimeout(clearHint, HINT_AUTO_HIDE_MS);
+    }
     // 次の描画でハイライトが updateHighlights に消されないよう、render 後に再適用が必要なら
-    // clearHint は手動操作時に app 側から呼ばれる
+    // clearHint は手動操作時や 10 秒経過後に呼ばれる
   }
 
   function setAutoSolving(solving) {
