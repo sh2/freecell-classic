@@ -1,6 +1,6 @@
 # コードベース整理・メンテナンス性改善計画
 
-> 対応状況: フェーズ 0 完了(2026-08-22)。実施後は本ドキュメントの各チェックボックスを更新し、
+> 対応状況: フェーズ 0〜1 完了(2026-08-22)。実施後は本ドキュメントの各チェックボックスを更新し、
 > ソースを変更した場合は [CHANGELOG.md](../CHANGELOG.md) へ追記する。
 
 ## 1. 目的と方針
@@ -99,20 +99,29 @@
 
 このフェーズは挙動に影響しない機械的な削除のみを行う。
 
-- [ ] **D2** `view.js` の `solutionPanelEl()` を削除する。
-- [ ] **D8** 常に真になる `typeof` チェックを削除する(`main.js` の
+- [x] **D2** `view.js` の `solutionPanelEl()` を削除する。
+- [x] **D8** 常に真になる `typeof` チェックを削除する(`main.js` の
   `typeof solverClient.cancelAutoSolve === "function"` など)。
-- [ ] **D3 + D4 + D5** `main.js: getTestApi()` から未使用の 5 エントリ
+- [x] **D3 + D4 + D5** `main.js: getTestApi()` から未使用の 5 エントリ
   (`requestSolution` / `replaySolution` / `hasSolverSolution` /
   `isAutoSolving` / `cancelAutoSolve`)を削除し、`solver-client.js` の
   `replaySolution()` と `hasSolution()` を削除する。
-- [ ] **D1 + T1** `game-state.js` の `autoMoveHome()`(バッチ版)を削除し、
+- [x] **D1 + T1** `game-state.js` の `autoMoveHome()`(バッチ版)を削除し、
   `tests/unit/game-state.test.js` の対応テスト群を削除する。
-- [ ] **D7** `solver.worker.js` の `fastOptions` / `safeOptions` 受け取りを
+- [x] **D7** `solver.worker.js` の `fastOptions` / `safeOptions` 受け取りを
   削除する(メッセージ契約を `type` / `requestId` / `board` / `strategy`
   に明示)。
 
 **検証**: `npm run test:unit` → `npm test`(E2E 含む全件成功)。
+
+#### 実施記録(2026-08-22)
+
+- 上記 5 項目をすべて実施。`npm test` 成功(単体 137 / E2E 65)。
+- 追加の帰結として、`replaySolution()` 専用だった `applyMove()`(solver-client)と、
+  `applyMoveAnimated()` 内の `typeof` フォールバック削除により未使用になった
+  `applyMoveInstant()`(app.js)も削除した。
+- 変更内容は [CHANGELOG.md](../CHANGELOG.md) の 2026-08-22「### リファクタリング」
+  に追記済み。
 
 ### フェーズ 2: ソルバーの legacy オプション整理
 

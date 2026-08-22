@@ -116,16 +116,6 @@ export function createSolverClient({ app, view }) {
     }
   }
 
-  /** 解答の 1 手を現在の状態に適用する(即時) */
-  function applyMove(mv) {
-    const state = app.getState();
-    const loc = rules.findCardLocation(state, mv.cardId);
-    if (!loc || loc.zone === "home") {
-      return false;
-    }
-    return app.applyMoveInstant(loc, mv.destZone, mv.destIndex).ok;
-  }
-
   /** 解答の 1 手をアニメーション付きで適用する */
   function applyMoveAnimated(mv) {
     const state = app.getState();
@@ -133,27 +123,7 @@ export function createSolverClient({ app, view }) {
     if (!loc || loc.zone === "home") {
       return false;
     }
-    if (typeof app.applyMoveAnimated === "function") {
-      return app.applyMoveAnimated(loc, mv.destZone, mv.destIndex).ok;
-    }
-    return app.applyMoveInstant(loc, mv.destZone, mv.destIndex).ok;
-  }
-
-  /** 解答手順を 1 手ずつ再生する(自動ホームは無効化して順序を保つ) - 旧API互換(即時再生) */
-  function replaySolution() {
-    if (!solution || solution.length === 0) {
-      return false;
-    }
-    app.setAutoMoveEnabled(false);
-    let ok = true;
-    for (const mv of solution) {
-      if (!applyMove(mv)) {
-        ok = false;
-        break;
-      }
-    }
-    app.setAutoMoveEnabled(true);
-    return ok;
+    return app.applyMoveAnimated(loc, mv.destZone, mv.destIndex).ok;
   }
 
   /** アニメーション付きで1手ずつ再生する(250ms待機を挟む)。完了後に全手順パネル表示 */
@@ -165,7 +135,7 @@ export function createSolverClient({ app, view }) {
     replayMoves = moves;
     replayIndex = 0;
     // 自動ホーム送りは無効化してソルバーの手順通りに進める（元の設定を保存）
-    savedAutoMoveEnabled = typeof app.getAutoMoveEnabled === "function" ? app.getAutoMoveEnabled() : true;
+    savedAutoMoveEnabled = app.getAutoMoveEnabled();
     app.setAutoMoveEnabled(false);
     autoSolving = true;
     app.setAutoSolving(true);
@@ -225,7 +195,7 @@ export function createSolverClient({ app, view }) {
     const requestId = nextRequestId++;
     activeRequest = { requestId, snapshot: boardSnapshot(board), autoPlay };
     if (autoPlay) {
-      savedAutoMoveEnabled = typeof app.getAutoMoveEnabled === "function" ? app.getAutoMoveEnabled() : true;
+      savedAutoMoveEnabled = app.getAutoMoveEnabled();
     }
     setBusy(true);
     if (autoPlay) {
@@ -321,11 +291,9 @@ export function createSolverClient({ app, view }) {
 
   return {
     requestSolution,
-    replaySolution,
     cancel,
     cancelAutoSolve,
     isAutoSolving,
-    hasSolution: () => solution !== null,
     clearSolution: () => {
       solution = null;
     },

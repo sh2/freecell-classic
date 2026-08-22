@@ -141,17 +141,6 @@ export function createApp({ view, deps = {} }) {
     return res;
   }
 
-  /** アニメーション・自動ホーム送りを挟まずに移動を適用する(解答再生用)。
-   *  成功時は通常の成功手と同じ副作用(タイマー開始→描画→勝利/詰み判定)を
-   *  実行するが、飛行アニメーションは予約しない。 */
-  function applyMoveInstant(from, destZone, destIndex) {
-    const res = gameState.attemptMove(state, from, destZone, destIndex);
-    if (res.ok) {
-      onMoveSucceeded();
-    }
-    return res;
-  }
-
   /** 解答再生用に1手ずつアニメーション付きで適用する。成功時は飛行を予約して描画する */
   function applyMoveAnimated(from, destZone, destIndex) {
     const groupIds = gameState.groupFrom(state, from).map((c) => c.id);
@@ -532,7 +521,6 @@ export function createApp({ view, deps = {} }) {
     mount,
     getState,
     attemptMove,
-    applyMoveInstant,
     applyMoveAnimated,
     isAutoSolving,
     setAutoSolving,

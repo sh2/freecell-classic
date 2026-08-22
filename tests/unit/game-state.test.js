@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   attemptMove,
-  autoMoveHome,
   autoMoveOne,
   checkStuck,
   checkWin,
@@ -245,62 +244,6 @@ describe("undo", () => {
     state.won = true;
     undo(state);
     expect(state.won).toBe(true);
-  });
-});
-
-describe("autoMoveHome", () => {
-  it("Game #12 の AC をホームへ送る", () => {
-    const state = createState(12, dealGame(12));
-    expect(autoMoveHome(state).map((c) => c.id)).toEqual([0]);
-    expect(idsOf(state).foundations.flat()).toContain(0);
-    expect(idsOf(state).cascades[6]).toEqual([21, 37, 30, 26, 24]);
-    expect(state.moveCount).toBe(1);
-  });
-
-  it("複数枚を送っても履歴はカード 1 枚単位で積まれる", () => {
-    // 3C-2C-AC を ♣ ホーム(空)へ、♦/♥ は 2 まで積まれた状態
-    const state = stateWith({
-      cascades: [[8, 4, 0]],
-      foundations: [[], [1, 5], [2, 6], [3, 7]],
-    });
-    // 積み上げの下から順番に送られる
-    expect(autoMoveHome(state).map((c) => c.id)).toEqual([0, 4, 8]);
-    expect(idsOf(state).foundations[0]).toEqual([0, 4, 8]);
-    expect(idsOf(state).cascades[0]).toEqual([]);
-    expect(state.moveCount).toBe(3);
-    expect(state.historyStack.length).toBe(3);
-  });
-
-  it("1 枚ずつ Undo できる", () => {
-    const state = stateWith({
-      cascades: [[8, 4, 0]],
-      foundations: [[], [1, 5], [2, 6], [3, 7]],
-    });
-    autoMoveHome(state);
-    undo(state);
-    expect(idsOf(state).foundations[0]).toEqual([0, 4]);
-    expect(state.moveCount).toBe(2);
-    undo(state);
-    expect(idsOf(state).foundations[0]).toEqual([0]);
-    expect(state.moveCount).toBe(1);
-    undo(state);
-    expect(idsOf(state).foundations[0]).toEqual([]);
-    expect(state.moveCount).toBe(0);
-  });
-
-  it("送れるカードがなければ空配列で何も変わらない", () => {
-    const state = createState(1, dealGame(1));
-    const before = idsOf(state);
-    expect(autoMoveHome(state)).toEqual([]);
-    expect(idsOf(state)).toEqual(before);
-    expect(state.moveCount).toBe(0);
-  });
-
-  it("won の状態では移動せず空配列", () => {
-    const state = createState(12, dealGame(12));
-    state.won = true;
-    expect(autoMoveHome(state)).toEqual([]);
-    expect(state.moveCount).toBe(0);
   });
 });
 

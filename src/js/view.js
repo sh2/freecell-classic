@@ -773,10 +773,6 @@ export function createView() {
     }
   }
 
-  function solutionPanelEl() {
-    return document.getElementById("solution-panel");
-  }
-
   return {
     render,
     buildBoard,
@@ -817,6 +813,5 @@ export function createView() {
     setSolverStage,
     showSolution,
     hideSolution,
-    solutionPanelEl,
   };
 }

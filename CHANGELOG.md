@@ -2,6 +2,27 @@
 
 ## 2026-08-22
 
+### リファクタリング
+
+- **未使用コードの削除(整理計画フェーズ 1)**。挙動は変更しない。
+  - `src/js/game-state.js`: 未使用の `autoMoveHome()`(バッチ版)を削除。
+    自動ホーム送りは `autoMoveOne()` の連鎖方式(`app.js: chainAutoNext`)に
+    一本化済みのため。対応する単体テスト(`tests/unit/game-state.test.js` の
+    `autoMoveHome` ブロック)も削除。
+  - `src/js/view.js`: 未使用の `solutionPanelEl()` を削除。
+  - `src/js/main.js`: E2E テストから未使用のテスト API 5 エントリ
+    (`requestSolution` / `replaySolution` / `hasSolverSolution` /
+    `isAutoSolving` / `cancelAutoSolve`)を削除。常に真になる防御的
+    `typeof` チェックを削除。
+  - `src/js/solver-client.js`: 旧 API 互換の `replaySolution()` と
+    `hasSolution()` を削除。`replaySolution()` 専用だった `applyMove()` と、
+    `applyMoveAnimated()` 内の常に真になる `typeof` フォールバックを削除。
+  - `src/js/app.js`: 上記により未使用になった `applyMoveInstant()` を削除。
+  - `src/js/solver.worker.js`: クライアントが送信しない `fastOptions` /
+    `safeOptions` の受け取りを削除(メッセージ契約を `type` / `requestId` /
+    `board` / `strategy` に明示)。
+  - 検証: `npm test`(単体 137 / E2E 65)がすべて成功。
+
 ### ドキュメント
 
 - **README.md を現状に追従**。2026-08-15 以降に追加された機能(ヒント、自動解答、

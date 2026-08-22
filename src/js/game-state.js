@@ -277,20 +277,6 @@ export function hasAutoMove(state) {
 }
 
 /**
- * 安全にホームへ送れるカードを自動移動する。
- * 移動したカードの配列(移動順)を返す。1 枚も動かなければ空配列を返す。
- */
-export function autoMoveHome(state) {
-  const movedCards = [];
-  let card = autoMoveOne(state);
-  while (card) {
-    movedCards.push(card);
-    card = autoMoveOne(state);
-  }
-  return movedCards;
-}
-
-/**
  * ダブルクリック時の自動移動。移動できたら true を返す。
  * ホームへ行けるカードはホームへ、無理なら空きフリーセルへ(先頭 1 枚のみ)。
  */

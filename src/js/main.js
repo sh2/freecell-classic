@@ -43,9 +43,7 @@ export function init() {
   // 新しいゲームを開始したら古い解答パネル・ヒント・自動解答をリセットする
   const clearSolutionOnNewGame = () => {
     solverClient.cancel();
-    if (typeof solverClient.cancelAutoSolve === "function") {
-      solverClient.cancelAutoSolve();
-    }
+    solverClient.cancelAutoSolve();
     const t = document.getElementById("auto-solve-toggle");
     if (t) {
       t.checked = false;
@@ -76,15 +74,6 @@ export function getTestApi() {
     setWinBoard: appInstance.setWinBoard,
     setAutoMoveEnabled: appInstance.setAutoMoveEnabled,
     setAnimationsEnabled: appInstance.setAnimationsEnabled,
-    requestSolution: (autoPlay) => solverClient.requestSolution({ autoPlay: Boolean(autoPlay) }),
-    replaySolution: () => solverClient.replaySolution(),
-    hasSolverSolution: () => solverClient.hasSolution(),
-    isAutoSolving: () => (typeof solverClient.isAutoSolving === "function" ? solverClient.isAutoSolving() : false),
-    cancelAutoSolve: () => {
-      if (typeof solverClient.cancelAutoSolve === "function") {
-        solverClient.cancelAutoSolve();
-      }
-    },
   };
 }
 

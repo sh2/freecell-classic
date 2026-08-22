@@ -9,11 +9,9 @@ import { solveWithFallback } from "./solver.js";
 
 export function createSolverWorkerHandler(postMessage, solve = solveWithFallback) {
   return (e) => {
-    const { requestId, board, strategy, fastOptions, safeOptions } = e.data;
+    const { requestId, board, strategy } = e.data;
     const result = solve(board, {
       strategy,
-      fastOptions,
-      safeOptions,
       onStageChange: (stage) => postMessage({ type: "stage", requestId, stage }),
     });
     postMessage({ type: "result", requestId, result });
