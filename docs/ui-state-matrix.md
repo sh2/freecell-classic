@@ -5,15 +5,16 @@
 本ドキュメントは、ゲームの状態に対して各UIコントロールを Enable / Disable すべきかを
 一貫した方針で整理することを目的とする。
 
-特に以下の不整合を起点として洗い出しを行った。
+もともとは以下の不整合を起点として洗い出しを行った。
 
 - 自動解答トグルをONにすると「高速探索中…」→「自動解答中…」へ表示が遷移するが、
   トグルをOFFにしてもラベルが「自動解答」に戻らない
 - 自動解答中（盤面操作がブロックされる状態）にもかかわらず「自動でホームへ送る」
   チェックボックスを操作できてしまい、意味のないUIになっている
 
-上記を含め、「どの状態でどの操作が可能か」を表として明文化し、
-今後の修正の基準とする。
+これらの不整合は `view.js: syncControls()` の導入(2026-08-20)で解消済みであり、
+本ドキュメントは現在の実装と一致する「生きた仕様」として維持する。
+「どの状態でどの操作が可能か」を表として明文化し、今後の変更の基準とする。
 
 ## 2. 状態定義
 
@@ -116,15 +117,15 @@ graph TD
 
 | ID / 領域 | 表示名 | 役割 | 現在の制御箇所 |
 | --- | --- | --- | --- |
-| `new-game-btn` | 新しいゲーム | ランダム番号で `startGame()` | 制御なし（常時有効） |
-| `restart-btn` | やり直す | 同じ番号で `startGame(state.gameNumber)` | 制御なし |
-| `undo-btn` | 元に戻す | `gameState.undo()` | `view.js: updateStatus()` で `historyStack.length===0 \|\| won` 時に `disabled` |
-| `auto-move-btn` | 自動移動 | `gameState.hasAutoMove()` があれば `chainAutoNext()` | `app.js: autoMoveHome()` で `autoSolving` 時に早期return（`disabled` は付けない） |
-| `hint-btn` | ヒント | `solverClient.requestSolution({autoPlay:false})` | `view.js: setSolverBusy()` で `busy` 時に `disabled` |
-| `auto-solve-toggle` | 自動解答 | ONで `requestSolution({autoPlay:true})`、OFFで `cancelAutoSolve()` | `view.js: setSolverBusy()` で `hint` 時に `disabled`、`auto` 時は `disabled=false` |
-| `auto-move-toggle` | 自動でホームへ送る | `autoMoveEnabled` を切替 | `app.js: setAutoMoveEnabled()` で `checked` のみ同期、`disabled` 制御なし |
-| `seed-input` | No. | ゲーム番号入力 | 制御なし |
-| `start-game-btn` | 開始 | `normalizeGameNumber()` して `startGame()` | 制御なし |
+| `new-game-btn` | 新しいゲーム | ランダム番号で `startGame()` | `view.js: syncControls()` で `autoSolving` 時に `disabled` |
+| `restart-btn` | やり直す | 同じ番号で `startGame(state.gameNumber)` | `view.js: syncControls()` で `autoSolving` 時に `disabled` |
+| `undo-btn` | 元に戻す | `gameState.undo()` | `view.js: syncControls()` で `won \|\| !hasHistory \|\| autoSolving` 時に `disabled` |
+| `auto-move-btn` | 自動移動 | `gameState.hasAutoMove()` があれば `chainAutoNext()` | `view.js: syncControls()` で `won \|\| autoSolving \|\| busyHint \|\| !hasAutoMove` 時に `disabled` |
+| `hint-btn` | ヒント | `solverClient.requestSolution({autoPlay:false})` | `view.js: syncControls()` で `won \|\| busyHint \|\| busyAuto` 時に `disabled` |
+| `auto-solve-toggle` | 自動解答 | ONで `requestSolution({autoPlay:true})`、OFFで `cancelAutoSolve()` | `view.js: syncControls()` で `won \|\| busyHint` 時に `disabled` |
+| `auto-move-toggle` | 自動でホームへ送る | `autoMoveEnabled` を切替 | `view.js: syncControls()` で `won \|\| autoSolving` 時に `disabled` |
+| `seed-input` | No. | ゲーム番号入力 | `view.js: syncControls()` で `autoSolving` 時に `disabled` |
+| `start-game-btn` | 開始 | `normalizeGameNumber()` して `startGame()` | `view.js: syncControls()` で `autoSolving` 時に `disabled` |
 | `#game` 盤面 | 盤面操作 | クリック / ドラッグ&ドロップ / ダブルクリック | `interactions.js: isBlocked()` と `app.js: attemptMove()` の `autoSolving` ガード、`game-state.js: attemptMove()` の `won` ガード |
 | `#overlay` | オーバーレイ | 詰み/勝利の通知。背景クリックで閉じる | `view.js: showWin()` / `showStuck()` / `hideOverlay()` |
 | `overlay-undo` | 1手戻す | 詰み時のみ表示される Undo | `view.js: showWin()` で `hidden`、 `showStuck()` で表示 |
@@ -174,36 +175,37 @@ graph TD
   どの移動も失敗する。UI上は盤面クリック自体は受け付けるが結果が変わらない。
 - 勝利状態の「自動でホームへ送る」は全カードがホームにあるため操作の意味がない。
   `disabled` にして意図を明示すべきである。
+- ヒントのハイライト(`hint-source` / `hint-target`)は 10 秒で自動消去される
+  (2026-08-21 追加)。手動操作(移動・Undo・自動解答開始・新規ゲーム)でも解除される。
 
-## 5. 既知の不整合
+## 5. 解決済みの不整合
+
+以下は本ドキュメント作成時点で存在した不整合であり、`view.js: syncControls()` の
+導入(2026-08-20)とその後の修正で解消済みである。履歴として残す。
 
 ### 5.1 自動解答トグルOFFでもラベルが「自動解答」に戻らない
 
 | 項目 | 内容 |
 | --- | --- |
 | 現象 | 自動解答ON → 「計算中…」→「高速探索中…」→「自動解答中…」と遷移するが、トグルをOFFにしてもラベルが「自動解答」に戻らない場合がある |
-| 期待 | トグルOFF（`cancelAutoSolve()`）で常にラベルが「自動解答」に戻り、`solverMode` が `null` になる |
+| 解決 | `solver-client.js: finishAutoSolve()` / `cancelAutoSolve()` の全パスで `view.setSolverBusy(false, "auto")` を経由し、`label.dataset.prevText` を確実にクリアするよう修正。`setSolverBusy()` は `solverMode` を `null` に戻し、ラベルを「自動解答」へ復元する |
 | 関連コード | `src/js/view.js: setSolverBusy()` / `setSolverStage()` / `solverMode` / `label.dataset.prevText`, `src/js/solver-client.js: cancelAutoSolve()` / `finishAutoSolve()` / `setBusy()` |
-| 推定原因 | `view.js` は `solverMode === "auto"` のときのみラベルを書き換える。`solver-client.js` の `cancelAutoSolve()` は `activeRequest.autoPlay` の有無で分岐し、`activeRequest` が `null` かつ `autoSolving===true`（再生中のキャンセル）のパスでは `stopWorker()` せず `finishAutoSolve()` のみ呼ぶ。`finishAutoSolve()` は `setBusy(false)` を呼ぶが、このとき `activeRequest` が既に `null` のため `setBusy()` 内の `mode` 判定が `autoSolving ? "auto" : "hint"` で `auto` になる場合とならない場合がある。さらに `setSolverBusy(false,"auto")` での復元は `label.dataset.prevText` が存在するときのみ行われ、計算中キャンセルと再生中キャンセルの順序で `prevText` が残留または消失し、復元がスキップされる |
-| 影響 | ユーザーは自動解答が終了したか否かをラベルで判断できず、トグルのON/OFF状態と表示が乖離する |
 
 ### 5.2 自動解答中に「自動でホームへ送る」を操作できてしまう
 
 | 項目 | 内容 |
 | --- | --- |
-| 現象 | 自動解答中（`autoSolving===true`、盤面操作はブロック）に「自動でホームへ送る」チェックボックスをON/OFFできる。トグルしても自動解答の再生には影響しない（ように見える）が、終了後に意図しない `autoMoveEnabled` が残る |
-| 期待 | 自動解答 計算中・再生中は「自動でホームへ送る」チェックボックスを `disabled` にする。終了時に元の値（`savedAutoMoveEnabled`）へ復元する |
-| 関連コード | `src/js/solver-client.js: startAnimatedReplay()`（`app.setAutoMoveEnabled(false)` で一時無効化）、`src/js/view.js: setSolverBusy()`（`hint`/`auto` で `auto-move-toggle` を制御していない）、`src/js/app.js: setAutoMoveEnabled()` |
-| 推定原因 | `solver-client.js` は再生開始時に `app.setAutoMoveEnabled(false)` で自動ホーム送りを抑止するが、View 側で `auto-move-toggle` 要素を `disabled` にしていない。ユーザーがチェックボックスを触ると `main.js` 相当の `change` ハンドラ（`app.js: mount()` 内）で `autoMoveEnabled` が即座に上書きされ、ソルバーの手順通りに進む保証が崩れる。`finishAutoSolve()` は `savedAutoMoveEnabled` を `true` 固定で復元しており、元のユーザー設定が失われる問題もある |
-| 影響 | 意味のないUI操作を許容し、終了後の自動ホーム送り設定がユーザーの意図とずれる |
+| 現象 | 自動解答中（`autoSolving===true`、盤面操作はブロック）に「自動でホームへ送る」チェックボックスをON/OFFできる。終了後に意図しない `autoMoveEnabled` が残る |
+| 解決 | `view.js: syncControls()` が `autoSolving` 中に `auto-move-toggle` を `disabled` にする。`solver-client.js: startAnimatedReplay()` で `savedAutoMoveEnabled` に現在値を保存し、`finishAutoSolve()` で保存値へ復元する(`true` 固定にしない) |
+| 関連コード | `src/js/solver-client.js: startAnimatedReplay()` / `finishAutoSolve()`、`src/js/view.js: syncControls()`、`src/js/app.js: setAutoMoveEnabled()` |
 
-### 5.3 その他の一貫性の欠け（参考）
+### 5.3 その他の一貫性の欠け(参考)
 
-| 項目 | 現状 | あるべき姿 |
+| 項目 | 現状 | 解決 |
 | --- | --- | --- |
-| `undo-btn` 以外のボタンの `disabled` 制御 | `view.js: updateStatus()` は `undo-btn` のみ制御。他は常時有効で `app.js` 側の早期returnに依存 | 実行できない状態では `disabled` を付与し、見た目と操作可否を一致させる（4章の表に準拠） |
-| ヒント計算中の新規ゲーム操作 | 可能（`clearSolutionOnNewGame` でキャンセルされる） | 許容するが、計算中であることを示すために `hint-btn` は `disabled` のままにする（現状通り） |
-| 詰み時の `auto-move-btn` | 有効だが押してもトースト「ホームへ移動できるカードはありません」 | `disabled` にして押せないことを明示（詰みなら `hasAutoMove()===false` が保証される） |
+| `undo-btn` 以外のボタンの `disabled` 制御 | `view.js: updateStatus()` は `undo-btn` のみ制御していた | `syncControls()` が全ボタン・トグル・入力欄の `disabled` を一元管理するようになった |
+| ヒント計算中の新規ゲーム操作 | 可能（`clearSolutionOnNewGame` でキャンセルされる） | 許容するが、計算中であることを示すために `hint-btn` は `disabled` のままにする(現状通り) |
+| 詰み時の `auto-move-btn` | 有効だが押してもトースト「ホームへ移動できるカードはありません」 | `syncControls()` が `!hasAutoMove` 時に `disabled` にする(詰みなら `hasAutoMove()===false` が保証される) |
 
 ## 6. 推奨ポリシー
 
@@ -237,30 +239,12 @@ graph TD
    - `startAnimatedReplay()` で `savedAutoMoveEnabled = autoMoveEnabled` の現在値を保存
    - `finishAutoSolve()` / `cancelAutoSolve()` で保存値へ復元する（`true` 固定にしない）
 
-## 7. 今後の修正方針
-
-本ドキュメントは状態とUIの対応を定義するものであり、実装の修正自体は含めない。
-修正時には以下の箇所を参照すること。
-
-| 修正対象 | ファイルと関数 | 対応する不整合 |
-| --- | --- | --- |
-| ラベル復元ロジック | `src/js/view.js: setSolverBusy()` / `setSolverStage()` | 5.1 |
-| 自動解答の中断パス | `src/js/solver-client.js: cancelAutoSolve()` / `finishAutoSolve()` / `setBusy()` | 5.1 |
-| 自動ホーム送りトグルの `disabled` 制御 | `src/js/view.js: setSolverBusy()` に `auto-move-toggle` の制御を追加 | 5.2 |
-| 自動ホーム送りの保存・復元 | `src/js/solver-client.js: startAnimatedReplay()` / `finishAutoSolve()` の `savedAutoMoveEnabled` | 5.2 |
-| 各ボタンの `disabled` 制御の追加 | `src/js/view.js: updateStatus()` または新設の `updateControls(state, solverState)` | 5.3 |
-| 新規ゲーム系の `disabled` 制御 | `src/js/view.js: setSolverBusy()` / `setAutoSolving()` | 4章の表 |
-| E2Eテストの追加 | `tests/e2e/freecell.spec.js` に自動解答トグルのON/OFFとラベル検証、自動ホーム送りトグルの `disabled` 検証を追加 | 全体 |
-
-修正後は `npm test`（単体 + E2E）が全て成功することを確認し、
-本ドキュメントの「あるべき姿」と実装が一致しているかを再検証すること。
-
-## 8. 参考
+## 7. 参考
 
 - `src/js/game-state.js` — 状態遷移の正準実装
 - `src/js/app.js` — `autoSolving` / `autoMoveEnabled` と操作ガード
 - `src/js/view.js` —
-  `updateStatus()` / `setSolverBusy()` / `setSolverStage()` / `setAutoSolving()`
+  `syncControls()` / `setSolverBusy()` / `setSolverStage()` / `setAutoSolving()`
 - `src/js/solver-client.js` —
   `requestSolution()` / `startAnimatedReplay()` / `finishAutoSolve()` /
   `cancelAutoSolve()`

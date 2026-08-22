@@ -68,8 +68,8 @@ python3 -m http.server 8000
 
 - UI の状態遷移とコントロールの有効 / 無効対応表:
   [`docs/ui-state-matrix.md`](./docs/ui-state-matrix.md)
-- ソルバーの改善記録と評価データ:
-  [`docs/solver-insights-and-improvement-plan.md`](./docs/solver-insights-and-improvement-plan.md)
+- ソルバーの改善記録と評価データ(アーカイブ):
+  [`docs/archive/solver-insights-and-improvement-plan.md`](./docs/archive/solver-insights-and-improvement-plan.md)
 - ソルバーベンチマークの使い方と計測結果:
   [`docs/benchmark/README.md`](./docs/benchmark/README.md)
 
