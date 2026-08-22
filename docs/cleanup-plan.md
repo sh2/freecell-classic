@@ -1,6 +1,6 @@
 # コードベース整理・メンテナンス性改善計画
 
-> 対応状況: フェーズ 0〜2 完了(2026-08-22)。実施後は本ドキュメントの各チェックボックスを更新し、
+> 対応状況: フェーズ 0〜3 完了(2026-08-22)。実施後は本ドキュメントの各チェックボックスを更新し、
 > ソースを変更した場合は [CHANGELOG.md](../CHANGELOG.md) へ追記する。
 
 ## 1. 目的と方針
@@ -148,17 +148,31 @@
 
 ### フェーズ 3: スクリプトと非コード資産の整理
 
-- [ ] **A4** `scripts/benchmark/` の実験スクリプトを整理する(既定案)。
+- [x] **A4** `scripts/benchmark/` の実験スクリプトを整理する(既定案)。
   - `sample-bench.js`: **残す**。変更前後の A/B 比較に有用。`docs/benchmark/README.md` の「構成」表へ追記する。
   - `profile.js` + `analyze-profile.js`: **残す**。プロファイリングのペア
     として `docs/benchmark/README.md` へ 1 行ずつ追記する(次回のソルバー
     高速化時に使う)。
   - `fast-cap-sensitivity.js`: **削除**。完了済みの 32,000 ゲーム評価に対するワンオフ解析のため(git 履歴に残る)。
-- [ ] **A6** `deploy-pages.yml` の `game.js` コメントを現状に合わせて書き換える(または削除する)。
-- [ ] **A5** 計測データの扱いを決める(4.1 の選択肢から選択)。既定は「現状維持」を提案するが、リポジトリ軽量化を優先する場合は gzip 圧縮案を採用する。
+- [x] **A6** `deploy-pages.yml` の `game.js` コメントを現状に合わせて書き換える(または削除する)。
+- [x] **A5** 計測データの扱いを決める(4.1 の選択肢から選択)。既定は「現状維持」を提案するが、リポジトリ軽量化を優先する場合は gzip 圧縮案を採用する。
 
 **検証**: `npm run benchmark:report` が成功すること(データ変更時のみ)。
 `node scripts/benchmark/sample-bench.js --games 1,2,3` でソルバーが動くこと。
+
+#### 実施記録(2026-08-22)
+
+- **A4**: `fast-cap-sensitivity.js` を削除。`sample-bench.js` / `profile.js` /
+  `analyze-profile.js` を `docs/benchmark/README.md` の「構成」表と新設の
+  「補助スクリプト」節へ追記(使い方つき)。
+- **A6**: `deploy-pages.yml` の `game.js` への言及を現状に合わせて整理。
+- **A5**: 計測データは**現状維持**(4.1 の案 A)を採用。`npm run benchmark:report`
+  で 32,000 ゲームすべて読み込めることを確認。`report.html` は再生成され、
+  生成時刻の更新と、既に存在しない範囲データ行の削除のみの差分。
+- 検証: `npm run benchmark:report` 成功、`sample-bench.js --games 1,2,3` で
+  3/3 解決。
+- 変更内容は [CHANGELOG.md](../CHANGELOG.md) の 2026-08-22「### リファクタリング」
+  に追記済み。
 
 ### フェーズ 4: ドキュメントの整合
 

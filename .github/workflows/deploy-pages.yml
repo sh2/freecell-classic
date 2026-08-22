@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v4
 
       # ---- CI: デプロイ前に構文チェック(失敗するとデプロイも止まる) ----
-      # game.js は責務分離で削除されたため、src/js 配下の全 ES Modules を対象にする
+      # src/js 配下の全 ES Modules を対象に構文チェックする
       - name: Syntax check (ES modules)
         run: |
           for f in src/js/*.js; do

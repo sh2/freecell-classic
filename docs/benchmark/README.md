@@ -11,6 +11,9 @@
 | `scripts/benchmark/run.js` | 計測スクリプト (シリアル実行) |
 | `scripts/benchmark/report.js` | HTML レポート生成スクリプト |
 | `scripts/benchmark/verify-node-limit.js` | node-limit ゲームの再検証スクリプト (戦略指定対応) |
+| `scripts/benchmark/sample-bench.js` | 固定サンプルでの A/B 比較用ベンチマーク (変更前後の比較に使用) |
+| `scripts/benchmark/profile.js` | CPU プロファイリング用ドライバ (`--cpu-prof` と併用) |
+| `scripts/benchmark/analyze-profile.js` | V8 CPU プロファイル (`.cpuprofile`) の解析スクリプト |
 | `docs/benchmark/data/batch-XX.json` | バッチ (1,000 ゲーム) ごとの計測結果 |
 | `docs/benchmark/data/batch-XX.partial.json` | 途中経過 (中断・再開用) |
 | `docs/benchmark/data/range-S-E.json` | `--start` で指定した範囲の計測結果 |
@@ -51,6 +54,28 @@ node scripts/benchmark/run.js --batch 1 --force
 
 # レポート生成 (データを HTML にまとめる)
 npm run benchmark:report
+```
+
+## 補助スクリプト
+
+ソルバーの変更前後で性能を比較したり、CPU プロファイルを採取するための
+補助スクリプトです。npm スクリプトには登録していません。
+
+```sh
+# 固定サンプル (ゲーム 1〜200) で A/B 比較。変更前後で同じコマンドを実行して比較する
+node scripts/benchmark/sample-bench.js
+# 難関サンプル (高速モード未解決の一部) を safe で実行
+node scripts/benchmark/sample-bench.js --hard
+# 指定ゲームのみ実行
+node scripts/benchmark/sample-bench.js --games 1,2,3 --strategy safe
+
+# CPU プロファイリング (Node.js の --cpu-prof と併用)
+node --cpu-prof --cpu-prof-dir=/tmp/freecell-profile \
+  --cpu-prof-name=normal-fast.cpuprofile \
+  scripts/benchmark/profile.js --games 720 --strategy fast
+
+# 採取した .cpuprofile を関数単位で集計して表示
+node scripts/benchmark/analyze-profile.js /tmp/freecell-profile/normal-fast.cpuprofile --top 30
 ```
 
 ## node-limit ゲームの再検証

@@ -31,6 +31,16 @@
     Worker プロトコルテストのモックを二本構成(fast→safe)に合わせた。
   - 検証: `npm test`(単体 135 / E2E 65)がすべて成功。`sample-bench.js`
     (ゲーム 1〜3)でソルバー動作を確認(3/3 解決)。
+- **スクリプトと非コード資産の整理(整理計画フェーズ 3)**。挙動は変更しない。
+  - `scripts/benchmark/fast-cap-sensitivity.js` を削除(完了済みの 32,000
+    ゲーム評価に対するワンオフ解析のため。git 履歴に残る)。
+  - `docs/benchmark/README.md`: 補助スクリプト(`sample-bench.js` /
+    `profile.js` / `analyze-profile.js`)を「構成」表と「補助スクリプト」節へ
+    追記し、使い方を文書化。
+  - `.github/workflows/deploy-pages.yml`: 削除済み `game.js` への言及を
+    現状に合わせて整理。
+  - 計測データ(`docs/benchmark/data/`、約 29 MB)は現状維持(計画の既定案)。
+    `npm run benchmark:report` で 32,000 ゲームすべて読み込めることを確認。
 
 ### ドキュメント
 
