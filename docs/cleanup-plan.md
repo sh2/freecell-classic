@@ -1,6 +1,6 @@
 # コードベース整理・メンテナンス性改善計画
 
-> 対応状況: フェーズ 0〜1 完了(2026-08-22)。実施後は本ドキュメントの各チェックボックスを更新し、
+> 対応状況: フェーズ 0〜2 完了(2026-08-22)。実施後は本ドキュメントの各チェックボックスを更新し、
 > ソースを変更した場合は [CHANGELOG.md](../CHANGELOG.md) へ追記する。
 
 ## 1. 目的と方針
@@ -125,16 +125,26 @@
 
 ### フェーズ 2: ソルバーの legacy オプション整理
 
-- [ ] **D6 + T2** `solver.js` から `SOLVER_PROFILES.safeRetry` を削除し、
+- [x] **D6 + T2** `solver.js` から `SOLVER_PROFILES.safeRetry` を削除し、
   `solveWithFallback()` の `safeRetry` / `safeRetryOptions` オプションと
   `attempts.safe2` を削除する。`fast + safe` の二本構成に一本化する。
-- [ ] `tests/unit/solver.test.js` の `safeRetry` テスト(「safe が失敗したら safe2 で再試行する」など)を削除し、「既定では二本構成」のテストへ統合する。
-- [ ] 戻り値の `attempts` を `{ fast, safe }` の 2 キーに限定する。
-- [ ] `docs/benchmark/report.js` が `attempts` を汎用に扱っていることを
+- [x] `tests/unit/solver.test.js` の `safeRetry` テスト(「safe が失敗したら safe2 で再試行する」など)を削除し、「既定では二本構成」のテストへ統合する。
+- [x] 戻り値の `attempts` を `{ fast, safe }` の 2 キーに限定する。
+- [x] `docs/benchmark/report.js` が `attempts` を汎用に扱っていることを
   確認し、キー変更の影響がないことを確認する(過去データの `safe2` キーは
   表示上無視されるだけで破綻しない)。
 
 **検証**: `npm run test:unit`。必要に応じて `sample-bench.js` で少数ゲームのソルバー動作を確認する。
+
+#### 実施記録(2026-08-22)
+
+- 上記 4 項目をすべて実施。`npm test` 成功(単体 135 / E2E 65)。
+- `sample-bench.js --games 1,2,3` でソルバー動作を確認(3/3 解決)。
+- `report.js` は `attempts` を生データとして埋め込むだけ(`r.attempts || null`)
+  で、`safe2` キーに依存しないことを確認。過去データの `safe2` キーは表示に
+  影響しない。
+- 変更内容は [CHANGELOG.md](../CHANGELOG.md) の 2026-08-22「### リファクタリング」
+  に追記済み。
 
 ### フェーズ 3: スクリプトと非コード資産の整理
 

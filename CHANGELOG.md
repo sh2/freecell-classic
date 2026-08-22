@@ -22,6 +22,15 @@
     `safeOptions` の受け取りを削除(メッセージ契約を `type` / `requestId` /
     `board` / `strategy` に明示)。
   - 検証: `npm test`(単体 137 / E2E 65)がすべて成功。
+- **ソルバーの legacy オプション整理(整理計画フェーズ 2)**。挙動は変更しない。
+  - `src/js/solver.js`: 後方互換用の `SOLVER_PROFILES.safeRetry` と、
+    `solveWithFallback()` の `safeRetry` / `safeRetryOptions` オプション、
+    `attempts.safe2` を削除。探索は `fast + safe` の二本構成に一本化
+    (旧三本構成は既定で無効だったため、実挙動は不変)。
+  - `tests/unit/solver.test.js`: `safe2` 再試行のテスト 2 件を削除し、
+    Worker プロトコルテストのモックを二本構成(fast→safe)に合わせた。
+  - 検証: `npm test`(単体 135 / E2E 65)がすべて成功。`sample-bench.js`
+    (ゲーム 1〜3)でソルバー動作を確認(3/3 解決)。
 
 ### ドキュメント
 

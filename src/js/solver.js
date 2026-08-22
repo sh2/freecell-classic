@@ -37,15 +37,6 @@ export const SOLVER_PROFILES = Object.freeze({
     tailStartWeightMax: 1.5,
     adaptiveWeight: true,
   }),
-  // 後方互換。旧 safeRetry(2M/w1.5)は safe に統合されたため safe と同値。
-  safeRetry: Object.freeze({
-    maxNodes: 2_000_000,
-    maxTimeMs: 60_000,
-    safeFoundationMoves: true,
-    allowUnsolvable: true,
-    disableReversePruning: false,
-    tailStartWeight: 1.5,
-  }),
 });
 
 /** カード id からランク(1〜13)とスート(0〜3)を得る */
@@ -1130,16 +1121,11 @@ export function solveWithFallback(board, options = {}) {
   }
   const fastOptions = { ...SOLVER_PROFILES.fast, ...(options.fastOptions ?? {}) };
   const safeOptions = { ...SOLVER_PROFILES.safe, ...(options.safeOptions ?? {}) };
-  // 旧 safe2 (2M/w1.5)は safe 改(12M/適応)に統合されたため既定では無効。
-  // 明示的に safeRetry:true を渡した場合のみ、後方互換として旧三本構成を再現する。
-  const retryEnabled = options.safeRetry ?? false;
-  const retryOptions = { ...SOLVER_PROFILES.safeRetry, ...(options.safeRetryOptions ?? {}) };
   if (options.trackCounters) {
     fastOptions.trackCounters = true;
     safeOptions.trackCounters = true;
-    retryOptions.trackCounters = true;
   }
-  const attempts = { fast: null, safe: null, safe2: null };
+  const attempts = { fast: null, safe: null };
 
   const run = (mode, solverOptions) => {
     options.onStageChange?.(mode);
@@ -1161,20 +1147,12 @@ export function solveWithFallback(board, options = {}) {
   } else if (strategy === "safe") {
     finalMode = "safe";
     result = run("safe", safeOptions);
-    if (!result.solved && retryEnabled) {
-      result = run("safe2", retryOptions);
-      finalMode = "safe2";
-    }
   } else {
     result = run("fast", fastOptions);
     finalMode = "fast";
     if (!result.solved) {
       result = run("safe", safeOptions);
       finalMode = "safe";
-    }
-    if (!result.solved && retryEnabled) {
-      result = run("safe2", retryOptions);
-      finalMode = "safe2";
     }
   }
 
@@ -1184,7 +1162,7 @@ export function solveWithFallback(board, options = {}) {
     ...result,
     finalMode,
     strategy,
-    fallbackUsed: strategy === "fast-safe" && (attempts.safe !== null || attempts.safe2 !== null),
+    fallbackUsed: strategy === "fast-safe" && attempts.safe !== null,
     totalNodes,
     totalTimeMs,
     attempts,
