@@ -232,7 +232,7 @@ export function checkStuck(state) {
  * 安全にホームへ送れるカードを 1 枚だけ探す(状態は変更しない)。
  * 見つからなければ null を返す。
  */
-export function findAutoMoveCard(state) {
+function findAutoMoveCard(state) {
   if (state.won) {
     return null;
   }

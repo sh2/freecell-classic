@@ -1,6 +1,6 @@
 # コードベース整理・メンテナンス性改善計画
 
-> 対応状況: フェーズ 0〜4 完了(2026-08-22)。実施後は本ドキュメントの各チェックボックスを更新し、
+> 対応状況: フェーズ 0〜5 完了(2026-08-22)。実施後は本ドキュメントの各チェックボックスを更新し、
 > ソースを変更した場合は [CHANGELOG.md](../CHANGELOG.md) へ追記する。
 
 ## 1. 目的と方針
@@ -208,15 +208,33 @@
 
 挙動を変えない範囲で、保守性をさらに高めたい場合に実施する。テストが充実しているため安全に行えるが、効果とリスクのバランスを見て判断する。
 
-- [ ] **S1** `solver-client.js` の `cancelAutoSolve()` / `cancel()` を、
+- [x] **S1** `solver-client.js` の `cancelAutoSolve()` / `cancel()` を、
   状態遷移(計算中 / 再生中 / 停止)を明示的にモデル化して簡素化する。
-- [ ] **S2** `view.js` の `syncControls()` 周りの 4 変数を 1 つの状態オブジェクトへ集約する。
-- [ ] **E1〜E4** 内部利用のみの関数のエクスポートを見直す(削除はせず、
+- [x] **S2** `view.js` の `syncControls()` 周りの 4 変数を 1 つの状態オブジェクトへ集約する。
+- [x] **E1〜E4** 内部利用のみの関数のエクスポートを見直す(削除はせず、
   非公開化できるものを export から外す。ただし単体テストが直接 import
   しているものはテスト側も合わせて調整する)。
-- [ ] **T3** `tests/unit/smoke.test.js` を削除するか判断する。
+- [x] **T3** `tests/unit/smoke.test.js` を削除するか判断する。
 
 **検証**: `npm test`(全件成功)+ ブラウザでの手動確認。
+
+#### 実施記録(2026-08-22)
+
+- **S1**: `cancelAutoSolve()` から到達しない「保険」分岐と重複したトグル OFF
+  処理を削除し、`cancel()` は `activeRequest.autoPlay=true ⟹ autoSolving=true`
+  の不変条件から `wasAuto` 判定を廃止して mode を `"hint"` に固定。未使用の
+  `cancelReplay()` も削除。
+- **S2**: `_lastState` / `_autoSolvingFlag` / `_solverBusyFlag` / `solverMode` を
+  1 つの `controlsState` オブジェクトへ集約。
+- **E1〜E3**: `findAutoMoveCard()`(game-state)を非公開化し、`makeCardEl()`(view) /
+  `newRandomGame()`(app)を返り値オブジェクトから除外。
+- **E4**: `foundationRank()` / `isWon()` は単体テストが直接 import する純粋関数
+  のため、5.3 の方針どおり公開を維持(削除しない)。
+- **T3**: `tests/unit/smoke.test.js` を削除(単体テスト 134 件が存在するため冗長)。
+- 検証: `npm test`(単体 134 / E2E 65)がすべて成功。ブラウザで手動確認
+  (初期コントロール状態・自動解答トグル ON/OFF・ヒント・新規ゲーム・移動)。
+- 変更内容は [CHANGELOG.md](../CHANGELOG.md) の 2026-08-22「### リファクタリング」
+  に追記済み。
 
 ## 4. 判断が必要な項目
 
@@ -260,7 +278,7 @@
 
 ## 6. 完了条件
 
-- [ ] フェーズ 0〜4 が完了し、`npm test`(単体 + E2E)が全件成功する。
-- [ ] フェーズ 5(任意)実施時は、さらにブラウザでの手動確認を完了する。
-- [ ] 削除・整理した項目が `CHANGELOG.md` に「### リファクタリング」として追記されている。
-- [ ] `docs/` の Markdown に markdownlint 診断が残っていない。
+- [x] フェーズ 0〜4 が完了し、`npm test`(単体 + E2E)が全件成功する。
+- [x] フェーズ 5(任意)実施時は、さらにブラウザでの手動確認を完了する。
+- [x] 削除・整理した項目が `CHANGELOG.md` に「### リファクタリング」として追記されている。
+- [x] `docs/` の Markdown に markdownlint 診断が残っていない。

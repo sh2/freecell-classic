@@ -73,41 +73,16 @@ export function createSolverClient({ app, view }) {
     replayMoves = null;
   }
 
-  function cancelReplay() {
-    clearReplayTimer();
-    replayMoves = null;
-    replayIndex = 0;
-  }
-
   /** トグルOFFや新規ゲームで自動解答を中断する */
   function cancelAutoSolve() {
-    // 再生中 → ラベル復元を含め finishAutoSolve で一括終了
-    if (autoSolving && !activeRequest) {
-      clearReplayTimer();
-      replayMoves = null;
-      replayIndex = 0;
-      finishAutoSolve();
-      return;
-    }
-    // 計算中に再生が始まっていた場合の保険（通常は到達しない）
-    if (autoSolving && activeRequest && activeRequest.autoPlay) {
-      clearReplayTimer();
-      replayMoves = null;
-      replayIndex = 0;
-    }
+    // 自動解答の計算(activeRequest)と再生(replayMoves)を停止してアイドルへ戻す。
+    // 計算中は Worker を止めて activeRequest をクリアし、再生中は finishAutoSolve
+    // がラベル復元・トグルOFF・自動ホーム送りの復元まで一括で行う。
     if (activeRequest && activeRequest.autoPlay) {
       activeRequest = null;
       stopWorker();
-      const toggle = document.getElementById("auto-solve-toggle");
-      if (toggle) {
-        toggle.checked = false;
-      }
-      if (autoSolving) {
-        finishAutoSolve();
-      } else {
-        view.setSolverBusy(false, "auto");
-      }
-    } else if (autoSolving) {
+    }
+    if (autoSolving) {
       finishAutoSolve();
     } else {
       clearReplayTimer();
@@ -276,13 +251,15 @@ export function createSolverClient({ app, view }) {
       cancelAutoSolve();
       return;
     }
-    const wasAuto = Boolean(activeRequest && activeRequest.autoPlay);
+    // ヒント計算中またはアイドル: 計算と再生状態をクリアして busy を解除する。
+    // activeRequest.autoPlay=true なら常に autoSolving=true のため、ここでは
+    // ヒント(またはアイドル)のみが対象となり mode は "hint" で固定できる。
     clearReplayTimer();
     replayMoves = null;
     replayIndex = 0;
     activeRequest = null;
     stopWorker();
-    view.setSolverBusy(false, wasAuto ? "auto" : "hint");
+    view.setSolverBusy(false, "hint");
   }
 
   function isAutoSolving() {

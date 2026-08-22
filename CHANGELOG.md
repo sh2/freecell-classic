@@ -49,6 +49,21 @@
   - `README.md`: ソルバー改善記録へのリンクを `docs/archive/` 配下へ修正。
   - `src/js/view.js`: `syncControls()` のコメント参照先
     (`docs/ui-state-matrix.md`)はファイル移動により正しくなったため変更不要。
+- **構造改善リファクタリング(整理計画フェーズ 5)**。挙動は変更しない。
+  - `src/js/solver-client.js`: `cancelAutoSolve()` / `cancel()` を簡素化。
+    到達しない「保険」分岐と重複したトグル OFF 処理を削除し、未使用の
+    `cancelReplay()` を削除。`cancel()` は `activeRequest.autoPlay=true` なら
+    常に `autoSolving=true` になる不変条件から、`wasAuto` 判定を廃止して
+    mode を `"hint"` に固定。
+  - `src/js/view.js`: `syncControls()` 周りの 4 変数(`_lastState` /
+    `_autoSolvingFlag` / `_solverBusyFlag` / `solverMode`)を 1 つの
+    `controlsState` オブジェクトへ集約。
+  - `src/js/game-state.js`: 内部利用のみの `findAutoMoveCard()` を非公開化。
+  - `src/js/view.js` / `src/js/app.js`: 内部利用のみの `makeCardEl()` /
+    `newRandomGame()` を返り値オブジェクトから除外。
+  - `tests/unit/smoke.test.js` を削除(Phase 1 名残の冗長なスモークテスト)。
+  - 検証: `npm test`(単体 134 / E2E 65)がすべて成功。ブラウザで手動確認
+    (初期コントロール状態・自動解答トグル ON/OFF・ヒント・新規ゲーム・移動)。
 
 ### ドキュメント
 

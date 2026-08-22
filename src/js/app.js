@@ -532,7 +532,6 @@ export function createApp({ view, deps = {} }) {
     setAnimationsEnabled,
     startGame,
     newGameFromInput,
-    newRandomGame,
     snapshot,
     maxMovable,
     setBoard,

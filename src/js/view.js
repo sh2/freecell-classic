@@ -346,18 +346,23 @@ export function createView() {
 
   /* ---------------- コントロール Enable/Disable の一元管理 ---------------- */
 
-  let _lastState = null;
-  let _autoSolvingFlag = false;
-  let _solverBusyFlag = false;
+  // syncControls が参照する UI 状態(最後に描画したゲーム状態とソルバーUIのフラグを集約)
+  let controlsState = {
+    lastState: null, // 最後に描画したゲーム状態(render 時に更新)
+    autoSolving: false, // 自動解答中(計算・再生)
+    solverBusy: false, // ソルバー計算中
+    solverMode: null, // "hint" | "auto" | null(ラベル書き換えの対象を限定)
+  };
 
   /** 状態表(docs/ui-state-matrix.md 4章)に準拠してツールバーの disabled を同期する */
   function syncControls() {
-    const won = _lastState ? _lastState.won : false;
-    const hasHistory = _lastState ? _lastState.historyStack.length > 0 : false;
-    const hasAutoMove = _lastState ? gameState.hasAutoMove(_lastState) : false;
-    const busyHint = solverMode === "hint" && _solverBusyFlag;
-    const busyAuto = solverMode === "auto" && _solverBusyFlag;
-    const autoSolving = _autoSolvingFlag || busyAuto;
+    const { lastState, autoSolving: autoSolvingFlag, solverBusy, solverMode } = controlsState;
+    const won = lastState ? lastState.won : false;
+    const hasHistory = lastState ? lastState.historyStack.length > 0 : false;
+    const hasAutoMove = lastState ? gameState.hasAutoMove(lastState) : false;
+    const busyHint = solverMode === "hint" && solverBusy;
+    const busyAuto = solverMode === "auto" && solverBusy;
+    const autoSolving = autoSolvingFlag || busyAuto;
 
     const newGameBtn = document.getElementById("new-game-btn");
     const restartBtn = document.getElementById("restart-btn");
@@ -407,7 +412,7 @@ export function createView() {
   }
 
   function updateStatus(state) {
-    _lastState = state;
+    controlsState.lastState = state;
     document.getElementById("move-counter").textContent = `手数: ${state.moveCount}`;
     syncControls();
   }
@@ -613,7 +618,6 @@ export function createView() {
   let hintEls = [];
   let hintTimer = null;
   const HINT_AUTO_HIDE_MS = 10000;
-  let solverMode = null; // "hint" | "auto" | null(ラベル書き換えの対象を限定)
 
   function clearHint() {
     if (hintTimer !== null) {
@@ -692,7 +696,7 @@ export function createView() {
   }
 
   function setAutoSolving(solving) {
-    _autoSolvingFlag = solving;
+    controlsState.autoSolving = solving;
     const gameEl = document.getElementById("game");
     if (gameEl) {
       gameEl.classList.toggle("auto-solving", solving);
@@ -706,8 +710,8 @@ export function createView() {
    *  mode="hint": ヒント。ラベルは変更せず、トグルを無効化(自動解答開始を防ぐ)。 */
   function setSolverBusy(busy, mode) {
     if (mode === "auto") {
-      solverMode = busy ? "auto" : null;
-      _solverBusyFlag = busy;
+      controlsState.solverMode = busy ? "auto" : null;
+      controlsState.solverBusy = busy;
       const label = document.getElementById("auto-solve-label");
       if (label) {
         if (busy) {
@@ -723,15 +727,15 @@ export function createView() {
       }
     } else {
       // ヒント計算中: ラベルは変えず、トグルのみ無効化
-      solverMode = busy ? "hint" : null;
-      _solverBusyFlag = busy;
+      controlsState.solverMode = busy ? "hint" : null;
+      controlsState.solverBusy = busy;
     }
     syncControls();
   }
 
   /** ソルバーの現在段階を表示する(自動解答中のみ。ヒント中はラベルを変えない) */
   function setSolverStage(stage) {
-    if (solverMode !== "auto") {
+    if (controlsState.solverMode !== "auto") {
       return;
     }
     const label = document.getElementById("auto-solve-label");
@@ -784,7 +788,6 @@ export function createView() {
     showWin,
     showStuck,
     hideOverlay,
-    makeCardEl,
     cardElById,
     setAnimationsEnabled,
     setNextRenderAnimation,
