@@ -125,3 +125,7 @@ npm run benchmark        # 次の未計測バッチ (1,000 ゲーム) を計測
 npm run benchmark:all    # 残り全バッチを順に計測 (シリアルで時間がかかる)
 npm run benchmark:report # 計測結果から自己完結型 HTML レポートを生成
 ```
+
+## ライセンス
+
+[MIT License](./LICENSE)

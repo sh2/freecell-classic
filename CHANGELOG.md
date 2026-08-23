@@ -61,6 +61,12 @@
   担当する(自動ホーム送りの一時無効化とステージ表示のみが `startAnimatedReplay()` 側)。
   コメントのみの変更で動作への影響なし。
 
+### その他
+
+- MIT ライセンスを適用。`LICENSE`(Copyright (c) 2026 Sadao Hiratsuka)を
+  新設し、`package.json` に `"license": "MIT"` を追加、README に
+  「ライセンス」セクションを追記。
+
 ## 2026-08-22
 
 ### リファクタリング

@@ -2,6 +2,7 @@
   "name": "freecell-classic",
   "version": "1.0.0",
   "private": true,
+  "license": "MIT",
   "description": "Microsoft FreeCell 互換のフリーセル (クラシックルール)",
   "type": "module",
   "scripts": {
