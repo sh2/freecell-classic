@@ -509,6 +509,56 @@ export function createView() {
     document.getElementById("overlay").classList.add("hidden");
   }
 
+  /* ---------------- やり直し確認ダイアログ ---------------- */
+
+  let confirmResolve = null; // 表示中の Promise の resolve(非 null なら表示中)
+  let confirmPrevFocus = null; // 開く前にフォーカスがあった要素
+
+  /** ダイアログを閉じて待ち受けている Promise を確定させる */
+  function resolveConfirmDialog(result) {
+    if (!confirmResolve) {
+      return;
+    }
+    const resolve = confirmResolve;
+    confirmResolve = null;
+    document.getElementById("confirm-dialog").classList.add("hidden");
+    if (confirmPrevFocus && typeof confirmPrevFocus.focus === "function") {
+      confirmPrevFocus.focus();
+    }
+    confirmPrevFocus = null;
+    resolve(result);
+  }
+
+  /** ダイアログ内のキー操作。Enter=実行 / Esc=中止。
+   *  stopPropagation で app 側のショートカット(Ctrl+Z / Esc)への漏れを防ぐ */
+  function onConfirmKeydown(e) {
+    e.stopPropagation();
+    if (e.key === "Escape") {
+      e.preventDefault();
+      resolveConfirmDialog(false);
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      resolveConfirmDialog(true);
+    }
+  }
+
+  /** やり直し確認ダイアログを表示し、実行で true / 中止で false に解決する
+   *  Promise を返す。開いている間はキャンセルボタンへフォーカスし、
+   *  閉じたら元の要素へフォーカスを戻す */
+  function showConfirmRestart() {
+    if (confirmResolve) {
+      return Promise.resolve(false); // 既に開いている場合は二重表示しない
+    }
+    return new Promise((resolve) => {
+      confirmResolve = resolve;
+      confirmPrevFocus = document.activeElement;
+      const dlg = document.getElementById("confirm-dialog");
+      dlg.classList.remove("hidden");
+      dlg.onkeydown = onConfirmKeydown;
+      document.getElementById("confirm-cancel-btn").focus();
+    });
+  }
+
   /* ---------------- 盤面の構築 ---------------- */
 
   function buildBoard() {
@@ -880,6 +930,8 @@ export function createView() {
     showWin,
     showStuck,
     hideOverlay,
+    showConfirmRestart,
+    resolveConfirmDialog,
     cardElById,
     setAnimationsEnabled,
     setNextRenderAnimation,

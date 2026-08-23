@@ -664,9 +664,73 @@ test.describe("タイマー", () => {
     await h.clickCard(page, 23);
     await h.clickSlot(page, "free", 0);
     expect(await h.timerRunning(page)).toBe(true);
+    // 進行があるので確認ダイアログ経由で実行される
     await page.click("#restart-btn");
+    await page.click("#confirm-ok-btn");
     expect(await h.timerRunning(page)).toBe(false);
     expect(await page.textContent("#timer")).toBe("0:00");
+  });
+
+  test("進行があるときのやり直しは確認ダイアログで中止できる", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.clickCard(page, 23);
+    await h.clickSlot(page, "free", 0);
+    const dialog = page.locator("#confirm-dialog");
+
+    // キャンセルボタンで中止すると盤面も履歴も維持される
+    await page.click("#restart-btn");
+    await expect(dialog).toBeVisible();
+    await page.click("#confirm-cancel-btn");
+    await expect(dialog).toBeHidden();
+    let snap = await h.state(page);
+    expect(snap.historyLength).toBe(1);
+    expect(snap.moveCount).toBe(1);
+
+    // Esc でも中止できる
+    await page.click("#restart-btn");
+    await expect(dialog).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+    snap = await h.state(page);
+    expect(snap.historyLength).toBe(1);
+
+    // 背景クリックでも中止できる
+    await page.click("#restart-btn");
+    await expect(dialog).toBeVisible();
+    await dialog.click({ position: { x: 10, y: 10 } });
+    await expect(dialog).toBeHidden();
+    expect((await h.state(page)).historyLength).toBe(1);
+  });
+
+  test("進行があるときのやり直しは Enter でも実行できる", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.clickCard(page, 23);
+    await h.clickSlot(page, "free", 0);
+    await page.click("#restart-btn");
+    await expect(page.locator("#confirm-dialog")).toBeVisible();
+    await page.keyboard.press("Enter");
+    await expect(page.locator("#confirm-dialog")).toBeHidden();
+    const snap = await h.state(page);
+    expect(snap.historyLength).toBe(0);
+    expect(snap.moveCount).toBe(0);
+  });
+
+  test("進行がないときのやり直しは確認なしで即座にリセットされる", async ({ page }) => {
+    await h.openGame(page, 1);
+    await page.click("#restart-btn");
+    await expect(page.locator("#confirm-dialog")).toBeHidden();
+    expect((await h.state(page)).historyLength).toBe(0);
+  });
+
+  test("勝利後のやり直しは確認なしでリセットされる", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setWinBoard(page);
+    expect((await h.state(page)).won).toBe(true);
+    // 勝利オーバーレイが全画面を覆うため、先に背景クリックで閉じる
+    await page.locator("#overlay").click({ position: { x: 10, y: 10 } });
+    await page.click("#restart-btn");
+    await expect(page.locator("#confirm-dialog")).toBeHidden();
+    expect((await h.state(page)).won).toBe(false);
   });
 
   test("勝利でタイマーが停止する", async ({ page }) => {

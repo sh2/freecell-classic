@@ -89,6 +89,7 @@ graph TD
     HintCalc["ヒント計算中<br/>activeRequest && !autoPlay"]
     AutoCalc["自動解答 計算中<br/>activeRequest && autoPlay"]
     Replay["自動解答 再生中<br/>replayMoves && autoSolving"]
+    Confirm["やり直し確認<br/>confirm-dialog 表示中"]
 
     Idle -- 合法手なし --> Stuck
     Stuck -- undo --> Idle
@@ -99,8 +100,12 @@ graph TD
     AutoCalc -- 解あり --> Replay
     AutoCalc -- 解なし/エラー/キャンセル --> Idle
     Replay -- 全手再生/勝利/失敗/キャンセル --> Idle
-    Won -- 新しいゲーム/やり直す/開始 --> Idle
-    Stuck -- 新しいゲーム/やり直す/開始 --> Idle
+    Won -- 新しいゲーム/開始 --> Idle
+    Stuck -- 新しいゲーム/開始 --> Idle
+    Idle -- やり直す(進行あり) --> Confirm
+    Won -- やり直す(進行あり) --> Confirm
+    Stuck -- やり直す(進行あり) --> Confirm
+    Confirm -- 承諾(リセット)/中止 --> Idle
 
     HintCalc -.->|"盤面は触れるが<br/>hint/autoトグルのみ制御"| Idle
     AutoCalc -.->|"盤面ブロック<br/>(autoSolving)"| Idle
@@ -130,6 +135,7 @@ graph TD
 | `start-game-btn` | 開始 | `normalizeGameNumber()` して `startGame()` | `view.js: syncControls()` で `autoSolving` 時に `disabled` |
 | `#game` 盤面 | 盤面操作 | クリック / ドラッグ&ドロップ / ダブルクリック | `interactions.js: isBlocked()` と `app.js: attemptMove()` の `autoSolving` ガード、`game-state.js: attemptMove()` の `won` ガード |
 | `#overlay` | オーバーレイ | 詰み/勝利の通知。背景クリックで閉じる | `view.js: showWin()` / `showStuck()` / `hideOverlay()` |
+| `#confirm-dialog` | やり直し確認 | 進行があるときの「やり直す」確認。OK/Enter でリスタート、キャンセル/Esc/背景クリックで中止 | `main.js: requestRestart()` が `app.needsRestartConfirm()` で表示を判定、`view.js: showConfirmRestart()` / `resolveConfirmDialog()` が表示と確定を担当 |
 | `overlay-undo` | 1手戻す | 詰み時のみ表示される Undo | `view.js: showWin()` で `hidden`、 `showStuck()` で表示 |
 | `overlay-new-game` | 新しいゲーム | オーバーレイ内の新規ゲーム | 制御なし |
 | `solution-panel` | 解答手順パネル | 自動解答完了後に全手順を表示 | `view.js: showSolution()` / `hideSolution()` |
@@ -179,6 +185,13 @@ graph TD
   `disabled` にして意図を明示すべきである。
 - ヒントのハイライト(`hint-source` / `hint-target`)は 10 秒で自動消去される
   (2026-08-21 追加)。手動操作(移動・Undo・自動解答開始・新規ゲーム)でも解除される。
+- 「やり直す」は進行がある(Undo 履歴があり勝利済みでない)ときだけ確認ダイアログ
+  (`#confirm-dialog`)を挟む(2026-08-23 追加)。承諾で同じ番号でリスタート、
+  中止(キャンセル / Esc / 背景クリック)なら盤面を維持する。進行がない場合と
+  勝利後は確認なしで即座にリスタートする(フル Undo 後のタイマーリセットなど、
+  無確認で押す意味のある操作を妨げないため)。ダイアログ表示中は背景が全画面を
+  覆うため盤面操作・ツールバーとも操作できず、Enter / Esc 以外のショートカットも
+  無効(`stopPropagation`)。
 
 ## 5. 解決済みの不整合
 
@@ -240,6 +253,11 @@ graph TD
 6. **自動ホーム送りの保存・復元を正確に行う**
    - `startAnimatedReplay()` で `savedAutoMoveEnabled = autoMoveEnabled` の現在値を保存
    - `finishAutoSolve()` / `cancelAutoSolve()` で保存値へ復元する（`true` 固定にしない）
+
+7. **不可逆な破壊的操作には確認を挟む**
+   - Undo 履歴を消す「やり直す」は、進行があるときだけ確認ダイアログを表示する
+     (`app.js: needsRestartConfirm()` を判定の正とする)
+   - 失うものがない状態(進行なし・勝利後)では確認せず、操作のコストを上げない
 
 ## 7. 参考
 

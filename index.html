@@ -81,6 +81,24 @@
     </div>
   </div>
 
+  <div
+    id="confirm-dialog"
+    class="overlay hidden"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="confirm-title"
+    aria-describedby="confirm-message"
+  >
+    <div class="overlay-card">
+      <h2 id="confirm-title">やり直しますか？</h2>
+      <p id="confirm-message">現在の盤面と手数は失われ、元に戻せません。</p>
+      <div class="confirm-actions">
+        <button id="confirm-cancel-btn" class="btn-secondary">キャンセル</button>
+        <button id="confirm-ok-btn">やり直す</button>
+      </div>
+    </div>
+  </div>
+
   <div id="solution-panel" class="solution-panel hidden">
     <div class="solution-card">
       <div class="solution-head">

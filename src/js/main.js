@@ -57,9 +57,40 @@ export function init() {
     }
   };
   document.getElementById("new-game-btn").addEventListener("click", clearSolutionOnNewGame);
-  document.getElementById("restart-btn").addEventListener("click", clearSolutionOnNewGame);
   document.getElementById("start-game-btn").addEventListener("click", clearSolutionOnNewGame);
   document.getElementById("overlay-new-game").addEventListener("click", clearSolutionOnNewGame);
+
+  // やり直し確認ダイアログのボタンと背景クリック
+  document.getElementById("confirm-ok-btn").addEventListener("click", () => {
+    view.resolveConfirmDialog(true);
+  });
+  document.getElementById("confirm-cancel-btn").addEventListener("click", () => {
+    view.resolveConfirmDialog(false);
+  });
+  document.getElementById("confirm-dialog").addEventListener("click", (e) => {
+    if (e.target.id === "confirm-dialog") {
+      view.resolveConfirmDialog(false);
+    }
+  });
+
+  // やり直し: 進行があるときだけ確認ダイアログを挟む(キャンセルなら盤面維持)。
+  // 実行時は新規ゲーム系と同じ後始末をしてから同じ番号で再スタートする
+  const requestRestart = () => {
+    const doRestart = () => {
+      clearSolutionOnNewGame();
+      app.restartGame();
+    };
+    if (app.needsRestartConfirm()) {
+      view.showConfirmRestart().then((ok) => {
+        if (ok) {
+          doRestart();
+        }
+      });
+    } else {
+      doRestart();
+    }
+  };
+  document.getElementById("restart-btn").addEventListener("click", requestRestart);
 }
 
 /** E2E テスト用の公開 API。init() 後にのみ利用できる */

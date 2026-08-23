@@ -538,6 +538,23 @@ body {
   display: none;
 }
 
+/* ---------- やり直し確認ダイアログ ---------- */
+
+.confirm-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+/* キャンセル(安全な方)は地味な色で示す */
+.overlay-card .btn-secondary {
+  background: #7a828c;
+}
+
+.overlay-card .btn-secondary:hover {
+  background: #8d959f;
+}
+
 @keyframes pop {
   from {
     transform: scale(0.7);

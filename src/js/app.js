@@ -291,6 +291,18 @@ export function createApp({ view, deps = {} }) {
     startGame(randomGameNumber());
   }
 
+  /** やり直し: 同じ gameNumber で再スタート(startGame が won フラグも降ろす) */
+  function restartGame() {
+    startGame(state.gameNumber);
+  }
+
+  /** やり直しに確認ダイアログが必要か。
+   *  Undo 履歴(= 復元できない進行)があり、勝利済みでない場合のみ確認する。
+   *  勝利後は失うものがないため確認しない */
+  function needsRestartConfirm() {
+    return state.historyStack.length > 0 && !state.won;
+  }
+
   function getState() {
     return state;
   }
@@ -305,8 +317,7 @@ export function createApp({ view, deps = {} }) {
     document.getElementById("start-game-btn").addEventListener("click", newGameFromInput);
     document.getElementById("overlay-new-game").addEventListener("click", newRandomGame);
     document.getElementById("overlay-undo").addEventListener("click", undo);
-    // やり直し: 同じ gameNumber で再スタート(startGame が won フラグも降ろす)
-    document.getElementById("restart-btn").addEventListener("click", () => startGame(state.gameNumber));
+    // やり直しボタンは main.js が確認ダイアログ経由で restartGame() を呼ぶ
     document.getElementById("undo-btn").addEventListener("click", undo);
     document.getElementById("auto-move-btn").addEventListener("click", autoMoveHome);
 
@@ -531,6 +542,8 @@ export function createApp({ view, deps = {} }) {
     getAutoMoveEnabled,
     setAnimationsEnabled,
     startGame,
+    restartGame,
+    needsRestartConfirm,
     newGameFromInput,
     snapshot,
     maxMovable,
