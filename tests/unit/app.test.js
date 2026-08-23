@@ -60,6 +60,9 @@ function createMockView() {
       calls.push("dragRects");
       return {};
     },
+    setAutoSolving(solving) {
+      calls.push(`autoSolving:${solving}`);
+    },
     setAnimationsEnabled() {
       calls.push("setAnimationsEnabled");
     },
@@ -308,6 +311,53 @@ describe("createApp: 自動でホームへ送る(毎手)", () => {
     expect(s.moveCount).toBe(3);
     expect(s.foundations[0].map((c) => c.id)).toEqual([2]); // AH
     expect(s.foundations[1].map((c) => c.id)).toEqual([0]); // AC
+  });
+});
+
+describe("createApp: 自動解答中の排他", () => {
+  it("attemptMove は auto-solving で拒否され、状態は変わらない", () => {
+    const view = createMockView();
+    const deps = createFakeDeps();
+    const app = createApp({ view, deps });
+    app.startGame(1);
+    app.setAutoSolving(true);
+    expect(app.isAutoSolving()).toBe(true);
+
+    const res = firstMove(app);
+    expect(res).toEqual({ ok: false, reason: "auto-solving" });
+    const s = app.getState();
+    expect(s.moveCount).toBe(0);
+    expect(s.historyStack.length).toBe(0);
+    expect(s.freeCells[0]).toBeNull();
+  });
+
+  it("undo / autoMoveHome / dblClickAutoMove も拒否される", () => {
+    const view = createMockView();
+    const deps = createFakeDeps();
+    const app = createApp({ view, deps });
+    app.startGame(1);
+    firstMove(app); // 進行を作ってから自動解答開始
+    app.setAutoSolving(true);
+
+    app.undo();
+    expect(app.getState().moveCount).toBe(1); // Undo されない
+    expect(app.autoMoveHome()).toBe(false);
+    expect(app.dblClickAutoMove({ zone: "cascade", index: 0, cardIndex: 5 })).toBe(false);
+    // autoMoveHome の「送れるカードがありません」トーストも出ない
+    expect(view.calls).not.toContain("toast");
+  });
+
+  it("setAutoSolving(false) で操作できるよう戻る", () => {
+    const view = createMockView();
+    const deps = createFakeDeps();
+    const app = createApp({ view, deps });
+    app.startGame(1);
+    app.setAutoSolving(true);
+    app.setAutoSolving(false);
+    expect(app.isAutoSolving()).toBe(false);
+    expect(firstMove(app).ok).toBe(true);
+    expect(view.calls).toContain("autoSolving:true");
+    expect(view.calls).toContain("autoSolving:false");
   });
 });
 

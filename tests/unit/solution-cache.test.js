@@ -24,6 +24,29 @@ function move(cardId, fromZone, fromIndex, destZone, destIndex, count = 1) {
   return { cardId, fromZone, fromIndex, destZone, destIndex, count };
 }
 
+describe("boardFingerprint", () => {
+  it("同じ配置なら同じ文字列になる", () => {
+    const a = board({ cascades: [[8, 4]], freeCells: [0] });
+    const b = board({ cascades: [[8, 4]], freeCells: [0] });
+    expect(boardFingerprint(a)).toBe(boardFingerprint(b));
+  });
+
+  it("列の分割が違えば異なる文字列になる(正規化はしない)", () => {
+    const a = board({ cascades: [[8, 4]] });
+    const b = board({ cascades: [[8], [4]] });
+    expect(boardFingerprint(a)).not.toBe(boardFingerprint(b));
+  });
+
+  it("ゾーンの違い(カスケード/フリーセル/ホーム)も反映する", () => {
+    const cascade = board({ cascades: [[0]] });
+    const free = board({ freeCells: [0] });
+    const home = board({ foundations: [[0]] });
+    expect(boardFingerprint(cascade)).not.toBe(boardFingerprint(free));
+    expect(boardFingerprint(cascade)).not.toBe(boardFingerprint(home));
+    expect(boardFingerprint(free)).not.toBe(boardFingerprint(home));
+  });
+});
+
 describe("buildSolutionCacheEntry", () => {
   // col0 に 3C-2C-AC が積まれた盤面。A→2→3 の順でホームへ送るのが解
   const start = board({ cascades: [[8, 4, 0]] });

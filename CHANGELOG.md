@@ -102,6 +102,27 @@
   `startAnimatedReplay()` 側と記載していたが、実際は直上の `setBusy()` が
   担当する(自動ホーム送りの一時無効化とステージ表示のみが `startAnimatedReplay()` 側)。
   コメントのみの変更で動作への影響なし。
+- 勝利直後にツールバーの一部ボタンが無効化されない問題を修正。`view.js` の
+  `showWin()` が `syncControls()` を呼んでおらず、最後の render 時点(まだ
+  `won` が false)のコントロール状態のままになっていたため、勝利後に
+  「ヒント」「ホームへ送る」や自動解答トグルなどが押せていた。
+  `showWin()` 内で `syncControls()` を再実行し、UI 状態表
+  (docs/ui-state-matrix.md)の「勝利」行どおり完了済みの操作を無効化する。
+
+### テスト
+
+- 自動解答まわりの未テスト挙動を補うテストを追加(単体 +6 / E2E +6)。
+  - 単体 `tests/unit/app.test.js`: 自動解答中の排他ガード(`attemptMove` が
+    `auto-solving` で拒否される、`undo` / `autoMoveHome` / `dblClickAutoMove`
+    も拒否、解除で操作可能に戻る)。モック View に `setAutoSolving()` を追加。
+  - 単体 `tests/unit/solution-cache.test.js`: `boardFingerprint` の直接テスト
+    (同一盤面は一致、列分割の違い・ゾーンの違いは不一致)。
+  - E2E: 自動解答の計算中にクリック/ドラッグが無視されることの実挙動検証
+    (既存テストを強化)、計算中のトグル OFF によるキャンセル(Worker 停止・
+    ラベル復元・盤面操作の復帰)、Worker エラー時のヒント/自動解答の復帰、
+    ドラッグ中のドロップ候補表示(`.drop-hint`)とドロップ先強調
+    (`.drop-target`)、勝利後のコントロール無効化(UI 状態表の「勝利」行)。
+  - 検証: `npm test`(単体 150 / E2E 82)がすべて成功。
 
 ### その他
 

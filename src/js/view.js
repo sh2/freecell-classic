@@ -495,6 +495,9 @@ export function createView() {
       `No.${gameNumber} を ${moveCount} 手・ ${time} でクリアしました！`;
     document.getElementById("overlay-undo").classList.add("hidden");
     document.getElementById("overlay").classList.remove("hidden");
+    // 勝利直前の render では won がまだ false のため、ここで再度同期する
+    // (UI 状態表どおり、完了済みの操作を無効化する)
+    syncControls();
   }
 
   function showStuck() {

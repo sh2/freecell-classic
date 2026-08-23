@@ -250,6 +250,52 @@ test.describe("ドラッグ&ドロップ", () => {
     expect(s.cascades[0]).toEqual([41, 49, 7, 12, 11, 21, 23]);
     expect(await page.evaluate(() => document.getElementById("drag-layer").style.display)).toBe("none");
   });
+
+  test("ドラッグ開始時、移動可能な先にドロップ候補ヒントが表示される", async ({ page }) => {
+    await h.openGame(page, 1);
+    // col0: 6S(黒6)、col1: 7♥(赤7)。6S は 7♥ の上と空きフリーセル/空き列へ動かせる
+    await h.setBoard(page, {
+      cascades: [[23], [26], [], [], [], [], [], []],
+      freeCells: [],
+      foundations: [],
+    });
+    const p = await h.clickPoint(page, 23);
+    await page.mouse.move(p.x, p.y);
+    await page.mouse.down();
+    await page.mouse.move(p.x + 40, p.y, { steps: 5 }); // 6px 閾値を超えてドラッグ開始
+    // 空きフリーセル 4 つと空き列 6 本、7♥ の上に候補が出る
+    await expect(page.locator("#free-cells .slot.drop-hint")).toHaveCount(4);
+    await expect(page.locator("#game .cascade .slot.drop-hint")).toHaveCount(6);
+    await expect(page.locator('#game .card.drop-hint[data-card-id="26"]')).toHaveCount(1);
+    // ホーム(6S は置けない)には候補が出ない
+    await expect(page.locator("#home-cells .slot.drop-hint")).toHaveCount(0);
+    // ドラッグを終了する(ドロップ先の成否は他のテストで検証済み)
+    await page.mouse.up();
+  });
+
+  test("ドラッグ中、重ねた先の候補だけが強調表示され、ドロップで移動する", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setBoard(page, {
+      cascades: [[23], [26], [], [], [], [], [], []],
+      freeCells: [],
+      foundations: [],
+    });
+    const from = await h.clickPoint(page, 23);
+    const to = await h.clickPoint(page, 26); // 7♥ の上へ
+    await page.mouse.move(from.x, from.y);
+    await page.mouse.down();
+    await page.mouse.move(from.x + 40, from.y, { steps: 5 });
+    await page.mouse.move(to.x, to.y, { steps: 10 });
+    // 重ねた先(7♥)が強調表示される
+    await expect(page.locator('#game .card.drop-target[data-card-id="26"]')).toHaveCount(1);
+    await page.mouse.up();
+    // ドロップで移動が確定し、候補表示は消える
+    const s = await h.state(page);
+    expect(s.moveCount).toBe(1);
+    expect(s.cascades[1]).toEqual([26, 23]);
+    await expect(page.locator("#game .drop-hint")).toHaveCount(0);
+    await expect(page.locator("#game .drop-target")).toHaveCount(0);
+  });
 });
 
 test.describe("ダブルクリック自動移動", () => {
@@ -524,6 +570,24 @@ test.describe("勝利", () => {
     const s = await h.state(page);
     expect(s.won).toBe(true);
     expect(s.moveCount).toBe(52);
+  });
+
+  test("勝利後はソルバー・自動移動系のコントロールが無効になる", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setWinBoard(page);
+    // オーバーレイを閉じてツールバーを操作できるようにする
+    await page.click("#overlay", { position: { x: 10, y: 10 } });
+    // UI 状態表(docs/ui-state-matrix.md 4.1)の「勝利」行: 完了済みの操作は無効
+    await expect(page.locator("#undo-btn")).toBeDisabled();
+    await expect(page.locator("#auto-move-btn")).toBeDisabled();
+    await expect(page.locator("#hint-btn")).toBeDisabled();
+    await expect(page.locator("#auto-solve-toggle")).toBeDisabled();
+    await expect(page.locator("#auto-move-toggle")).toBeDisabled();
+    // 新規ゲーム系は有効のまま(勝利後に次のゲームへ進める)
+    await expect(page.locator("#new-game-btn")).toBeEnabled();
+    await expect(page.locator("#restart-btn")).toBeEnabled();
+    await expect(page.locator("#seed-input")).toBeEnabled();
+    await expect(page.locator("#start-game-btn")).toBeEnabled();
   });
 });
 
@@ -895,6 +959,31 @@ test.describe("ソルバー", () => {
     };
   }
 
+  /** Worker 生成時に必ず onerror を発火させるモックを注入する(エラー復帰の検証用) */
+  async function installErrorWorker(page) {
+    await page.addInitScript(() => {
+      const NativeWorker = window.Worker;
+      window.Worker = class ErrorSolverWorker {
+        constructor() {
+          this.onmessage = null;
+          this.onerror = null;
+          this.terminated = false;
+        }
+        postMessage() {
+          setTimeout(() => {
+            if (!this.terminated && this.onerror) {
+              this.onerror(new Error("mock solver error"));
+            }
+          }, 10);
+        }
+        terminate() {
+          this.terminated = true;
+        }
+      };
+      void NativeWorker;
+    });
+  }
+
   test("高速探索から安全探索への段階表示を行う", async ({ page }) => {
     await page.addInitScript(() => {
       window.__solverWorkerScenario = "fallback";
@@ -1071,7 +1160,7 @@ test.describe("ソルバー", () => {
 
   test("自動解答: トグルON中は盤面操作がブロックされる", async ({ page }) => {
     await page.addInitScript(() => {
-      window.__solverDelayMs = 300;
+      window.__solverDelayMs = 3000;
       const NativeWorker = window.Worker;
       window.Worker = class DelayedWorker {
         constructor(url, opts) {
@@ -1098,12 +1187,108 @@ test.describe("ソルバー", () => {
     });
     await h.openGame(page, 1);
     await h.setBoard(page, nearWinBoard());
+    // ブロック中は #game が pointer-events:none になり座標探索が使えないため、
+    // ブロック前に操作座標を取得しておく
+    const from = await h.clickPoint(page, 51); // フリーセルの ♠K
+    const to = await h.slotPoint(page, "free", 0);
     await page.locator("#auto-solve-toggle").check();
     // 計算中は #game に auto-solving クラスが付く(操作ブロックの目印)
     await expect(page.locator("#game.auto-solving")).toBeVisible({ timeout: 2000 });
-    // オーバーレイ/パネルを閉じて再検証の前に少し待つ
+    // ブロック中のクリックは無視される(選択も移動も起こらない)
+    await page.mouse.click(from.x, from.y);
+    let s = await h.state(page);
+    expect(s.selected).toBeNull();
+    expect(s.moveCount).toBe(0);
+    // ブロック中のドラッグも無視される
+    await page.mouse.move(from.x, from.y);
+    await page.mouse.down();
+    await page.mouse.move(to.x, to.y, { steps: 5 });
+    await page.mouse.up();
+    s = await h.state(page);
+    expect(s.moveCount).toBe(0);
+    expect(s.freeCells[3]).toBe(51); // ♠K は動いていない
+    // 計算完了後は通常どおりクリアまで進む
     await expect(page.locator("#overlay")).toBeVisible({ timeout: 10000 });
     await expect(page.locator("#auto-solve-toggle")).not.toBeChecked({ timeout: 2000 });
+  });
+
+  test("自動解答: 計算中にトグルOFFでキャンセルでき、盤面操作が復活する", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__solverDelayMs = 30000; // テスト中は結果を返さない
+      window.__terminatedCount = 0;
+      const NativeWorker = window.Worker;
+      window.Worker = class DelayedWorker {
+        constructor(url, opts) {
+          this._inner = new NativeWorker(url, opts);
+          this.onmessage = null;
+          this.onerror = null;
+          this._inner.onmessage = (e) => {
+            const d = e.data;
+            if (d && d.type === "result") {
+              setTimeout(() => this.onmessage?.(e), window.__solverDelayMs);
+            } else {
+              this.onmessage?.(e);
+            }
+          };
+          this._inner.onerror = (e) => this.onerror?.(e);
+        }
+        postMessage(m) {
+          this._inner.postMessage(m);
+        }
+        terminate() {
+          window.__terminatedCount += 1;
+          this._inner.terminate();
+        }
+      };
+      void NativeWorker;
+    });
+    await h.openGame(page, 1);
+    await h.setBoard(page, nearWinBoard());
+    await page.locator("#auto-solve-toggle").check();
+    await expect(page.locator("#game.auto-solving")).toBeVisible({ timeout: 2000 });
+
+    // トグルOFFでキャンセル: Worker が停止し、UI と盤面操作が復帰する
+    await page.locator("#auto-solve-toggle").uncheck();
+    await expect(page.locator("#game")).not.toHaveClass(/auto-solving/);
+    await expect(page.locator("#auto-solve-label")).toHaveText("自動解答");
+    expect(await page.evaluate(() => window.__terminatedCount)).toBeGreaterThanOrEqual(1);
+
+    // 盤面操作が再度受け付けられる(フリーセルの ♠K を選択できる)
+    await h.clickCard(page, 51);
+    const s = await h.state(page);
+    expect(s.selected).toEqual({ zone: "free", index: 3, cardIndex: 0 });
+    expect(s.won).toBe(false);
+  });
+
+  test("ヒント: Worker エラー時にトーストを出してボタンを復帰させる", async ({ page }) => {
+    await installErrorWorker(page);
+    await h.openGame(page, 1);
+    await h.setBoard(page, nearWinBoard());
+    await page.click("#hint-btn");
+    await expect(page.locator("#toast")).toContainText("ソルバーでエラーが発生しました", {
+      timeout: 2000,
+    });
+    // busy 表示が解除され、ボタンは「ヒント」へ戻る
+    await expect(page.locator("#hint-btn")).toBeEnabled();
+    await expect(page.locator("#hint-btn")).not.toHaveClass(/busy/);
+    await expect(page.locator("#hint-btn")).toHaveText("ヒント");
+  });
+
+  test("自動解答: Worker エラー時にトーストを出して操作可能に戻る", async ({ page }) => {
+    await installErrorWorker(page);
+    await h.openGame(page, 1);
+    await h.setBoard(page, nearWinBoard());
+    await page.locator("#auto-solve-toggle").check();
+    await expect(page.locator("#toast")).toContainText("ソルバーでエラーが発生しました", {
+      timeout: 2000,
+    });
+    // ブロックが解除され、トグルとラベルは初期状態へ戻る
+    await expect(page.locator("#game")).not.toHaveClass(/auto-solving/);
+    await expect(page.locator("#auto-solve-toggle")).not.toBeChecked();
+    await expect(page.locator("#auto-solve-label")).toHaveText("自動解答");
+    // 盤面操作も復帰する
+    await h.clickCard(page, 51);
+    expect((await h.state(page)).selected).toEqual({ zone: "free", index: 3, cardIndex: 0 });
   });
 
   test("解答パネルは閉じるボタンで閉じられる(自動解答完了後)", async ({ page }) => {
