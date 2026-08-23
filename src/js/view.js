@@ -87,6 +87,11 @@ export function createView() {
         pile.length > 1
           ? Math.min(34, Math.max(20, (budget - cardH) / (pile.length - 1)))
           : 0;
+      // カードは position: absolute でレイアウト高さに反映されないため、
+      // 山の見た目の高さを wrap の高さに設定する(後続のフッターなどの
+      // 要素がカードの下に回り込まないようにするため)
+      wrap.style.height =
+        pile.length > 0 ? (pile.length - 1) * overlap + cardH + "px" : "";
       pile.forEach((card, idx) => {
         const el = makeCardEl(card);
         el.style.top = idx * overlap + "px";
