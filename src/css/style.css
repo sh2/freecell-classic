@@ -23,6 +23,12 @@ body {
   font-family: "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
   background: radial-gradient(ellipse at 50% 0%, #2a8a60 0%, var(--felt) 45%, var(--felt-dark) 100%);
   min-height: 100vh;
+  min-height: 100dvh;
+  /* フッターを画面下端に固定する(sticky footer)。コンテンツが画面より
+     短い間はフッターは下端に張り付き、盤面が伸びて画面を超えたときだけ
+     下へ押し出されてスクロール対象になる */
+  display: flex;
+  flex-direction: column;
   color: #fff;
   user-select: none;
   -webkit-user-select: none;
@@ -194,6 +200,9 @@ body {
 /* ---------- フッター ---------- */
 
 .site-footer {
+  /* コンテンツが画面より短いときはビューポート下端まで押し下げる
+     (カードの増減でフッターが上下しないようにするため) */
+  margin-top: auto;
   display: flex;
   align-items: center;
   justify-content: center;

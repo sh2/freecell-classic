@@ -78,7 +78,22 @@ export function createView() {
     // --- カスケード ---
     const cardH = freeSlotEls[0].getBoundingClientRect().height || 124;
     const areaTop = cascadeEls[0].getBoundingClientRect().top;
-    const budget = Math.max(280, window.innerHeight - areaTop - 24);
+    // 山の下端がフッター(画面下端に張り付いている)より下に伸びないよう、
+    // 「#game の下パディング + フッターの高さ + 余白」を下側の予約域として
+    // 確保する。これにより通常のディールでは山が伸縮してもフッターは
+    // 押し出されない。予約域を超える極端な積み上げでは budget の下限
+    // (280px)が優先され、フッターはコンテンツに押されて下へ追い出される
+    // (スクロールで到達できる)
+    const footerEl = document.querySelector(".site-footer");
+    const gameEl = document.getElementById("game");
+    const gamePadBottom = gameEl
+      ? parseFloat(getComputedStyle(gameEl).paddingBottom) || 0
+      : 0;
+    const footerReserve =
+      gamePadBottom +
+      (footerEl ? footerEl.getBoundingClientRect().height : 56) +
+      12;
+    const budget = Math.max(280, window.innerHeight - areaTop - footerReserve);
     for (let i = 0; i < NUM_CASCADES; i++) {
       const wrap = cascadeEls[i];
       wrap.querySelectorAll(".card").forEach((el) => el.remove());
