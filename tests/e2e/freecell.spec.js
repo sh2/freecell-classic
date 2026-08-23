@@ -975,3 +975,180 @@ test.describe("ソルバー", () => {
     await expect(page.locator("#solution-panel")).toBeHidden();
   });
 });
+
+test.describe("解法キャッシュ", () => {
+  /**
+   * あと 2 手で勝利する盤面(♠Q・♠K がフリーセル、♠ は A〜J までホーム)。
+   * 解は ♠Q → ホーム → ♠K → ホーム の 2 手で、簡単に解けるため E2E 向け。
+   * swapped=true でフリーセルの並びだけが違う別盤面になる(解パス外)。
+   */
+  function twoAwayBoard(swapped = false) {
+    const pile = (suit) => Array.from({ length: 13 }, (_, r) => r * 4 + suit);
+    return {
+      cascades: Array.from({ length: 8 }, () => []),
+      freeCells: swapped ? [47, 51, null, null] : [51, 47, null, null], // ♠K, ♠Q
+      foundations: [pile(0), pile(1), pile(2), pile(3).slice(0, 11)],
+    };
+  }
+
+  /** Worker 起動数を数えるモックを注入する(再探索の有無の観測用) */
+  async function installCountingWorker(page) {
+    await page.addInitScript(() => {
+      window.__workerCount = 0;
+      const NativeWorker = window.Worker;
+      window.Worker = class CountingSolverWorker {
+        constructor(url, opts) {
+          window.__workerCount += 1;
+          this._inner = new NativeWorker(url, opts);
+          this.onmessage = null;
+          this.onerror = null;
+          this._inner.onmessage = (e) => this.onmessage?.(e);
+          this._inner.onerror = (e) => this.onerror?.(e);
+        }
+        postMessage(m) {
+          this._inner.postMessage(m);
+        }
+        terminate() {
+          this._inner.terminate();
+        }
+      };
+    });
+  }
+
+  const workerCount = (page) => page.evaluate(() => window.__workerCount);
+
+  /** ヒント要求の完了(キャッシュ再構築)を solverCacheInfo で待つ */
+  async function waitForCacheActive(page) {
+    await expect
+      .poll(async () => {
+        const info = await h.solverCacheInfo(page);
+        return info.active ? `true:${info.remainingMoves}` : "false";
+      })
+      .toMatch(/^true:/);
+  }
+
+  test("ヒント→従う→ヒント: 2回目のヒントはキャッシュから即座に供給される(再探索なし)", async ({ page }) => {
+    await installCountingWorker(page);
+    await h.openGame(page, 1);
+    await h.setAutoMove(page, false); // ♠K が自動ホーム送りされないようにする
+    await h.setBoard(page, twoAwayBoard());
+
+    // 1 回目のヒント: Worker で探索してキャッシュが作られる
+    await page.click("#hint-btn");
+    await expect(page.locator("#toast")).toContainText("ヒント: ♠Q → ホーム", { timeout: 10000 });
+    expect(await workerCount(page)).toBe(1);
+    expect(await h.solverCacheInfo(page)).toEqual({ active: true, remainingMoves: 2 });
+
+    // 解に従う: ♠Q をホームへ
+    await h.clickCard(page, 47);
+    await h.clickSlot(page, "home", 3);
+    expect((await h.state(page)).foundations[3]).toHaveLength(12);
+    expect(await h.solverCacheInfo(page)).toEqual({ active: true, remainingMoves: 1 });
+
+    // 2 回目のヒント: Worker を起動せず同期で表示される
+    await page.click("#hint-btn");
+    await expect(page.locator("#toast")).toContainText("ヒント: ♠K → ホーム");
+    expect(await workerCount(page)).toBe(1);
+  });
+
+  test("ヒント→解から外す→ヒント: キャッシュは破棄され再探索される", async ({ page }) => {
+    await installCountingWorker(page);
+    await h.openGame(page, 1);
+    await h.setAutoMove(page, false);
+    await h.setBoard(page, twoAwayBoard());
+    await page.click("#hint-btn");
+    await expect(page.locator("#toast")).toContainText("ヒント: ♠Q → ホーム", { timeout: 10000 });
+    expect(await workerCount(page)).toBe(1);
+
+    // 解から外す: ♠Q を別のフリーセルへ移す(パス上に存在しない盤面)
+    await h.clickCard(page, 47);
+    await h.clickSlot(page, "free", 2);
+    expect(await h.solverCacheInfo(page)).toEqual({ active: false, remainingMoves: 0 });
+
+    // 次のヒントはキャッシュなしで通常どおり再探索する
+    await page.click("#hint-btn");
+    await waitForCacheActive(page);
+    expect(await h.solverCacheInfo(page)).toEqual({ active: true, remainingMoves: 2 });
+    expect(await workerCount(page)).toBe(2);
+  });
+
+  test("ヒント→従う→アンドゥ→ヒント: キャッシュは維持され残り手数が元に戻る", async ({ page }) => {
+    await installCountingWorker(page);
+    await h.openGame(page, 1);
+    await h.setAutoMove(page, false);
+    await h.setBoard(page, twoAwayBoard());
+    await page.click("#hint-btn");
+    await expect(page.locator("#toast")).toContainText("ヒント: ♠Q → ホーム", { timeout: 10000 });
+    await h.clickCard(page, 47);
+    await h.clickSlot(page, "home", 3);
+    expect(await h.solverCacheInfo(page)).toEqual({ active: true, remainingMoves: 1 });
+
+    // パス上へのアンドゥでもキャッシュは維持される
+    await page.click("#undo-btn");
+    expect((await h.state(page)).foundations[3]).toHaveLength(11);
+    expect(await h.solverCacheInfo(page)).toEqual({ active: true, remainingMoves: 2 });
+
+    // アンドゥした盤面でのヒントも再探索なしで供給される
+    await page.click("#hint-btn");
+    await expect(page.locator("#toast")).toContainText("ヒント: ♠Q → ホーム");
+    expect(await workerCount(page)).toBe(1);
+  });
+
+  test("ヒント取得後にリスタート→ヒント: B0 一致で全手順が復活し即答する", async ({ page }) => {
+    await installCountingWorker(page);
+    // 実際のディールで最初のヒントを要求する(B0 = ゲーム #1 の初期配置)
+    await h.openGame(page, 1);
+    await page.click("#hint-btn");
+    await waitForCacheActive(page);
+    const before = await h.solverCacheInfo(page);
+    expect(await workerCount(page)).toBe(1);
+
+    // リスタート(同番号)では盤面が B0 に戻り、キャッシュは破棄されない
+    await page.click("#restart-btn");
+    expect(await h.solverCacheInfo(page)).toEqual(before);
+    await page.click("#hint-btn");
+    await expect(page.locator("#toast")).toContainText("ヒント", { timeout: 10000 });
+    expect(await workerCount(page)).toBe(1); // 即答(再探索なし)
+  });
+
+  test("ヒント取得後に新規ゲーム→ヒント: キャッシュは無効化され再探索される", async ({ page }) => {
+    await installCountingWorker(page);
+    await h.openGame(page, 1);
+    await h.setAutoMove(page, false);
+    await h.setBoard(page, twoAwayBoard());
+    await page.click("#hint-btn");
+    await expect(page.locator("#toast")).toContainText("ヒント: ♠Q → ホーム", { timeout: 10000 });
+    expect(await workerCount(page)).toBe(1);
+
+    // 新規ゲームの盤面(52枚すべてカスケード)は解パス上のどの盤面とも一致しない
+    await page.click("#new-game-btn");
+    expect(await h.solverCacheInfo(page)).toEqual({ active: false, remainingMoves: 0 });
+
+    // 別盤面でのヒントは通常どおり Worker で探索する
+    await h.setBoard(page, twoAwayBoard(true));
+    await page.click("#hint-btn");
+    await waitForCacheActive(page);
+    expect(await h.solverCacheInfo(page)).toEqual({ active: true, remainingMoves: 2 });
+    expect(await workerCount(page)).toBe(2);
+  });
+
+  test("自動解答もキャッシュから再生される(再探索なし)", async ({ page }) => {
+    await installCountingWorker(page);
+    await h.openGame(page, 1);
+    await h.setAutoMove(page, false);
+    await h.setBoard(page, twoAwayBoard());
+
+    // 先にヒントで解を求めておく
+    await page.click("#hint-btn");
+    await expect(page.locator("#toast")).toContainText("ヒント: ♠Q → ホーム", { timeout: 10000 });
+    expect(await workerCount(page)).toBe(1);
+
+    // 自動解答トグル ON → キャッシュ命中で Worker を起こさず再生する
+    await page.locator("#auto-solve-toggle").check();
+    await expect(page.locator("#overlay")).toBeVisible({ timeout: 10000 });
+    expect(await workerCount(page)).toBe(1);
+    const s = await h.state(page);
+    expect(s.won).toBe(true);
+    expect(s.foundations[3]).toHaveLength(13);
+  });
+});

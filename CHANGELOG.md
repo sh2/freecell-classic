@@ -1,5 +1,47 @@
 # 変更履歴
 
+## 2026-08-23
+
+### 機能
+
+- **解法キャッシュ(ソルバー結果の再利用)**。ヒントのたびに Web Worker を
+  新規起動してフル探索していたのを、直近に求めた解を盤面スナップ照合で
+  再利用する方式に変更(docs/solution-cache-plan.md の実装)。
+  「ヒント → 従う → ヒント」のループで再探索が発生しなくなり、
+  2 回目以降のヒントは同期表示・自動解答は即再生になる。
+  - `src/js/solution-cache.js`(新規): キャッシュエントリ構築
+    (`buildSolutionCacheEntry`: シャドウ state 再生により B0〜勝利までの
+    盤面フィンガープリント列と手順列を作る)と照合
+    (`findProgressIndex`: 末尾側からの一致探索)、`boardFingerprint` を
+    提供する純粋モジュール。game-state.js / rules.js のみに依存し
+    DOM・Worker に触れない。
+  - `src/js/solver-client.js`: 未使用だった `solution` 変数をキャッシュ
+    エントリで置き換え。`requestSolution()` の冒頭(計算中ガードの直後)で
+    現在盤面を照合し、パス上なら残り手順を供給(ヒントは Worker 起動なしの
+    同期表示、自動解答は既存パスと同じ事前準備をしてから `startAnimatedReplay()`)。
+    供給時は先頭手の合法性検証 + count 再計算の防御チェックを行い、失敗時は
+    キャッシュ破棄して通常探索へフォールバック。Worker 解の受信時
+    (stale チェック通過後)にエントリを構築・保存。`boardSnapshot()` は
+    `solution-cache.js` の `boardFingerprint()` へ統合。
+    E2E 観測用の `getCacheInfo()` を追加。
+  - `src/js/main.js`: 新規ゲーム系ボタンの後始末(`clearSolutionOnNewGame`)から
+    `solverClient.clearSolution()` 呼び出しを削除。キャッシュの寿命は盤面照合に
+    一任し、リスタート後の同番号ディールではキャッシュが即答に使われる。
+    テスト API に `solverCacheInfo()` を追加。
+  - テスト: 単体 `tests/unit/solution-cache.test.js`(エントリ構築 4件 /
+    照合 6件)を新規、E2E `tests/e2e/freecell.spec.js` に「解法キャッシュ」
+    ブロック(ヒント→従う→ヒントで再探索なし、逸脱で破棄・再探索、
+    アンドゥで維持、リスタートで B0 一致即答、新規ゲームで無効化、
+    自動解答のキャッシュ再生)を追加。helpers.js に `solverCacheInfo()` を追加。
+  - 検証: `npm test`(単体 144 / E2E 71)がすべて成功。
+
+### 修正
+
+- 自動解答のキャッシュヒットパスのコメントを修正。busy 表示の担当を
+  `startAnimatedReplay()` 側と記載していたが、実際は直上の `setBusy()` が
+  担当する(自動ホーム送りの一時無効化とステージ表示のみが `startAnimatedReplay()` 側)。
+  コメントのみの変更で動作への影響なし。
+
 ## 2026-08-22
 
 ### リファクタリング

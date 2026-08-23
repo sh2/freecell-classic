@@ -9,11 +9,13 @@
 
 import * as rules from "./rules.js";
 import { formatMove } from "./solver.js";
+import { boardFingerprint, buildSolutionCacheEntry, findProgressIndex } from "./solution-cache.js";
+import { groupFrom } from "./game-state.js";
 
 /** ソルバークライアントを生成する */
 export function createSolverClient({ app, view }) {
   let worker = null;
-  let solution = null;
+  let cacheEntry = null; // 直近の解のキャッシュ({ boards, moves })。エントリは常に 1 つ
   let nextRequestId = 1;
   let activeRequest = null;
   let autoSolving = false;
@@ -37,10 +39,6 @@ export function createSolverClient({ app, view }) {
       worker.terminate();
       worker = null;
     }
-  }
-
-  function boardSnapshot(board) {
-    return JSON.stringify(board);
   }
 
   /** ソルバーUIのbusy状態を mode(hint/auto)付きで view へ伝える */
@@ -158,17 +156,91 @@ export function createSolverClient({ app, view }) {
     view.showToast(`ヒント: ${line}`);
   }
 
+  /** キャッシュ先頭手の防御チェック。現在盤面に対して合法なら count を
+   *  再計算した手を返し、違えば null を返す(設計 4.4) */
+  function validatedCachedMove(mv) {
+    const state = app.getState();
+    const loc = rules.findCardLocation(state, mv.cardId);
+    if (!loc || loc.zone === "home") {
+      return null;
+    }
+    const group = groupFrom(state, loc);
+    if (mv.destZone === "free") {
+      if (group.length !== 1 || state.freeCells[mv.destIndex] !== null) {
+        return null;
+      }
+    } else if (mv.destZone === "home") {
+      // 指定ホームが受け入れ不可でも attemptMove が別 home へ誘導するため、
+      // ここでは行き先さえあればよく、destIndex の再解決は不要
+      if (group.length !== 1 || rules.foundationTargetFor(state.foundations, group[0]) < 0) {
+        return null;
+      }
+    } else {
+      if (
+        !rules.canDropOnCascade(state.cascades, group, mv.destIndex) ||
+        group.length > rules.maxMovable(state.freeCells, state.cascades, mv.destIndex)
+      ) {
+        return null;
+      }
+    }
+    return { ...mv, count: group.length };
+  }
+
+  /** 現在盤面のキャッシュ照合(設計 4.3)。残り手順を返すか、
+   *  供給できなければキャッシュを破棄して null を返す */
+  function takeFromCache(board) {
+    if (!cacheEntry) {
+      return null;
+    }
+    const j = findProgressIndex(cacheEntry, board);
+    // 勝利盤面(最終盤面)は供給対象外として破棄する
+    if (j < 0 || j === cacheEntry.boards.length - 1) {
+      cacheEntry = null;
+      return null;
+    }
+    const remaining = cacheEntry.moves.slice(j);
+    const first = validatedCachedMove(remaining[0]);
+    if (!first) {
+      cacheEntry = null;
+      return null;
+    }
+    remaining[0] = first;
+    return remaining;
+  }
+
   /** 解答を計算する。autoPlay が true なら完了後に自動再生(アニメ付き)する */
   function requestSolution({ autoPlay }) {
     if (worker) {
       return; // 計算中
     }
+    // キャッシュ照合(設計 4.3): 現在盤面が解パス上にあれば Worker を起動せず供給する
+    const board = boardFromState();
+    const cached = takeFromCache(board);
+    if (cached) {
+      if (autoPlay) {
+        // 自動解答のキャッシュヒット: 既存の Worker パスと同じ事前準備をしてから
+        // 再生する。busy 表示は直上の setBusy() が担当し、自動ホーム送りの
+        // 一時無効化とステージ表示は startAnimatedReplay 側が行う
+        savedAutoMoveEnabled = app.getAutoMoveEnabled();
+        autoSolving = true;
+        app.setAutoSolving(true);
+        setBusy(true); // autoSolving 済みなので mode は "auto" になる
+        const toggle = document.getElementById("auto-solve-toggle");
+        if (toggle) {
+          toggle.checked = true;
+        }
+        startAnimatedReplay(cached);
+      } else {
+        // ヒント: 同期で表示する(busy 表示なし・Worker 起動なし)
+        showHintMove(cached[0]);
+      }
+      return;
+    }
     // ヒントは解答パネルを出さない・トースト+ハイライトのみ
     // 自動解答はトグルON状態で開始される想定
     stopWorker();
-    const board = boardFromState();
     const requestId = nextRequestId++;
-    activeRequest = { requestId, snapshot: boardSnapshot(board), autoPlay };
+    activeRequest = { requestId, snapshot: boardFingerprint(board), autoPlay };
     if (autoPlay) {
       savedAutoMoveEnabled = app.getAutoMoveEnabled();
     }
@@ -201,7 +273,7 @@ export function createSolverClient({ app, view }) {
       if (!request.autoPlay) {
         setBusy(false);
       }
-      if (boardSnapshot(boardFromState()) !== request.snapshot) {
+      if (boardFingerprint(boardFromState()) !== request.snapshot) {
         if (request.autoPlay) {
           finishAutoSolve();
         }
@@ -209,7 +281,11 @@ export function createSolverClient({ app, view }) {
       }
       const result = res.result;
       if (result.solved && result.moves.length > 0) {
-        solution = result.moves;
+        // 解を受信したら B0 から勝利までの盤面列を構築してキャッシュする(設計 4.3)
+        const entry = buildSolutionCacheEntry(board, result.moves);
+        if (entry) {
+          cacheEntry = entry;
+        }
         if (request.autoPlay) {
           startAnimatedReplay(result.moves);
         } else {
@@ -271,8 +347,17 @@ export function createSolverClient({ app, view }) {
     cancel,
     cancelAutoSolve,
     isAutoSolving,
-    clearSolution: () => {
-      solution = null;
+    /** キャッシュ状態の取得(E2E テスト用)。
+     *  active は次のヒント要求でキャッシュが使えるか、remainingMoves は残り手数 */
+    getCacheInfo: () => {
+      if (!cacheEntry) {
+        return { active: false, remainingMoves: 0 };
+      }
+      const j = findProgressIndex(cacheEntry, boardFromState());
+      if (j >= 0 && j < cacheEntry.boards.length - 1) {
+        return { active: true, remainingMoves: cacheEntry.moves.length - j };
+      }
+      return { active: false, remainingMoves: 0 };
     },
   };
 }

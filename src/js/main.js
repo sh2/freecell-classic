@@ -41,6 +41,8 @@ export function init() {
   });
 
   // 新しいゲームを開始したら古い解答パネル・ヒント・自動解答をリセットする
+  // (解法キャッシュは破棄しない。寿命は盤面照合に一任され、リスタート後の
+  // 同一盤面ではキャッシュが即答に使われる)
   const clearSolutionOnNewGame = () => {
     solverClient.cancel();
     solverClient.cancelAutoSolve();
@@ -49,7 +51,6 @@ export function init() {
       t.checked = false;
     }
     app.setAutoSolving(false);
-    solverClient.clearSolution();
     view.hideSolution();
     if (view.clearHint) {
       view.clearHint();
@@ -74,6 +75,8 @@ export function getTestApi() {
     setWinBoard: appInstance.setWinBoard,
     setAutoMoveEnabled: appInstance.setAutoMoveEnabled,
     setAnimationsEnabled: appInstance.setAnimationsEnabled,
+    /** 解法キャッシュの状態取得。{ active, remainingMoves } を返す */
+    solverCacheInfo: () => solverClient.getCacheInfo(),
   };
 }
 

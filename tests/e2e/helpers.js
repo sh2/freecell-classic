@@ -117,6 +117,11 @@ export function setAutoMove(page, enabled) {
   return page.evaluate((v) => window.__testApi.setAutoMoveEnabled(v), enabled);
 }
 
+/** 解法キャッシュの状態({ active, remainingMoves })を取得する */
+export function solverCacheInfo(page) {
+  return page.evaluate(() => window.__testApi.solverCacheInfo());
+}
+
 /** カード移動アニメーションをオン/オフする(既定ではヘルパー注入時に無効化済み) */
 export function setAnimations(page, enabled) {
   return page.evaluate((v) => window.__testApi.setAnimationsEnabled(v), enabled);
