@@ -65,14 +65,16 @@
 | 派生状態 | 条件 | `view.setSolverBusy()` の mode | ラベル表示 |
 | --- | --- | --- | --- |
 | アイドル | `!activeRequest && !autoSolving` | `null` | 自動解答 |
-| ヒント計算中 | `activeRequest && !autoPlay` | `hint` | 変化なし |
+| ヒント計算中 | `activeRequest && !autoPlay` | `hint` | 自動解答ラベルは不変。`hint-btn` 内にスピナーを即表示し、300ms 経過後は「高速探索中…」/「安全探索中…」へ切替(`setSolverStage()`) |
 | 自動解答 計算中 | `activeRequest && autoPlay` | `auto` | 計算中… → 高速探索中… / 安全探索中… |
 | 自動解答 再生中 | `replayMoves !== null && autoSolving` | `auto`（`setSolverStage("replay")`） | 自動解答中… |
 
 補足:
 
 - ヒント計算中は `hint-btn` を `disabled` にし、自動解答トグルを `disabled` にする
-  （`view.js: setSolverBusy()` の `hint` 分岐）
+  （`view.js: setSolverBusy()` の `hint` 分岐）。進捗は自動解答ラベルではなく
+  `hint-btn` 自体(スピナー + 段階テキスト)に出す。即答する盤面では
+  300ms の遅延内に完了するため表示は変化しない
 - 自動解答 計算中は `hint-btn` を `disabled` にするが、自動解答トグルは
   `disabled = false` のまま（OFFでキャンセル可能にする意図）
 - 再生中は `activeRequest` は既に `null` だが `autoSolving` が `true` のまま残る

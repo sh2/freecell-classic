@@ -914,6 +914,82 @@ test.describe("ソルバー", () => {
     expect(s.won).toBe(false);
   });
 
+  test("ヒント: 計算中はボタンにスピナーと段階表示を出し、自動解答ラベルは変えない", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__solverWorkerScenario = "hint-stages";
+      const NativeWorker = window.Worker;
+      window.Worker = class MockSolverWorker {
+        constructor() {
+          this.onmessage = null;
+          this.onerror = null;
+          this.terminated = false;
+        }
+
+        postMessage(message) {
+          if (window.__solverWorkerScenario !== "hint-stages") {
+            return;
+          }
+          setTimeout(() => {
+            if (!this.terminated) {
+              this.onmessage?.({ data: { type: "stage", requestId: message.requestId, stage: "fast" } });
+            }
+          }, 0);
+          setTimeout(() => {
+            if (!this.terminated) {
+              this.onmessage?.({ data: { type: "stage", requestId: message.requestId, stage: "safe" } });
+            }
+          }, 800);
+          setTimeout(() => {
+            if (!this.terminated) {
+              this.onmessage?.({
+                data: {
+                  type: "result",
+                  requestId: message.requestId,
+                  result: {
+                    solved: true,
+                    status: "solved",
+                    moves: [{ cardId: 51, count: 1, destZone: "home", destIndex: 3 }],
+                    nodes: 10,
+                    timeMs: 20,
+                    totalNodes: 50,
+                    totalTimeMs: 800,
+                    finalMode: "safe",
+                    strategy: "fast-safe",
+                    fallbackUsed: true,
+                    attempts: {},
+                  },
+                },
+              });
+            }
+          }, 1000);
+        }
+
+        terminate() {
+          this.terminated = true;
+        }
+      };
+      void NativeWorker;
+    });
+    await h.openGame(page, 1);
+    await h.setBoard(page, nearWinBoard());
+    await page.click("#hint-btn");
+    // 押下直後はスピナー(busy クラス + aria-busy)。文字はまだ「ヒント」のまま
+    await expect(page.locator("#hint-btn")).toHaveClass(/busy/);
+    await expect(page.locator("#hint-btn")).toHaveAttribute("aria-busy", "true");
+    // 遅延(300ms)確定後に段階表示へ切り替わる
+    await expect(page.locator("#hint-btn")).toHaveText("高速探索中…", { timeout: 2000 });
+    await expect(page.locator("#hint-btn")).toHaveText("安全探索中…", { timeout: 2000 });
+    // ヒント中も自動解答ラベルは変化しない
+    await expect(page.locator("#auto-solve-label")).toHaveText("自動解答");
+    // 完了したらハイライト+トーストを表示し、ボタンは「ヒント」へ戻る
+    await expect(page.locator("#toast")).toContainText("ヒント", { timeout: 2000 });
+    await expect(page.locator("#game .card.hint-source")).toBeVisible({ timeout: 2000 });
+    await expect(page.locator("#hint-btn")).toHaveText("ヒント");
+    await expect(page.locator("#hint-btn")).not.toHaveClass(/busy/);
+    await expect(page.locator("#hint-btn")).not.toHaveAttribute("aria-busy");
+    await expect(page.locator("#hint-btn")).toBeEnabled();
+  });
+
   test("自動解答: トグルで1手ずつアニメーションし、完了後に全手順パネルとトグルOFFを表示する", async ({ page }) => {
     await h.openGame(page, 1);
     await h.setBoard(page, nearWinBoard());

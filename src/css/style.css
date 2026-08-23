@@ -138,6 +138,44 @@ body {
   display: inline-block;
 }
 
+/* ヒントボタン: 計算中はスピナーを表示し、遅延後に文字を段階表示
+   (高速探索中…/安全探索中…)へ切り替える。静止時から最小幅を固定して、
+   押下・段階切替・完了復元のどの遷移でもツールバーの配置が動かないようにする
+   (自動解答ラベルの min-width 固定と同じ方針) */
+#hint-btn {
+  min-width: 10.5em;
+}
+
+#hint-btn.busy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#hint-btn.busy::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 0.8em;
+  height: 0.8em;
+  margin-right: 6px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: hint-spin 0.8s linear infinite;
+}
+
+@keyframes hint-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #hint-btn.busy::before {
+    animation: none;
+  }
+}
+
 .seed-label input {
   width: 76px;
   padding: 6px 8px;

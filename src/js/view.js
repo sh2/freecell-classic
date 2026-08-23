@@ -704,10 +704,69 @@ export function createView() {
     syncControls();
   }
 
+  /* ---------------- ヒントボタンの進捗表示 ---------------- */
+
+  // 押下直後はスピナーのみで、一定時間経過しても計算が続いている場合だけ
+  // ボタンの文字を段階表示(高速探索中…/安全探索中…)へ切り替える。
+  // 即答する盤面(キャッシュヒット・高速で解ける配置)では遅延内に完了するため
+  // 文字は一度も変わらずチラつかない。自動解答ラベルはヒント中は変えない。
+  const HINT_STAGE_DELAY_MS = 300;
+  let hintStageTimer = null;
+  let hintStageText = null; // 遅延確定前に届いた最新の段階テキスト
+
+  function stageLabelFor(stage) {
+    if (stage === "safe" || stage === "safe2") {
+      return "安全探索中…";
+    }
+    return "高速探索中…";
+  }
+
+  /** ヒントボタンへ段階テキストを反映する(遅延確定後に呼ばれる) */
+  function applyHintStageText() {
+    const btn = document.getElementById("hint-btn");
+    if (btn) {
+      btn.textContent = hintStageText || stageLabelFor("fast");
+    }
+  }
+
+  /** ヒント計算の開始: スピナーを即表示し、段階テキストへの切替を遅延させる */
+  function beginHintBusy() {
+    const btn = document.getElementById("hint-btn");
+    if (!btn) {
+      return;
+    }
+    btn.classList.add("busy");
+    btn.setAttribute("aria-busy", "true");
+    hintStageText = null;
+    if (hintStageTimer !== null) {
+      clearTimeout(hintStageTimer);
+    }
+    hintStageTimer = setTimeout(() => {
+      hintStageTimer = null;
+      applyHintStageText();
+    }, HINT_STAGE_DELAY_MS);
+  }
+
+  /** ヒント計算の終了: スピナーと段階テキストを解除して「ヒント」へ戻す */
+  function endHintBusy() {
+    if (hintStageTimer !== null) {
+      clearTimeout(hintStageTimer);
+      hintStageTimer = null;
+    }
+    hintStageText = null;
+    const btn = document.getElementById("hint-btn");
+    if (btn) {
+      btn.classList.remove("busy");
+      btn.removeAttribute("aria-busy");
+      btn.textContent = "ヒント";
+    }
+  }
+
   /** ソルバー計算中のUI状態を制御する。
    *  mode="auto": 自動解答。ラベルに状態を表示するが、トグルは有効のまま
    *   (OFFでキャンセルできる)。テキスト幅はCSSで固定しているため位置は動かない。
-   *  mode="hint": ヒント。ラベルは変更せず、トグルを無効化(自動解答開始を防ぐ)。 */
+   *  mode="hint": ヒント。自動解答ラベルは変えず、ヒントボタン自体に
+   *   スピナーと段階テキストを表示する(トグルは無効化して自動解答開始を防ぐ)。 */
   function setSolverBusy(busy, mode) {
     if (mode === "auto") {
       controlsState.solverMode = busy ? "auto" : null;
@@ -726,26 +785,39 @@ export function createView() {
         }
       }
     } else {
-      // ヒント計算中: ラベルは変えず、トグルのみ無効化
+      // ヒント計算中: ボタン自体に進捗を出し、トグルのみ無効化
       controlsState.solverMode = busy ? "hint" : null;
       controlsState.solverBusy = busy;
+      if (busy) {
+        beginHintBusy();
+      } else {
+        endHintBusy();
+      }
     }
     syncControls();
   }
 
-  /** ソルバーの現在段階を表示する(自動解答中のみ。ヒント中はラベルを変えない) */
+  /** ソルバーの現在段階を表示する。
+   *  auto: 自動解答ラベル / hint: ヒントボタンのテキスト(遅延確定後に反映) */
   function setSolverStage(stage) {
-    if (controlsState.solverMode !== "auto") {
+    if (controlsState.solverMode === "auto") {
+      const label = document.getElementById("auto-solve-label");
+      if (label) {
+        if (stage === "safe" || stage === "safe2") {
+          label.textContent = "安全探索中…";
+        } else if (stage === "replay") {
+          label.textContent = "自動解答中…";
+        } else {
+          label.textContent = "高速探索中…";
+        }
+      }
       return;
     }
-    const label = document.getElementById("auto-solve-label");
-    if (label) {
-      if (stage === "safe" || stage === "safe2") {
-        label.textContent = "安全探索中…";
-      } else if (stage === "replay") {
-        label.textContent = "自動解答中…";
-      } else {
-        label.textContent = "高速探索中…";
+    if (controlsState.solverMode === "hint") {
+      hintStageText = stageLabelFor(stage);
+      if (hintStageTimer === null) {
+        // 遅延時間が経過済みなら、届いた段階へ即座に切替える
+        applyHintStageText();
       }
     }
   }
