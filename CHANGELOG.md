@@ -1,5 +1,18 @@
 # 変更履歴
 
+## 2026-10-31
+
+### その他
+
+- OGP(Open Graph Protocol)に対応。`index.html` の `<head>` に
+  description と `og:title` / `og:description` / `og:type` /
+  `og:url` / `og:image`、`twitter:card` のメタタグを追加し、
+  Qiita や X などに URL を貼った際のリンクカードでタイトル・
+  説明文・画像が表示されるようにした。カード画像はゲーム画面の
+  スクリーンショット `ogp.png`(1335x668)をリポジトリ直下に配置し、
+  GitHub Pages 経由の絶対 URL で参照する。ゲーム自体の挙動に
+  変更はない。
+
 ## 2026-08-23
 
 ### 機能
