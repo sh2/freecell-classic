@@ -57,6 +57,9 @@
 - `autoMoveEnabled: boolean`
   - 手動移動成功後の `chainAutoNext()` を実行するか否か
   - `solver-client.js: startAnimatedReplay()` 中は一時的に `false` にされる
+- ドパモード (`#dopa-toggle`) は演出専用の表示設定であり、ゲーム状態・
+  アプリ排他状態・ソルバー派生状態のいずれにも影響しない。`src/js/dopa.js`
+  が ON/OFF・combo・演出の世代だけを所有し、設定は保存しない。
 
 ### 2.4 ソルバー派生状態
 
@@ -112,6 +115,9 @@ graph TD
     Replay -.->|"盤面ブロック<br/>(autoSolving)"| Idle
 ```
 
+いずれの状態でも `#dopa-toggle` は演出のみを切り替え、状態遷移を起こさない
+（状態遷移図にはノードを増やさない）。
+
 到達不能な組合せ:
 
 - 勝利中にヒント/自動解答の計算・再生は開始しない（`boardSnapshot` 不一致で破棄される）
@@ -131,6 +137,7 @@ graph TD
 | `hint-btn` | ヒント | `solverClient.requestSolution({autoPlay:false})` | `view.js: syncControls()` で `won \|\| busyHint \|\| busyAuto` 時に `disabled` |
 | `auto-solve-toggle` | 自動解答 | ONで `requestSolution({autoPlay:true})`、OFFで `cancelAutoSolve()` | `view.js: syncControls()` で `won \|\| busyHint` 時に `disabled` |
 | `auto-move-toggle` | 自動でホームへ送る | `autoMoveEnabled` を切替 | `view.js: syncControls()` で `won \|\| autoSolving` 時に `disabled` |
+| `dopa-toggle` | ドパモード | 演出とサウンドをまとめて ON/OFF(デフォルト OFF・保存しない) | `disabled` 制御の対象外(演出専用)。`#confirm-dialog` / `solution-panel` / `#overlay` 表示中は全画面モーダルに覆われる |
 | `seed-input` | No. | ゲーム番号入力 | `view.js: syncControls()` で `autoSolving` 時に `disabled` |
 | `start-game-btn` | 開始 | `normalizeGameNumber()` して `startGame()` | `view.js: syncControls()` で `autoSolving` 時に `disabled` |
 | `#game` 盤面 | 盤面操作 | クリック / ドラッグ&ドロップ / ダブルクリック | `interactions.js: isBlocked()` と `app.js: attemptMove()` の `autoSolving` ガード、`game-state.js: attemptMove()` の `won` ガード |
@@ -172,7 +179,42 @@ graph TD
 | 自動解答 計算中 | × ブロック中 | × ブロック中 | × `autoSolving` のためブロック | 非表示 |
 | 自動解答 再生中 | × ブロック中 | × ブロック中 | × `autoSolving` のためブロック | 非表示 |
 
-### 4.3 補足
+### 4.3 演出設定（ドパモード）
+
+`#dopa-toggle` はゲーム状態を変えない演出専用の設定である。`view.js: syncControls()`
+の `disabled` 制御には加えず、モーダル表示中を除いて全状態で有効とする。
+
+| 状態 | `#dopa-toggle` | 演出の振る舞い |
+| --- | --- | --- |
+| アイドル（通常） | ◎ | 移動・ホーム・失敗などのイベントに 56 演出の割り当てを適用 |
+| 詰み | ◎ | g03（灰色沈下）＋g04（ドクロ・暗転）。OFF で即停止、アンドゥでリセット |
+| 勝利（オーバーレイ表示中） | × 全画面モーダルが覆う | 既存 Canvas（2100）に加え f04→f05→f06 を 8 秒以内で再生 |
+| 勝利（オーバーレイを閉じた後） | ◎ | `fadeWin()` と `cancelEffects()` で演出を停止し、Canvas はフェード |
+| ヒント計算中 | ◎ | 盤面は操作可能。ヒント表示時に e01-magic または c09-spotlight |
+| 自動解答 計算中 | ◎ | ゲームイベントが無いため演出なし。OFF にしても計算は継続 |
+| 自動解答 再生中 | ◎ | 各移動で通常と同じプールから演出（大幅な抑制はしない）。OFF で演出だけ停止し、自動解答は継続 |
+| やり直し確認ダイアログ | × モーダルが覆う | 新規演出なし。既存の短い演出は自然終了 |
+| 解答手順パネル | × モーダルが覆う | パネル表示中の新規演出なし |
+
+補足:
+
+- ON にした瞬間から次のイベントに適用する。再生中の演出を途中から強くしない。
+- 56 演出の ID・割り当ては `src/js/dopa-effects.js` を正とする。A+B+C の
+  通常移動プール、B+E のホームプール、D の重ね表示、e02-ssr の K / combo 8
+  制限、f01〜f06・g01〜g04 の節目 / 失敗割り当てを含む。
+- 画面全体の transform / filter は同時 2 件まで（超過分は捨てる）。
+  DOM 演出ノードは同時 200（モバイル 100）まで。各演出は 2.5 秒以内。
+- OFF にした瞬間に鳴っている音はフェードで止める。画面効果クラスと
+  盤面の transform / filter も解除する。既存のカード飛行・トースト・
+  オーバーレイは止めない。
+- 自動解答の再生中に OFF にしても `autoSolving` や `solver-client.js` の状態には
+  触れない。演出だけの停止であることを保証する。
+- `dopaGen` と既存の `animGen` は独立しており、ドパモード OFF が既存の飛行を
+  中断したり、既存の再描画がドパモードの音を止めたりしない。
+- テスト API `triggerDopaEffect(id)` と `dopaDebug().effects`
+  （registered / counts / active / history）で 56 件を機械検証できる。
+
+### 4.4 補足
 
 - 「新しいゲーム」「やり直す」「開始」「No.入力」を自動解答中に × とする理由:
   現在の `main.js: clearSolutionOnNewGame` は新しいゲーム開始時に

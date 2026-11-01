@@ -12,6 +12,9 @@
   <meta property="og:image" content="https://sh2.github.io/freecell-classic/src/img/ogp.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="icon" type="image/svg+xml" href="src/img/favicon.svg" />
+  <link rel="preload" as="image" href="src/img/magic-circle.png" />
+  <link rel="preload" as="image" href="src/img/space-cat.jpg" />
+  <link rel="preload" as="image" href="src/img/nebula-backdrop.jpg" />
   <link rel="stylesheet" href="src/css/style.css" />
 </head>
 <body>
@@ -41,6 +44,12 @@
         <label class="auto-toggle" title="解を探索して1手ずつ自動で進めます">
           <input id="auto-solve-toggle" type="checkbox" />
           <span id="auto-solve-label">自動解答</span>
+        </label>
+      </div>
+      <div class="control-group" aria-label="演出">
+        <label class="auto-toggle" title="カード移動や勝利時に、光・音・紙吹雪で派手に演出します">
+          <input id="dopa-toggle" type="checkbox" autocomplete="off" />
+          <span>ドパモード</span>
         </label>
       </div>
       <div class="control-group control-group--info" aria-label="情報">

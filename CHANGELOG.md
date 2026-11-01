@@ -1,5 +1,194 @@
 # 変更履歴
 
+## 2026-11-01
+
+### 機能
+
+- **ドパモード**を追加。ツールバーの単一チェックボックス `#dopa-toggle` で、
+  プレイ中と勝利時の視覚効果・サウンドをまとめて ON/OFF できる。デフォルト
+  OFF、設定は保存しない(再読み込みで OFF)。`prefers-reduced-motion` 環境でも
+  ON なら演出するが、通常モードの既存アニメーション無効化ルールは変更しない。
+  - プレイ中: 選択リング、ドラッグの浮遊感、移動の残像と着地バースト、
+    ホーム発光と連続ホームの音程上昇(900ms 窓・最大 +12 半音)、失敗の
+    赤/琥珀ビネット、アンドゥの波紋、配布の星屑、ヒントのリング、
+    詰みの暗いビネット。自動解答の再生中は粒子・音量を控えめにする。
+  - 勝利時: オーバーレイより上の専用レイヤー `#dopa-win-layer`
+    (z-index: 2100)の Canvas に紙吹雪・花火・金のグローを描き、
+    4.5 秒で自動終了する。オーバーレイを閉じる・新規ゲーム・OFF で停止する。
+  - サウンドは Web Audio API の合成のみ(音声ファイル・外部ライブラリなし)。
+    AudioContext は最初のユーザー操作まで生成しない。マスターゲイン 0.22 +
+    コンプレッサー + 同時発音上限(デスクトップ 12 / モバイル 8)で、
+    OFF 時はフェードして停止する。
+  - `src/js/dopa.js` / `src/js/dopa-audio.js` / `src/js/dopa-visuals.js` を
+    新規追加。`view.js` に演出レイヤーと `getDopaStage()` / `setDopaMode()` /
+    `onBeforeRender()` / `flightDuration()` を追加し、`app.js` /
+    `interactions.js` / `solver-client.js` からは `handle(event)` で通知する。
+    `createApp()` / `createInteractions()` / `createSolverClient()` の `dopa`
+    は省略可能で、既存テストの呼び出しはそのまま動く。
+  - E2E テスト `tests/e2e/dopa-mode.spec.js` と単体テスト
+    `tests/unit/dopa.test.js` / `tests/unit/dopa-audio.test.js` を追加。
+    `docs/ui-state-matrix.md` に演出設定の状態を追記した。
+
+### 機能（ドパモード増強版・全部盛り）
+
+- ドパモードに固定 ID の **56 演出**を追加した（A カード系 10 / B 攻撃系 10 /
+  C 画面系 10 / D テロップ系 8 / E 世界観系 8 / F 節目系 6 / G 失敗系 4）。
+  ユーザー実機所感「派手さが足りない」を受け、前回の粒子上限・シェイク不採用・
+  控えめ指定を外した全部盛り構成。
+  - 通常移動: A+B+C の 30 件からランダム 1 件（直前と同一は回避）＋50% で
+    D から 1 件を重ねる。ホーム移動: B+E から 1 件＋D 1 件。
+    e02-ssr は K のホーム送りまたは combo 8 以上でのみ解禁。
+  - ヒントは e01-magic / c09-spotlight、アンドゥは a06-warp / c03-slowmo、
+    配布は e05-sakura / a08-rocket、失敗は g01 / g02、詰みは g03＋g04。
+  - スート完成で f01＋e02、K の初配置で f02、残り 10 枚以下で毎手 f03。
+    勝利は既存の紙吹雪・花火に加えて f04→f05→f06 を順に再生する。
+  - 画面全体の transform / filter は同時 2 件まで、DOM ノードは同時 200
+    （モバイル 100）まで。シェイクは b01 大・b02 小刻み・勝利時などに採用。
+  - 爆発・連射・斬撃・雷・ビーム・SSR ファンファーレ・歓声・下降ホイッスル・
+    秒針停止などを Web Audio API の合成で追加（音声ファイルなし）。
+  - `src/js/dopa-effects.js`（56 ID レジストリと割り当て）と
+    `src/js/dopa-effects-a.js` 〜 `dopa-effects-g.js` を追加。
+    `main.js` のテスト API に `triggerDopaEffect(id)` を追加し、
+    `dopaDebug().effects` に registered / counts / active / history を追加した。
+  - 単体テスト `tests/unit/dopa-effects.test.js` と E2E
+    `tests/e2e/dopa-boost.spec.js` を追加。56 ID の完全一致・全 ID の割り当て・
+    56 件連続発火・実プレイでの発火・勝利順序・OFF 時の画面効果解除を検証する。
+
+### 修正（ドパモード fix-01・実機フィードバック）
+
+- 実機所感「最初の版より遥かによくなった」を受けた追加強化。
+  - **効果音**: 爆発はノイズバースト＋サブベース＋WaveShaper の歪み、
+    重火器は短い破裂音の連打＋低域の胴鳴り、魔法は帯域スイープ＋detune
+    アルペジオ＋高音のきらめき、斬撃は低い鋸波ハム＋ビブラート＋
+    スウィングノイズに作り直した。b01/b04/f05 → explosion、
+    b02 → heavy-gun、b03 → saber、e01/e02/e03 → magic に割り当て、
+    B 群・E 群の音量と低域を底上げした（マスター 0.22 とコンプレッサーは維持）。
+  - **オノマトペ**: d05 の文言を BOOM! / BANG! / WHAM! / POW! / CRASH! /
+    SLASH! / ZOOM! / KABOOM! / SMASH! / RATATATA! の英語プールに変更。
+    Impact / Haettenschweiler / "Arial Black" のシステムフォントスタック、
+    イタリック、太いストローク、グラデーション塗り、詰めた字間の
+    専用クラス `.dopa-onomatopeia` で表示する。他の日本語擬音も英語化した。
+  - **演出範囲**: 局所演出の飛程・サイズを 2.4 倍（`LOCAL_EFFECT_SCALE`）に
+    拡大。爆発系（b01/b04/b10/f05）では盤面を着地点方向へ一瞬傾ける
+    ティルト（perspective + rotateX/rotateY、430ms で復帰）と、
+    背後に大きな背景爆発を追加した。画面効果の同時 2 件上限と
+    OFF 時の即停止・transform 復帰は維持する。
+  - 単体テスト `tests/unit/dopa-audio-fix.test.js` と、FB-1 のサウンド
+    マッピング・FB-2 の英語プール・FB-3 の局所スケール定数の検証、
+    E2E の d05 表示・ティルト/背景爆発の発生と復帰を追加した。
+
+### 修正（ドパモード fix-02・実機フィードバック第2弾）
+
+- **FB-4 表示文言の英語化**: 演出内に表示する文字列をすべて英語プールへ
+  移した。カットイン（PERFECT MOVE! など）、実況（WHAT A MOVE! など）、
+  観客歓声、スロー／宇宙／水中のオーバーレイ、オノマトペ、単発ラベルを
+  `src/js/dopa-text.js` に export し、全プール文字列に日本語が含まれない
+  ことを単体テストで検証する。コメントは従来どおり日本語。
+- **FB-5 書体の変更**: 演出テキストのフォントを
+  `"Times New Roman", Times, Georgia, serif` 先頭の Serif スタックに変更し、
+  前ラウンドの Impact / Arial Black 系は置き換えた。カットイン・
+  オノマトペ・ランク・速報帯・クレジット等は太字イタリックで表示する。
+- **FB-6 表示位置と文字アニメーション**: カード位置に紐づかない
+  テキスト演出（d01/d02/d05/d07/d08、c03、e04〜e07、f03〜f06、g03/g04 等）は、
+  上中下 × 左中右の 9 アンカーから発火ごとに位置を選び、直前と同じ
+  アンカーを避ける。文字の登場はカットイン／一文字ずつフラッシュ／
+  拡大パンチの 3 種からランダムに選ぶ。直近の
+  `lastPlacement: { anchor, motion }` を `dopaDebug().effects` に記録する。
+- **FB-7 時間のジッターと epic**: 実効時間を base × 0.8〜1.3 の一様乱数に
+  し、C/D/E 群は約 12% で base × 3 の epic にする。e02-ssr /
+  f01-foundation-finale / f02-crown / combo 8 以上は epic を確定する。
+  `pickDuration()` / `shouldEpic()` を純粋関数として export し、
+  `dopaDebug().effects` に `lastDuration` / `lastEpic` を追加した。
+  epic でも単体 6 秒以内（base は 2.5 秒以内）に収まる。
+- 既存テストの更新: 「全演出 2.5 秒以内」を「base 2.5 秒以内かつ
+  epic 3 倍で 6 秒以内」に変更（FB-7 の新仕様）。d05 のフォント検証を
+  Impact 系から Times New Roman 系へ変更（FB-5 の新仕様）。理由は
+  `tasks/dopa-boost/notes.md` に記載。その他の既存テストは変更しない。
+
+### 修正（ドパモード fix-03・実機フィードバック第3弾）
+
+- **FB-8 枠付きテキストの位置ずれ修正**: カットイン・実況・オノマトペ・
+  速報帯などの文字と背景枠を 1 つのラッパー `.dopa-text-wrap` に入れ、
+  アンカー配置と移動・拡大・傾けはラッパーだけに適用する。
+  文字 spans の stagger はラッパー内部の相対配置で動かし、枠は
+  ラッパー全面に追随させる。E2E で枠の bounding box が文字を
+  4px 以内の誤差で内包することを複数アンカーで検証する。
+- **FB-9 低音重視のサウンド**: `sparkle` / `ssr` / `slot` / `bounce` /
+  `combo` / `rank` / `finale` / `crown` / `countdown` / `curtain` /
+  `staffroll` の軽いチャイム・BEEP・音階／アルペジオ系レシピを削除。
+  `impact` / `impact-soft` / `rumble` を追加し、魔法・歓声・スポット
+  ライト・桜・水中・コイン・カットイン・勝利音も低域ドローン、
+  サブベース、ローパスノイズ中心へ作り直した。演出メタの sound は
+  現行レシピへ付け替え、`DOPA_AUDIO_RECIPES` / `DOPA_REMOVED_RECIPES`
+  を export する。全レシピに `low: true` と `lowHz`（160Hz 以下）を宣言。
+- **FB-10 ヒットストップ**: テキスト演出を
+  `buildTextTimeline()` の enter / hold / exit の 3 相にし、hold を
+  120〜250ms（epic は最大 300ms）に固定する。爆発・着地・斬撃・
+  マシンガン等のインパクト系は `hitStop()` で盤面と進行中アニメーションを
+  80〜160ms（多重時は最長・上限 200ms、epic は上限 300ms）停止する。
+  `dopaDebug().effects` に `lastTextTimeline` / `hitStopCount` /
+  `lastHitStopMs` / `hitStopActive` を追加した。
+- 既存テストの更新: fix-01 の magic 検証を「高音アルペジオ」から
+  「低域ドローン＋帯域スイープ」へ変更（FB-9 の新仕様）。理由は
+  `tasks/dopa-boost/notes.md` に記載。その他の既存テストは変更しない。
+
+### 修正（ドパモード fix-03R・FB-9R）
+
+- 基本操作音の実音を低域中心へ作り直した。`select`（880+1320Hz）・
+  `drop-target`（1200Hz）・`move-home`（C5 和音）・`toggle-on`
+  （659→880Hz）に加え、`move-cascade` / `move-free` / `landing` /
+  `undo` / `deal` / `auto-start` / `auto-end` / `solver-move` /
+  `toggle-off` / `stuck` / `fail` も、120Hz 前後のサブベース、
+  低域の打撃、ローパスノイズへ置き換えた。
+- 未使用の `playWin()`（ファンファーレ風アルペジオ）を削除。
+  `BOOSTED_RECIPES` から削除済みの `ssr` / `slot` も除去した。
+- 単体テストを実音検証へ変更。基本操作音を再生して生成された
+  oscillator の基音が 300Hz 以下であること、ローパス／帯域ノイズ経路を
+  持つことを確認する。`select` / `move-home` の旧・高音期待値は
+  FB-9R の新仕様に合わせて更新した（理由は notes.md）。
+
+### 修正（ドパモード fix-04・実機フィードバック第4弾）
+
+- **FB-11 テロップのはみ出し修正**: テキストの実測幅がビューポートの
+  72%（余白込み）に収まるまでフォントサイズを自動縮小する。
+  文字 spans 分割後も全体幅で判定し、アンカー位置も左右の余白へ
+  クランプする。390px 幅の E2E で、カットイン・実況・オノマトペ・
+  速報帯のテキストとラッパーがビューポート内に収まり、横スクロールが
+  発生しないことを検証する。
+- **FB-12 魔法陣**: e01-magic の音を `magic-boon`（55Hz 前後のサブ正弦波
+  ＋ detune した低域鋸波＋ローパスノイズ、0.8 秒の膨らみと長い減衰）へ
+  変更し、e02-ssr も下地に使う。e01 では `src/img/magic-circle.png` を
+  専用レイヤーに表示する。盤面幅の 70% 以上を目安に画面を埋め、
+  `mix-blend-mode: screen` で黒背景を透過し、360 度回転＋スケールインする。
+  読み込み失敗時は従来の魔法陣描画へフォールバックする。
+- **FB-13 宇宙演出**: e06-space で `src/img/nebula-backdrop.jpg` を
+  盤面いっぱいに敷き、`src/img/space-cat.jpg` を白枠＋影のステッカー風に
+  盤面幅の 45% で漂わせる。猫は ±8 度の回転と浮遊を伴って横切り、
+  終了時に星雲背景ごとフェードアウトする。
+- 画像表示は `showImageEffect()` として共通化し、ドパ ON 時に 3 画像を
+  プリロードする（`index.html` の preload も追加）。画像アセット自体は
+  変更していない。
+- 既存テストの更新: e01/e02 の sound 期待値を `magic` から `magic-boon`
+  へ変更（FB-12 の新レシピ）。理由は notes.md に記載。FB-8 / FB-10 は
+  変更していない。
+
+### 修正（ドパモード fix-04R・FB-12R / FB-14）
+
+- **FB-12R 魔法陣の透過**: `src/img/magic-circle.png` がアルファ付き PNG
+  （四隅 alpha ≒ 0）に差し替わったため、通常の alpha 合成で黒背景が
+  透過する。`mix-blend-mode: screen` は補助として残すが、透過は
+  アセットのアルファで担保する。E2E で画像を canvas に描画し、
+  四隅の alpha が 16 未満であることを検証する（アセット退行検出）。
+- **FB-14 インフェルノ全画面化**: c10-felt の fire バリアントは、
+  `100vw × 100vh` の `.dopa-inferno-layer` を演出レイヤーに追加し、
+  画面全体の炎グラデーション・発光・フリッカーを表示する。
+  炎パーティクルもビューポート全幅・全高へ広げた。ice / gold は従来どおり。
+  `triggerDopaEffect("c10-felt", { variant: "fire" })` でバリアントを
+  テストから確定指定できる。E2E でレイヤーがビューポートの 95% 以上を
+  覆うこと、終了後に消えることを検証する。
+- 画像アセット自体の再生成・差し替えは行っていない（Muse 配置済みの
+  アルファ付き PNG をそのまま参照）。
+
 ## 2026-10-31
 
 ### その他

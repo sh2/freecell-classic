@@ -14,10 +14,11 @@ import * as rules from "./rules.js";
 import * as gameState from "./game-state.js";
 
 /** 入力ハンドラを生成する。app は移動実行・状態取得の窓口 */
-export function createInteractions({ view, app }) {
+export function createInteractions({ view, app, dopa = null }) {
   // ダブルクリック判定用: 最後にクリックしたカードと時刻
   let lastClick = { time: 0, cardId: -1 };
   let dragState = null; // { from, group, offsetX, offsetY, active, targetEl }
+  let lastDropKey = null; // 直近に強調したドロップ候補(変化時のみ通知する)
 
   /** 連続クリック判定のリセット(app の成功手処理から呼ばれる) */
   function resetLastClick() {
@@ -34,6 +35,21 @@ export function createInteractions({ view, app }) {
 
   function isBlocked() {
     return typeof app.isAutoSolving === "function" && app.isAutoSolving();
+  }
+
+  function emitDopa(event) {
+    if (!dopa || typeof dopa.handle !== "function") {
+      return;
+    }
+    dopa.handle(event);
+  }
+
+  function notifyMoveFail(res, zone, index) {
+    emitDopa({
+      type: "move-fail",
+      reason: res && res.reason ? res.reason : "invalid",
+      dest: zone ? { zone, index } : null,
+    });
   }
 
   function handleClick(targetEl) {
@@ -53,6 +69,7 @@ export function createInteractions({ view, app }) {
         const res = app.attemptMove(state.selected, zone.zone, zone.index);
         if (!res.ok) {
           view.failFeedback(res, zone.zone, zone.index);
+          notifyMoveFail(res, zone.zone, zone.index);
         }
       }
       return;
@@ -71,6 +88,7 @@ export function createInteractions({ view, app }) {
       state.selected = null;
       if (!app.dblClickAutoMove(loc)) {
         view.render(state); // 移動できなければ選択解除だけ反映
+        emitDopa({ type: "select-cancel" });
       }
       return;
     }
@@ -84,6 +102,7 @@ export function createInteractions({ view, app }) {
       if (sameCard) {
         state.selected = null;
         view.render(state);
+        emitDopa({ type: "select-cancel" });
         return;
       }
       // 選択中のカードを対象の場所へ移動してみる
@@ -93,16 +112,20 @@ export function createInteractions({ view, app }) {
       }
       if (res.reason === "too-many") {
         view.failFeedback(res, loc.zone, loc.index);
+        notifyMoveFail(res, loc.zone, loc.index);
         return;
       }
       // 移動できない → つかめるなら選択を切り替える
       if (rules.isGrabbable(state.cascades, loc)) {
         state.selected = loc;
         view.render(state);
+        emitDopa({ type: "select", cardId: Number(cardEl.dataset.cardId) });
       } else {
         state.selected = null;
         view.render(state);
         view.shakeEl(cardEl);
+        notifyMoveFail(res, loc.zone, loc.index);
+        emitDopa({ type: "select-cancel" });
       }
       return;
     }
@@ -111,6 +134,7 @@ export function createInteractions({ view, app }) {
     if (rules.isGrabbable(state.cascades, loc)) {
       state.selected = loc;
       view.render(state);
+      emitDopa({ type: "select", cardId: Number(cardEl.dataset.cardId) });
     } else {
       view.shakeEl(cardEl);
     }
@@ -162,6 +186,8 @@ export function createInteractions({ view, app }) {
     // 移動元のカードを隠す
     view.hideCards(dragState.group.map((c) => c.id));
     showDropHints();
+    lastDropKey = null;
+    emitDopa({ type: "drag-start", cardIds: dragState.group.map((c) => c.id), source: "manual" });
   }
 
   function getValidDropTargets() {
@@ -243,12 +269,20 @@ export function createInteractions({ view, app }) {
     return best;
   }
 
-  /* 現在ドロップされようとしている候補を強調表示する */
+  /* 現在ドロップされようとしている候補を強調表示する。
+   * 強調が実際に変わったときだけドパモードへ通知する(毎フレーム鳴らさない) */
   function updateDropTargetHighlight() {
     const cur = computeDropTarget();
     view.clearDropTargets();
     if (cur) {
       view.setDropTarget(cur.hintEl, true);
+    }
+    const key = cur ? `${cur.zone}:${cur.index}` : null;
+    if (key !== lastDropKey) {
+      lastDropKey = key;
+      if (cur) {
+        emitDopa({ type: "drop-target", dest: { zone: cur.zone, index: cur.index } });
+      }
     }
   }
 
@@ -300,6 +334,7 @@ export function createInteractions({ view, app }) {
       view.clearDropHints();
       view.clearDropTargets();
       dragState = null;
+      lastDropKey = null;
       view.hideDragLayer();
       return;
     }
@@ -312,6 +347,7 @@ export function createInteractions({ view, app }) {
     // 有効なドロップ先が無く、ドロップ位置の列が枚数超過ならその上限を記録する
     const tooManyLimit = st.active && !target ? tooManyLimitAt(e.clientX, e.clientY) : null;
     dragState = null;
+    lastDropKey = null;
 
     if (st.active) {
       view.clearDropHints();
@@ -323,9 +359,15 @@ export function createInteractions({ view, app }) {
           handled = true;
         } else if (res.reason === "too-many") {
           view.showToast(view.tooManyMessage(res.limit));
+          notifyMoveFail(res, target.zone, target.index);
+        } else {
+          notifyMoveFail(res, target.zone, target.index);
         }
       } else if (tooManyLimit !== null) {
         view.showToast(view.tooManyMessage(tooManyLimit));
+        emitDopa({ type: "move-fail", reason: "too-many", dest: null });
+      } else {
+        emitDopa({ type: "move-fail", reason: "invalid", dest: null });
       }
       if (handled) {
         view.hideDragLayer();
@@ -352,6 +394,7 @@ export function createInteractions({ view, app }) {
     view.clearDropHints();
     view.clearDropTargets();
     dragState = null;
+    lastDropKey = null;
     view.hideDragLayer();
     view.render(app.getState());
   }

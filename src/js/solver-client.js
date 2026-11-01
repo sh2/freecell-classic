@@ -13,7 +13,7 @@ import { boardFingerprint, buildSolutionCacheEntry, findProgressIndex } from "./
 import { groupFrom } from "./game-state.js";
 
 /** ソルバークライアントを生成する */
-export function createSolverClient({ app, view }) {
+export function createSolverClient({ app, view, dopa = null }) {
   let worker = null;
   let cacheEntry = null; // 直近の解のキャッシュ({ boards, moves })。エントリは常に 1 つ
   let nextRequestId = 1;
@@ -23,6 +23,13 @@ export function createSolverClient({ app, view }) {
   let replayIndex = 0;
   let replayMoves = null;
   let savedAutoMoveEnabled = true;
+
+  function emitDopa(event) {
+    if (!dopa || typeof dopa.handle !== "function") {
+      return;
+    }
+    dopa.handle(event);
+  }
 
   /** 現在の盤面をカード id の配列へ変換する(solver の入力形式) */
   function boardFromState() {
@@ -69,6 +76,7 @@ export function createSolverClient({ app, view }) {
     view.setSolverBusy(false, "auto");
     clearReplayTimer();
     replayMoves = null;
+    emitDopa({ type: "auto-end" });
   }
 
   /** トグルOFFや新規ゲームで自動解答を中断する */
@@ -113,6 +121,7 @@ export function createSolverClient({ app, view }) {
     autoSolving = true;
     app.setAutoSolving(true);
     view.setSolverStage("replay"); // ラベルを「自動解答中…」に
+    emitDopa({ type: "auto-start" });
 
     const step = () => {
       if (!autoSolving || !replayMoves) {
@@ -154,6 +163,11 @@ export function createSolverClient({ app, view }) {
     const line = formatMove(mv);
     view.showHint(mv);
     view.showToast(`ヒント: ${line}`);
+    emitDopa({
+      type: "hint",
+      cardId: mv.cardId,
+      dest: { zone: mv.destZone, index: mv.destIndex },
+    });
   }
 
   /** キャッシュ先頭手の防御チェック。現在盤面に対して合法なら count を

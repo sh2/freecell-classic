@@ -19,6 +19,9 @@ export function createView() {
   let dragLayer = null;
   let cardElMap = null; // render() 時に構築する cardId -> 要素のマップ
   let toastHandle = null;
+  let dopaLayer = null; // ドパモードのプレイ中演出レイヤー(遅延生成)
+  let dopaWinLayer = null; // ドパモードの勝利演出レイヤー(遅延生成)
+  let beforeRenderHook = null; // render 冒頭で呼ぶフック(ドパ演出の中断用)
 
   /* ---------------- カード要素の生成 ---------------- */
 
@@ -49,6 +52,13 @@ export function createView() {
   function render(state) {
     // 再描画で DOM が作り直されるため、進行中の飛行アニメーションは即座に確定する
     cancelActiveFlight();
+    if (beforeRenderHook) {
+      try {
+        beforeRenderHook();
+      } catch {
+        // フックの失敗で描画を止めない
+      }
+    }
     cardElMap = new Map();
     // --- フリーセル ---
     for (let i = 0; i < NUM_FREE; i++) {
@@ -328,6 +338,108 @@ export function createView() {
     anim.onfinish = () => {
       anim.cancel(); // transform を戻す(同じタスク内で隠すためスナップは見えない)
       onDone();
+    };
+  }
+
+  /* ---------------- ドパモード用レイヤー / stage ---------------- */
+
+  function getDopaLayer() {
+    if (!dopaLayer) {
+      dopaLayer = document.createElement("div");
+      dopaLayer.id = "dopa-layer";
+      document.body.appendChild(dopaLayer);
+    }
+    return dopaLayer;
+  }
+
+  function getDopaWinLayer() {
+    if (!dopaWinLayer) {
+      dopaWinLayer = document.createElement("div");
+      dopaWinLayer.id = "dopa-win-layer";
+      document.body.appendChild(dopaWinLayer);
+    }
+    return dopaWinLayer;
+  }
+
+  /** ドパモードの ON/OFF を body クラスと演出レイヤーへ反映する */
+  function setDopaMode(on) {
+    const next = !!on;
+    document.body.classList.toggle("dopa-on", next);
+    if (next) {
+      getDopaLayer();
+      return;
+    }
+    if (dopaLayer) {
+      dopaLayer.innerHTML = "";
+      dopaLayer.remove();
+      dopaLayer = null;
+    }
+    if (dopaWinLayer) {
+      dopaWinLayer.innerHTML = "";
+      dopaWinLayer.remove();
+      dopaWinLayer = null;
+    }
+  }
+
+  /** render() の冒頭(飛行キャンセル直後)で呼ぶフックを 1 つ登録する */
+  function onBeforeRender(fn) {
+    beforeRenderHook = typeof fn === "function" ? fn : null;
+  }
+
+  function getSlotEl(zone, index) {
+    if (zone === "free") {
+      return freeSlotEls[index] ?? null;
+    }
+    if (zone === "home") {
+      return homeSlotEls[index] ?? null;
+    }
+    return cascadeEls[index] ?? null;
+  }
+
+  function getTopCardEl(zone, index) {
+    if (zone === "cascade") {
+      const wrap = cascadeEls[index];
+      return wrap ? wrap.querySelector(".card:last-child") : null;
+    }
+    const slot = getSlotEl(zone, index);
+    return slot ? slot.querySelector(".card:last-child") : null;
+  }
+
+  /** 盤面上の全カード要素の矩形(配布演出のサンプリング用) */
+  function getBoardCardRects() {
+    return [...document.querySelectorAll("#game .card")].map((el) => {
+      const r = el.getBoundingClientRect();
+      return { left: r.left, top: r.top, width: r.width, height: r.height };
+    });
+  }
+
+  /** dopa-visuals.js へ渡す DOM 窓口。探索は View 内に閉じ込める */
+  function getDopaStage() {
+    return {
+      getLayer: getDopaLayer,
+      getWinLayer: getDopaWinLayer,
+      getCardEl: cardElById,
+      getSlotEl,
+      getTopCardEl,
+      getRect(el) {
+        return el ? el.getBoundingClientRect() : null;
+      },
+      getFlightDuration: flightDuration,
+      getBoardCardRects,
+      getDragLayer,
+      getBoardEl() {
+        return document.getElementById("game");
+      },
+      getHintEls() {
+        return hintEls.slice();
+      },
+      getViewport() {
+        return {
+          width: window.innerWidth,
+          height: window.innerHeight,
+          dpr: window.devicePixelRatio || 1,
+        };
+      },
     };
   }
 
@@ -963,5 +1075,9 @@ export function createView() {
     setSolverStage,
     showSolution,
     hideSolution,
+    getDopaStage,
+    setDopaMode,
+    onBeforeRender,
+    flightDuration,
   };
 }

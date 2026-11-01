@@ -11,8 +11,9 @@ import { dealGame } from "./deal.js";
 import * as rules from "./rules.js";
 import * as gameState from "./game-state.js";
 
-/** アプリを生成する。view は必須、deps はテスト用の差し替え依存 */
-export function createApp({ view, deps = {} }) {
+/** アプリを生成する。view は必須、deps はテスト用の差し替え依存。
+ *  dopa は演出専用で、未指定時はイベントを通知しない */
+export function createApp({ view, dopa = null, deps = {} }) {
   const now = deps.now ?? (() => Date.now());
   const setIntervalFn = deps.setInterval ?? ((fn, ms) => setInterval(fn, ms));
   const clearIntervalFn = deps.clearInterval ?? ((handle) => clearInterval(handle));
@@ -24,6 +25,36 @@ export function createApp({ view, deps = {} }) {
   let interactions = null; // mount() で登録される入力層
   let autoMoveEnabled = true; // 成功手の直後に安全なカードを自動でホームへ送るか
   let autoSolving = false; // 自動解答中は手動操作をブロックする
+
+  /** ドパモードへイベントを通知する(未指定・未知イベントは無視される) */
+  function emitDopa(event) {
+    if (!dopa || typeof dopa.handle !== "function") {
+      return;
+    }
+    dopa.handle(event);
+  }
+
+  /** 成功手の移動先を解決して move / home イベントを通知する */
+  function notifyMove(meta) {
+    if (!meta || !Array.isArray(meta.cardIds) || meta.cardIds.length === 0) {
+      return;
+    }
+    const cardId = meta.cardIds[meta.cardIds.length - 1];
+    const dest = rules.findCardLocation(state, cardId);
+    if (!dest) {
+      return;
+    }
+    emitDopa({
+      type: meta.source === "auto-home" ? "home" : "move",
+      source: meta.source,
+      cardIds: meta.cardIds.slice(),
+      origins: meta.origins,
+      dest,
+      cardId,
+      remainingCards: 52 - state.foundations.reduce((sum, pile) => sum + pile.length, 0),
+      foundationComplete: dest.zone === "home" && (state.foundations[dest.index]?.length ?? 0) === 13,
+    });
+  }
 
   /* ---------------- タイマー ---------------- */
 
@@ -68,13 +99,14 @@ export function createApp({ view, deps = {} }) {
 
   /* ---------------- モデル操作後の副作用 ---------------- */
 
-  /** 成功手の共通副作用: lastClick リセット → タイマー開始 → 描画 → 勝利・詰み処理 */
-  function onMoveSucceeded() {
+  /** 成功手の共通副作用: lastClick リセット → タイマー開始 → 描画 → ドパ通知 → 勝利・詰み処理 */
+  function onMoveSucceeded(meta = null) {
     if (interactions) {
       interactions.resetLastClick();
     }
     startTimerIfNeeded();
     view.render(state);
+    notifyMove(meta);
     checkWin();
     checkStuck();
   }
@@ -107,14 +139,14 @@ export function createApp({ view, deps = {} }) {
       return;
     }
     view.setNextRenderAnimation([{ cardIds: [card.id], origins }]);
-    onMoveSucceeded();
+    onMoveSucceeded({ source: "auto-home", cardIds: [card.id], origins });
     view.runAfterAnimations(chainAutoNext);
   }
 
   /** 手動移動の描画・飛行を開始し、完了後に自動ホーム送りを連鎖させる */
-  function commitMove(manualSteps) {
+  function commitMove(manualSteps, meta = null) {
     view.setNextRenderAnimation(manualSteps);
-    onMoveSucceeded();
+    onMoveSucceeded(meta);
     if (autoMoveEnabled) {
       view.runAfterAnimations(chainAutoNext);
     }
@@ -136,7 +168,7 @@ export function createApp({ view, deps = {} }) {
     if (res.ok) {
       // 移動前の DOM はまだ古い位置にあるため、成功が確定してから矩形を取得できる
       const origins = opts.fromDrag ? view.getDragCardRects() : view.getCardRects(groupIds);
-      commitMove([{ cardIds: groupIds, origins }]);
+      commitMove([{ cardIds: groupIds, origins }], { source: "manual", cardIds: groupIds, origins });
     }
     return res;
   }
@@ -148,7 +180,7 @@ export function createApp({ view, deps = {} }) {
     if (res.ok) {
       const origins = view.getCardRects(groupIds);
       view.setNextRenderAnimation([{ cardIds: groupIds, origins }]);
-      onMoveSucceeded();
+      onMoveSucceeded({ source: "solver", cardIds: groupIds, origins });
     }
     return res;
   }
@@ -180,6 +212,7 @@ export function createApp({ view, deps = {} }) {
     if (gameState.undo(state)) {
       view.hideOverlay();
       view.render(state);
+      emitDopa({ type: "undo" });
     }
   }
 
@@ -234,7 +267,11 @@ export function createApp({ view, deps = {} }) {
     if (view.clearHint) {
       view.clearHint();
     }
-    commitMove([{ cardIds: dblCardIds, origins: dblOrigins }]);
+    commitMove([{ cardIds: dblCardIds, origins: dblOrigins }], {
+      source: "dblclick",
+      cardIds: dblCardIds,
+      origins: dblOrigins,
+    });
     return true;
   }
 
@@ -252,12 +289,14 @@ export function createApp({ view, deps = {} }) {
     updateTimerLabel();
     // DOM の時刻テキストは読まず、タイマー状態から経過時間を生成して渡す
     view.showWin(state.gameNumber, state.moveCount, formatElapsedTime());
+    emitDopa({ type: "win" });
   }
 
   /** 詰み判定。詰んでいれば詰みオーバーレイを表示する(タイマーは止めない) */
   function checkStuck() {
     if (gameState.checkStuck(state)) {
       view.showStuck();
+      emitDopa({ type: "stuck" });
     }
   }
 
@@ -274,7 +313,9 @@ export function createApp({ view, deps = {} }) {
       seedInput.value = num;
     }
     resetTimerAndOverlay();
+    emitDopa({ type: "reset", reason: "new-game" });
     view.render(state);
+    emitDopa({ type: "deal" });
   }
 
   function newGameFromInput() {
@@ -346,6 +387,7 @@ export function createApp({ view, deps = {} }) {
     view.overlayEl().addEventListener("click", (e) => {
       if (e.target.id === "overlay") {
         e.target.classList.add("hidden");
+        emitDopa({ type: "win-dismiss" });
       }
     });
 
@@ -356,6 +398,7 @@ export function createApp({ view, deps = {} }) {
       } else if (e.key === "Escape") {
         state.selected = null;
         view.render(state);
+        emitDopa({ type: "select-cancel" });
       }
     });
 

@@ -11,18 +11,22 @@ import { createView } from "./view.js";
 import { createApp } from "./app.js";
 import { createInteractions } from "./interactions.js";
 import { createSolverClient } from "./solver-client.js";
+import { createDopaMode } from "./dopa.js";
 
 let appInstance = null;
 let solverClient = null;
+let dopaInstance = null;
 
 export function init() {
   const view = createView();
-  const app = createApp({ view });
-  const interactions = createInteractions({ view, app });
+  const dopa = createDopaMode({ view });
+  dopaInstance = dopa;
+  const app = createApp({ view, dopa });
+  const interactions = createInteractions({ view, app, dopa });
   app.mount(interactions);
   appInstance = app;
 
-  solverClient = createSolverClient({ app, view });
+  solverClient = createSolverClient({ app, view, dopa });
   document.getElementById("hint-btn").addEventListener("click", () => {
     solverClient.requestSolution({ autoPlay: false });
   });
@@ -36,6 +40,23 @@ export function init() {
       }
     });
   }
+  // ドパモード: 単一チェックボックスで演出とサウンドをまとめて切り替える。
+  // デフォルト OFF・保存しない。OFF 中も ON 中の最初の操作でも AudioContext を解錠する
+  const dopaToggle = document.getElementById("dopa-toggle");
+  if (dopaToggle) {
+    dopaToggle.checked = dopa.isEnabled();
+    dopaToggle.addEventListener("change", () => {
+      dopa.setEnabled(dopaToggle.checked);
+    });
+  }
+  const unlockDopaAudio = () => {
+    if (dopa.isEnabled()) {
+      dopa.unlock();
+    }
+  };
+  document.addEventListener("pointerdown", unlockDopaAudio, { passive: true });
+  document.addEventListener("keydown", unlockDopaAudio);
+
   document.getElementById("solution-close-btn").addEventListener("click", () => {
     view.hideSolution();
   });
@@ -106,6 +127,26 @@ export function getTestApi() {
     setWinBoard: appInstance.setWinBoard,
     setAutoMoveEnabled: appInstance.setAutoMoveEnabled,
     setAnimationsEnabled: appInstance.setAnimationsEnabled,
+    /** ドパモードの ON/OFF(テスト用)。トグル UI も同期する */
+    setDopaEnabled: (enabled) => {
+      if (dopaInstance) {
+        dopaInstance.setEnabled(enabled);
+      }
+      const toggle = document.getElementById("dopa-toggle");
+      if (toggle) {
+        toggle.checked = !!enabled;
+      }
+    },
+    isDopaEnabled: () => (dopaInstance ? dopaInstance.isEnabled() : false),
+    /** 演出 ID を直接発火する(56 件の機械検証用) */
+    triggerDopaEffect: (id, context = {}) => {
+      if (!dopaInstance) {
+        return false;
+      }
+      return dopaInstance.triggerEffect(id, context);
+    },
+    /** ドパモードのデバッグ状態 { enabled, combo, activeEffects, activeVoices, lastRecipe, effects } */
+    dopaDebug: () => (dopaInstance ? dopaInstance.debugState() : null),
     /** 解法キャッシュの状態取得。{ active, remainingMoves } を返す */
     solverCacheInfo: () => solverClient.getCacheInfo(),
   };

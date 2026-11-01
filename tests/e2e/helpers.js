@@ -127,6 +127,43 @@ export function setAnimations(page, enabled) {
   return page.evaluate((v) => window.__testApi.setAnimationsEnabled(v), enabled);
 }
 
+/* ---------------- ドパモード ---------------- */
+
+/** ドパモードを ON/OFF する(トグル UI も同期する) */
+export function setDopa(page, enabled) {
+  return page.evaluate((v) => window.__testApi.setDopaEnabled(v), enabled);
+}
+
+/** ドパモードが ON か */
+export function isDopaEnabled(page) {
+  return page.evaluate(() => window.__testApi.isDopaEnabled());
+}
+
+/** ドパモードのデバッグ状態 { enabled, combo, activeEffects, activeVoices, lastRecipe } */
+export function dopaDebug(page) {
+  return page.evaluate(() => window.__testApi.dopaDebug());
+}
+
+/** 演出 ID を直接発火する(56 件の機械検証用) */
+export function triggerDopaEffect(page, id, context = {}) {
+  return page.evaluate(([effectId, ctx]) => window.__testApi.triggerDopaEffect(effectId, ctx), [
+    id,
+    context,
+  ]);
+}
+
+/** 増強版の演出デバッグ { registered, counts, active, history } */
+export function dopaEffects(page) {
+  return page.evaluate(() => window.__testApi.dopaDebug().effects);
+}
+
+/** ドパモードの演出がすべて終わる(activeEffects が 0)まで待つ */
+export function waitForDopaIdle(page, timeout = 5000) {
+  return page.waitForFunction(() => window.__testApi.dopaDebug().activeEffects === 0, undefined, {
+    timeout,
+  });
+}
+
 /** 移動アニメーションの完了を待つ(飛行クローン・隠しカードがなくなったら解決) */
 export function waitForAnimationsDone(page, timeout = 3000) {
   return page.waitForFunction(
