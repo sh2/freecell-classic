@@ -1,5 +1,61 @@
 # 変更履歴
 
+## 2026-11-01
+
+### 機能
+
+- **ホーム移動時のパーティクル花火**。カードがホームセルへ正常に移動し、
+  飛行アニメーションの着地が完了したタイミングで、そのホームセルの
+  上端から 33% の高さ(x は中央)から花火が 1 回だけ広がる。
+  96 個の粒子は輪郭(速さ係数 0.9〜1.0、約 55%)と内側(0.1〜0.9)の
+  2 集団で構成され、バーストごとに金(`#e0a916`)・桜色(`#ef7d9c`)・
+  水色(`#45a5e8`)・紫(`#8656e8`)・緑(`#34b26b`)の 5 色から、
+  直前のバーストと異なる 1 色を選び、全粒が同じ色で始まる。
+  速度は `v *= exp(-BRAKE * dt)` の乗算ブレーキのみで減衰し、弱い重力
+  (115px/s^2)で自然に沈む。寿命は 1000ms、粒ごとに 0.7〜1.0 倍の
+  ばらつきがある。寿命の 70% までは alpha・大きさを変えず、そこから
+  alpha → 0、大きさ → 40% へ速く消える。下向きに転じ、粒ごとの進行度
+  しきい値(0.55〜0.68)を超えた粒だけが赤黒(`#571f16`)へ寿命比 0.10 で
+  変色する。各粒は約 120ms 間隔で残像を残し、残像は 12〜48px/s で
+  沈みながら 0.5〜0.8 秒で薄れる(総数上限 240、粒より先に描画)。
+  canvas は加算合成(`globalCompositeOperation: "lighter"`)で描画する。
+  直径は 1280x720・DPR 1 の実測で 216〜232px。音・テキスト・
+  画面シェイクは伴わない。
+  - `src/js/fx.js`(新規): `PARTICLE_COUNT` / `COLORS` / `DURATION_MS` /
+    `GRAVITY` / `SPEED` / `PARTICLE_SIZE` / `BRAKE` / `FADE_START` /
+    `OUTLINE_RATIO` / `OUTLINE_SPEED_MIN` / `OUTLINE_SPEED_MAX` /
+    `INNER_SPEED_MIN` / `INNER_SPEED_MAX` / `EMBER_ENABLED` /
+    `EMBER_COLOR` / `EMBER_THRESHOLD_MIN` / `EMBER_THRESHOLD_MAX` /
+    `EMBER_TRANSITION` / `TRAIL_*` / `MAX_TRAILS` / `BASE_CARD_WIDTH` /
+    `ORIGIN_Y_RATIO` / `MAX_BURSTS` を先頭に集約し、値だけで調整できる構成。
+    現在は `GRAVITY=115` / `SPEED=300` / `DURATION_MS=1000` /
+    `BRAKE=2.2` / `FADE_START=0.7` / `MAX_TRAILS=240`。
+    `devicePixelRatio` 対応の canvas 描画、同時 3 バースト(最大 288 粒)までの
+    制限、`prefers-reduced-motion: reduce` 時の抑止、E2E 用
+    `window.__fxDebug = { bursts, lastScale, lastColor, trails }` を実装。
+  - レスポンシブ追従: 発火時に実際のホームセル幅を測り、
+    `scale = セル幅 / BASE_CARD_WIDTH(88px)`(上限 1)を広がり・粒サイズ・
+    重力・残像の沈みに掛ける。狭い画面では花火全体がカード幅に比例して
+    縮小する。幅 390px では `scale ≈ 0.465` となる。
+  - `index.html` / `src/css/style.css`: `pointer-events: none` の
+    `#fx-canvas` を全画面固定で追加。盤面より上、オーバーレイより下に配置。
+  - `src/js/view.js`: `burstAtHome(cardId)` を追加し、ホームスロットの
+    上端 33% の座標で発火する。
+  - `src/js/app.js`: クリック/ドラッグ、ダブルクリック、自動ホーム送り、
+    自動解答の各成功経路で、ホームへ移動したカードだけを検出する。飛行が
+    ある場合は `view.runAfterAnimations()` で着地後に発火し、アニメーション
+    なしの経路では描画直後に発火する。
+  - テスト: E2E に「視覚効果 (ホーム移動の花火)」を追加(発火回数と canvas
+    ピクセル、着地前後の発火タイミング、発火直後の重心が上端 25〜40%、
+    時間経過で重心が下がる重力、中央 30% 円内と輪郭帯域の彩色ピクセル比率、
+    乗算ブレーキで広がりの伸びが緩やかになること、後半の平均輝度低下、
+    ピーク時の直径 205〜235px、残像の描画、連続バーストでの異色選択、
+    幅 390px での scale 比例縮小、ホーム以外では非発火、reduced-motion で
+    非発火)。単体テストで色・重力・初速・発火位置・基準幅・粒子数・
+    2 集団の比率と速度レンジ・フェード・余燼の条件と色・乗算ブレーキ・
+    直前と同色を続けない色選択を照合する。
+  - 検証: `npm test`(単体 166 / E2E 96)がすべて成功。
+
 ## 2026-10-31
 
 ### その他

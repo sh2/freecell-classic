@@ -1477,3 +1477,286 @@ test.describe("解法キャッシュ", () => {
     expect(s.foundations[3]).toHaveLength(13);
   });
 });
+
+test.describe("視覚効果 (ホーム移動の花火)", () => {
+  /** A♣ だけがカスケード先頭にあり、すぐホームへ送れる盤面 */
+  const aceBoard = {
+    cascades: [[0], [], [], [], [], [], [], []],
+    freeCells: [],
+    foundations: [],
+  };
+  const FX_COLORS = ["#e0a916", "#ef7d9c", "#45a5e8", "#8656e8", "#34b26b"];
+
+  test("ホームへ移動するとバーストが 1 回増え、canvas にピクセルが現れる", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setAutoMove(page, false);
+    await h.setBoard(page, aceBoard);
+    const before = await h.fxBursts(page);
+
+    await h.clickCard(page, 0); // A♣
+    await h.clickSlot(page, "home", 0);
+
+    expect((await h.state(page)).foundations[0]).toEqual([0]);
+    expect(await h.fxBursts(page)).toBe(before + 1);
+    expect(FX_COLORS).toContain(await h.fxLastColor(page));
+    await h.waitForFxPixels(page);
+    expect(await h.fxPixelCount(page)).toBeGreaterThan(0);
+  });
+
+  test("バースト中は残像が描画される", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setAutoMove(page, false);
+    await h.setBoard(page, aceBoard);
+
+    await h.clickCard(page, 0); // A♣
+    await h.clickSlot(page, "home", 0);
+    await page.waitForFunction(() => window.__fxDebug.trails > 0, undefined, { timeout: 2000 });
+    const trails = await h.fxTrailCount(page);
+    console.log(`fx trails: ${trails}`);
+    expect(trails).toBeGreaterThan(0);
+  });
+
+  test("連続バーストで直前と同色を続けない", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setAutoMove(page, false);
+    await h.setBoard(page, {
+      cascades: [[0], [1], [], [], [], [], [], []],
+      freeCells: [],
+      foundations: [],
+    });
+
+    await h.clickCard(page, 0); // A♣
+    await h.clickSlot(page, "home", 0);
+    const first = await h.fxLastColor(page);
+
+    await h.clickCard(page, 1); // A♦
+    await h.clickSlot(page, "home", 1);
+    const second = await h.fxLastColor(page);
+
+    console.log(`fx colors: ${first} -> ${second}`);
+    expect(FX_COLORS).toContain(first);
+    expect(FX_COLORS).toContain(second);
+    expect(second).not.toBe(first);
+  });
+
+  test("飛行を伴うホーム移動では着地後に発火する", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setAutoMove(page, false);
+    await h.setBoard(page, aceBoard);
+    await h.setAnimations(page, true);
+    const before = await h.fxBursts(page);
+
+    await h.clickCard(page, 0); // A♣
+    await h.clickSlot(page, "home", 0);
+
+    const during = await page.evaluate(() => ({
+      bursts: window.__fxDebug.bursts,
+      clones: document.querySelectorAll("#anim-layer .card").length,
+    }));
+    expect(during.clones).toBeGreaterThan(0); // まだ飛行中
+    expect(during.bursts).toBe(before); // 着地前は発火しない
+
+    await h.waitForAnimationsDone(page);
+    expect(await h.fxBursts(page)).toBe(before + 1); // 着地後に発火
+  });
+
+  test("発火直後の重心がホームセルの上端から25〜40%に入る", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setAutoMove(page, false);
+    await h.setBoard(page, aceBoard);
+
+    await h.clickCard(page, 0); // A♣
+    await h.clickSlot(page, "home", 0);
+    await h.waitForFxPixels(page);
+
+    const centroid = await h.fxColorCentroid(page);
+    const slot = await page.evaluate(() => {
+      const r = document.querySelectorAll("#home-cells .slot")[0].getBoundingClientRect();
+      return { top: r.top, height: r.height };
+    });
+    const ratio = (centroid.y - slot.top) / slot.height;
+    console.log(`fx origin ratio: ${ratio.toFixed(3)} (colored=${centroid.count})`);
+    expect(centroid.count).toBeGreaterThan(0);
+    expect(ratio).toBeGreaterThanOrEqual(0.25);
+    expect(ratio).toBeLessThanOrEqual(0.4);
+  });
+
+  test("時間経過で彩色ピクセルの重心が下がる", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setAutoMove(page, false);
+    await h.setBoard(page, aceBoard);
+
+    await h.clickCard(page, 0); // A♣
+    await h.clickSlot(page, "home", 0);
+
+    await page.waitForTimeout(150);
+    const early = await h.fxColorCentroid(page);
+    await page.waitForTimeout(600);
+    const late = await h.fxColorCentroid(page);
+    console.log(`fx centroid y: early=${early.y.toFixed(1)} late=${late.y.toFixed(1)}`);
+    expect(early.count).toBeGreaterThan(0);
+    expect(late.count).toBeGreaterThan(0);
+    expect(late.y).toBeGreaterThan(early.y + 10);
+  });
+
+  test("中央30%円内と輪郭帯域に彩色ピクセルが十分ある", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setAutoMove(page, false);
+    await h.setBoard(page, aceBoard);
+    const origin = await page.evaluate(() => {
+      const r = document.querySelectorAll("#home-cells .slot")[0].getBoundingClientRect();
+      return { x: r.left + r.width / 2, y: r.top + r.height * 0.33 };
+    });
+    await h.startFxDistributionSampler(page, origin.x, origin.y, 16, 60, 1400);
+
+    await h.clickCard(page, 0); // A♣
+    await h.clickSlot(page, "home", 0);
+    await page.waitForTimeout(1250);
+
+    const metrics = await h.fxDistributionMetrics(page);
+    console.log(
+      `fx center: ratio=${metrics.peakCenterRatio.toFixed(3)} ` +
+        `center=${metrics.peakCenterCount}/${metrics.peakCount} ` +
+        `outer=${metrics.peakOuterRatio.toFixed(3)} radius=${metrics.peakRadius.toFixed(1)}`
+    );
+    expect(metrics.peakCount).toBeGreaterThan(0);
+    expect(metrics.peakCenterRatio).toBeGreaterThanOrEqual(0.1);
+    expect(metrics.peakOuterRatio).toBeGreaterThanOrEqual(0.3);
+  });
+
+  test("空気抵抗で広がりの伸びが後半ほど緩やか", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setAutoMove(page, false);
+    await h.setBoard(page, aceBoard);
+    await h.startFxTimelineSampler(page, 16, 60, 1400);
+
+    await h.clickCard(page, 0); // A♣
+    await h.clickSlot(page, "home", 0);
+    await page.waitForTimeout(1250);
+
+    const metrics = await h.fxTimelineMetrics(page);
+    const earlyGrowth = metrics.widthAt400 - metrics.widthAt150;
+    const lateGrowth = metrics.widthAt900 - metrics.widthAt400;
+    console.log(
+      `fx drag: widths=${metrics.widthAt150}/${metrics.widthAt400}/${metrics.widthAt900} ` +
+        `early=${earlyGrowth} late=${lateGrowth}`
+    );
+    expect(metrics.widthAt150).toBeGreaterThan(0);
+    expect(metrics.widthAt400).toBeGreaterThan(0);
+    expect(earlyGrowth).toBeGreaterThan(10);
+    expect(lateGrowth).toBeLessThan(earlyGrowth);
+  });
+
+  test("後半フレームの平均輝度がピーク時より下がる", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setAutoMove(page, false);
+    await h.setBoard(page, aceBoard);
+    await h.startFxTimelineSampler(page, 16, 60, 1400);
+
+    await h.clickCard(page, 0); // A♣
+    await h.clickSlot(page, "home", 0);
+    await page.waitForTimeout(1250);
+
+    const metrics = await h.fxTimelineMetrics(page);
+    console.log(
+      `fx luminance: peak=${metrics.peakMeanLuma.toFixed(1)}@${metrics.peakMeanLumaAt.toFixed(0)}ms ` +
+        `late=${metrics.lateMeanLuma.toFixed(1)}`
+    );
+    expect(metrics.peakMeanLuma).toBeGreaterThan(0);
+    expect(metrics.lateMeanLuma).toBeLessThan(metrics.peakMeanLuma * 0.5);
+  });
+
+  test("彩色ピクセルが十分あり、広がりを記録する", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setAutoMove(page, false);
+    await h.setBoard(page, aceBoard);
+    await h.startFxColorSampler(page, 16, 60, 1400);
+
+    await h.clickCard(page, 0); // A♣
+    await h.clickSlot(page, "home", 0);
+    await page.waitForTimeout(1250);
+
+    const metrics = await h.fxColorMetrics(page);
+    console.log(
+      `fx colored: peak=${metrics.peakCount} maxWidth=${metrics.maxWidth} maxHeight=${metrics.maxHeight}`
+    );
+    expect(metrics.peakCount).toBeGreaterThanOrEqual(1500);
+    expect(metrics.maxWidth).toBeGreaterThan(0);
+  });
+
+  test("ピーク時の広がり（直径）が205〜235px", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setAutoMove(page, false);
+    await h.setBoard(page, aceBoard);
+    await h.startFxDiameterSampler(page, 1, 1400);
+
+    await h.clickCard(page, 0); // A♣
+    await h.clickSlot(page, "home", 0);
+    await page.waitForTimeout(1250);
+
+    const metrics = await h.fxDiameterMetrics(page);
+    console.log(`fx diameter: maxWidth=${metrics.maxWidth} maxHeight=${metrics.maxHeight}`);
+    expect(metrics.maxWidth).toBeGreaterThanOrEqual(205);
+    expect(metrics.maxWidth).toBeLessThanOrEqual(235);
+  });
+
+  test("幅390pxではscaleに比例して広がりが縮小する", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setAutoMove(page, false);
+    await h.setBoard(page, aceBoard);
+    await h.startFxColorSampler(page, 16, 60, 1400);
+    await h.clickCard(page, 0); // A♣
+    await h.clickSlot(page, "home", 0);
+    await page.waitForTimeout(1250);
+    const normal = await h.fxColorMetrics(page);
+    await page.evaluate(() => document.getElementById("overlay").classList.add("hidden"));
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForTimeout(150);
+    await h.setBoard(page, aceBoard);
+    await h.startFxColorSampler(page, 16, 60, 1400);
+    await h.clickCard(page, 0); // A♣
+    await h.clickSlot(page, "home", 0);
+    await page.waitForTimeout(1250);
+    const narrow = await h.fxColorMetrics(page);
+    const scale = await h.fxLastScale(page);
+    const expected = normal.maxWidth * scale;
+    console.log(
+      `fx responsive: normal=${normal.maxWidth} narrow=${narrow.maxWidth} ` +
+        `scale=${scale.toFixed(3)} expected=${expected.toFixed(1)}`
+    );
+    expect(scale).toBeGreaterThan(0);
+    expect(scale).toBeLessThan(1);
+    expect(narrow.maxWidth).toBeGreaterThanOrEqual(expected * 0.85);
+    expect(narrow.maxWidth).toBeLessThanOrEqual(expected * 1.15);
+  });
+
+  test("ホーム以外への移動では発火しない", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setAutoMove(page, false);
+    await h.setBoard(page, aceBoard);
+    const before = await h.fxBursts(page);
+
+    await h.clickCard(page, 0); // A♣
+    await h.clickSlot(page, "free", 0);
+
+    expect((await h.state(page)).freeCells[0]).toBe(0);
+    expect(await h.fxBursts(page)).toBe(before);
+    expect(await h.fxPixelCount(page)).toBe(0);
+  });
+
+  test("prefers-reduced-motion では発火しない", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await h.openGame(page, 1);
+    await h.setAutoMove(page, false);
+    await h.setBoard(page, aceBoard);
+
+    await h.clickCard(page, 0); // A♣
+    await h.clickSlot(page, "home", 0);
+
+    expect((await h.state(page)).foundations[0]).toEqual([0]);
+    await page.waitForTimeout(100);
+    expect(await h.fxBursts(page)).toBe(0);
+    expect(await h.fxPixelCount(page)).toBe(0);
+  });
+});

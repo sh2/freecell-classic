@@ -138,6 +138,436 @@ export function waitForAnimationsDone(page, timeout = 3000) {
   );
 }
 
+/* ---------------- パーティクル花火 (fx) ---------------- */
+
+/** パーティクル花火の発火回数 (window.__fxDebug.bursts) */
+export function fxBursts(page) {
+  return page.evaluate(() => (window.__fxDebug ? window.__fxDebug.bursts : -1));
+}
+
+/** #fx-canvas 上の不透明ピクセル数 */
+export function fxPixelCount(page) {
+  return page.evaluate(() => {
+    const canvas = document.getElementById("fx-canvas");
+    if (!canvas) {
+      return 0;
+    }
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      return 0;
+    }
+    const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let count = 0;
+    for (let i = 3; i < data.length; i += 4) {
+      if (data[i] > 0) {
+        count++;
+      }
+    }
+    return count;
+  });
+}
+
+/** #fx-canvas に不透明ピクセルが現れるまで待つ */
+export function waitForFxPixels(page, timeout = 2000) {
+  return page.waitForFunction(
+    () => {
+      const canvas = document.getElementById("fx-canvas");
+      if (!canvas) {
+        return false;
+      }
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        return false;
+      }
+      const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      for (let i = 3; i < data.length; i += 4) {
+        if (data[i] > 0) {
+          return true;
+        }
+      }
+      return false;
+    },
+    undefined,
+    { timeout }
+  );
+}
+
+/**
+ * 花火の彩色ピクセル（彩度 = max(R,G,B)-min(R,G,B)）をサンプリングし、
+ * ピーク時の彩色ピクセル数と、最大のバウンディングボックスを記録する。
+ * 白地・緑地のどちらとも区別できる色かどうかを彩度で判定する。
+ */
+export function startFxColorSampler(page, minAlpha = 16, minSaturation = 60, durationMs = 1400) {
+  return page.evaluate(
+    ([alphaMin, saturationMin, duration]) => {
+      const canvas = document.getElementById("fx-canvas");
+      window.__fxColorMetrics = {
+        peakCount: 0,
+        peakWidth: 0,
+        peakHeight: 0,
+        maxWidth: 0,
+        maxHeight: 0,
+        frames: 0,
+      };
+      if (!canvas) {
+        return;
+      }
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        return;
+      }
+      const started = performance.now();
+      const sample = () => {
+        const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        let count = 0;
+        let minX = Infinity;
+        let maxX = -Infinity;
+        let minY = Infinity;
+        let maxY = -Infinity;
+        for (let i = 0; i < data.length; i += 4) {
+          const alpha = data[i + 3];
+          if (alpha < alphaMin) {
+            continue;
+          }
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          if (Math.max(r, g, b) - Math.min(r, g, b) < saturationMin) {
+            continue;
+          }
+          count++;
+          const p = i / 4;
+          const x = p % canvas.width;
+          const y = Math.floor(p / canvas.width);
+          if (x < minX) {
+            minX = x;
+          }
+          if (x > maxX) {
+            maxX = x;
+          }
+          if (y < minY) {
+            minY = y;
+          }
+          if (y > maxY) {
+            maxY = y;
+          }
+        }
+        const width = count > 0 ? maxX - minX + 1 : 0;
+        const height = count > 0 ? maxY - minY + 1 : 0;
+        const m = window.__fxColorMetrics;
+        m.frames++;
+        if (count > m.peakCount) {
+          m.peakCount = count;
+          m.peakWidth = width;
+          m.peakHeight = height;
+        }
+        if (width > m.maxWidth) {
+          m.maxWidth = width;
+        }
+        if (height > m.maxHeight) {
+          m.maxHeight = height;
+        }
+        if (performance.now() - started < duration) {
+          window.requestAnimationFrame(sample);
+        }
+      };
+      window.requestAnimationFrame(sample);
+    },
+    [minAlpha, minSaturation, durationMs]
+  );
+}
+
+/** startFxColorSampler() が記録した彩色ピクセル数とバウンディングボックス */
+export function fxColorMetrics(page) {
+  return page.evaluate(() => window.__fxColorMetrics ?? null);
+}
+
+/** 可視ピクセル全体の bounding box から花火の直径を測るサンプラー */
+export function startFxDiameterSampler(page, minAlpha = 1, durationMs = 1400) {
+  return startFxColorSampler(page, minAlpha, 0, durationMs);
+}
+
+/** startFxDiameterSampler() が記録した直径メトリクス */
+export function fxDiameterMetrics(page) {
+  return fxColorMetrics(page);
+}
+
+/** 現在のフレームの彩色ピクセルの重心 (canvas 座標 = CSS px) */
+export function fxColorCentroid(page) {
+  return page.evaluate(() => {
+    const canvas = document.getElementById("fx-canvas");
+    if (!canvas) {
+      return { count: 0, x: 0, y: 0 };
+    }
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      return { count: 0, x: 0, y: 0 };
+    }
+    const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let count = 0;
+    let sumX = 0;
+    let sumY = 0;
+    for (let i = 0; i < data.length; i += 4) {
+      if (data[i + 3] < 16) {
+        continue;
+      }
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      if (Math.max(r, g, b) - Math.min(r, g, b) < 60) {
+        continue;
+      }
+      const p = i / 4;
+      sumX += p % canvas.width;
+      sumY += Math.floor(p / canvas.width);
+      count++;
+    }
+    return count > 0 ? { count, x: sumX / count, y: sumY / count } : { count: 0, x: 0, y: 0 };
+  });
+}
+
+/** 直近のバーストに適用された scale (狭い画面ほど 1 未満) */
+export function fxLastScale(page) {
+  return page.evaluate(() => (window.__fxDebug ? window.__fxDebug.lastScale : null));
+}
+
+/** 直近のバーストの色 */
+export function fxLastColor(page) {
+  return page.evaluate(() => (window.__fxDebug ? window.__fxDebug.lastColor : null));
+}
+
+/** 現在のゴースト（残像）数 */
+export function fxTrailCount(page) {
+  return page.evaluate(() => (window.__fxDebug ? window.__fxDebug.trails : 0));
+}
+
+/**
+ * 花火中心からの半径分布をサンプリングする。ピーク時の彩色ピクセル数、
+ * 中心から半径 30% 以内の彩色ピクセル比率、最大半径、bbox を記録する。
+ */
+export function startFxDistributionSampler(
+  page,
+  originX,
+  originY,
+  minAlpha = 16,
+  minSaturation = 60,
+  durationMs = 1400
+) {
+  return page.evaluate(
+    ([ox, oy, alphaMin, saturationMin, duration]) => {
+      const canvas = document.getElementById("fx-canvas");
+      window.__fxDistributionMetrics = {
+        peakCount: 0,
+        peakCenterCount: 0,
+        peakCenterRatio: 0,
+        peakOuterCount: 0,
+        peakOuterRatio: 0,
+        peakRadius: 0,
+        maxWidth: 0,
+        maxHeight: 0,
+        frames: 0,
+      };
+      if (!canvas) {
+        return;
+      }
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        return;
+      }
+      const started = performance.now();
+      const sample = () => {
+        const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const xs = [];
+        const ys = [];
+        let minX = Infinity;
+        let maxX = -Infinity;
+        let minY = Infinity;
+        let maxY = -Infinity;
+        for (let i = 0; i < data.length; i += 4) {
+          if (data[i + 3] < alphaMin) {
+            continue;
+          }
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          if (Math.max(r, g, b) - Math.min(r, g, b) < saturationMin) {
+            continue;
+          }
+          const p = i / 4;
+          const x = p % canvas.width;
+          const y = Math.floor(p / canvas.width);
+          xs.push(x);
+          ys.push(y);
+          if (x < minX) {
+            minX = x;
+          }
+          if (x > maxX) {
+            maxX = x;
+          }
+          if (y < minY) {
+            minY = y;
+          }
+          if (y > maxY) {
+            maxY = y;
+          }
+        }
+        const count = xs.length;
+        let maxRadius = 0;
+        for (let i = 0; i < count; i++) {
+          const d = Math.hypot(xs[i] - ox, ys[i] - oy);
+          if (d > maxRadius) {
+            maxRadius = d;
+          }
+        }
+        let centerCount = 0;
+        let outerCount = 0;
+        if (maxRadius > 0) {
+          for (let i = 0; i < count; i++) {
+            const d = Math.hypot(xs[i] - ox, ys[i] - oy);
+            if (d <= maxRadius * 0.3) {
+              centerCount++;
+            }
+            if (d >= maxRadius * 0.7 && d <= maxRadius * 1.05) {
+              outerCount++;
+            }
+          }
+        }
+        const m = window.__fxDistributionMetrics;
+        m.frames++;
+        if (count > m.peakCount) {
+          m.peakCount = count;
+          m.peakCenterCount = centerCount;
+          m.peakCenterRatio = count > 0 ? centerCount / count : 0;
+          m.peakOuterCount = outerCount;
+          m.peakOuterRatio = count > 0 ? outerCount / count : 0;
+          m.peakRadius = maxRadius;
+        }
+        const width = count > 0 ? maxX - minX + 1 : 0;
+        const height = count > 0 ? maxY - minY + 1 : 0;
+        if (width > m.maxWidth) {
+          m.maxWidth = width;
+        }
+        if (height > m.maxHeight) {
+          m.maxHeight = height;
+        }
+        if (performance.now() - started < duration) {
+          window.requestAnimationFrame(sample);
+        }
+      };
+      window.requestAnimationFrame(sample);
+    },
+    [originX, originY, minAlpha, minSaturation, durationMs]
+  );
+}
+
+/** startFxDistributionSampler() が記録した半径分布メトリクス */
+export function fxDistributionMetrics(page) {
+  return page.evaluate(() => window.__fxDistributionMetrics ?? null);
+}
+
+/**
+ * 空気抵抗による広がりの減速と、燃え尽きによる輝度低下を計測する。
+ * bbox 幅を 150ms / 400ms / 900ms 時点で記録し、彩色ピクセルの
+ * alpha 加重平均輝度のピークと後半（800ms 以降）を記録する。
+ */
+export function startFxTimelineSampler(page, minAlpha = 16, minSaturation = 60, durationMs = 1400) {
+  return page.evaluate(
+    ([alphaMin, saturationMin, duration]) => {
+      const canvas = document.getElementById("fx-canvas");
+      window.__fxTimelineMetrics = {
+        widthAt150: 0,
+        widthAt400: 0,
+        widthAt900: 0,
+        peakMeanLuma: 0,
+        peakMeanLumaAt: 0,
+        lateMeanLuma: 0,
+        lateMeanR: 0,
+        lateMeanG: 0,
+        lateMeanB: 0,
+        frames: 0,
+      };
+      if (!canvas) {
+        return;
+      }
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        return;
+      }
+      const started = performance.now();
+      const sample = () => {
+        const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        let count = 0;
+        let minX = Infinity;
+        let maxX = -Infinity;
+        let lumaSum = 0;
+        let rSum = 0;
+        let gSum = 0;
+        let bSum = 0;
+        for (let i = 0; i < data.length; i += 4) {
+          const alpha = data[i + 3];
+          if (alpha < alphaMin) {
+            continue;
+          }
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          if (Math.max(r, g, b) - Math.min(r, g, b) < saturationMin) {
+            continue;
+          }
+          count++;
+          const p = i / 4;
+          const x = p % canvas.width;
+          if (x < minX) {
+            minX = x;
+          }
+          if (x > maxX) {
+            maxX = x;
+          }
+          const weight = alpha / 255;
+          lumaSum += (0.2126 * r + 0.7152 * g + 0.0722 * b) * weight;
+          rSum += r * weight;
+          gSum += g * weight;
+          bSum += b * weight;
+        }
+        const width = count > 0 ? maxX - minX + 1 : 0;
+        const meanLuma = count > 0 ? lumaSum / count : 0;
+        const m = window.__fxTimelineMetrics;
+        const elapsed = performance.now() - started;
+        m.frames++;
+        if (count > 0 && elapsed >= 150 && m.widthAt150 === 0) {
+          m.widthAt150 = width;
+        }
+        if (count > 0 && elapsed >= 400 && m.widthAt400 === 0) {
+          m.widthAt400 = width;
+        }
+        if (count > 0 && elapsed >= 900 && m.widthAt900 === 0) {
+          m.widthAt900 = width;
+        }
+        if (count > 0 && elapsed >= 800 && m.lateMeanLuma === 0) {
+          m.lateMeanLuma = meanLuma;
+          m.lateMeanR = rSum / count;
+          m.lateMeanG = gSum / count;
+          m.lateMeanB = bSum / count;
+        }
+        if (meanLuma > m.peakMeanLuma) {
+          m.peakMeanLuma = meanLuma;
+          m.peakMeanLumaAt = elapsed;
+        }
+        if (performance.now() - started < duration) {
+          window.requestAnimationFrame(sample);
+        }
+      };
+      window.requestAnimationFrame(sample);
+    },
+    [minAlpha, minSaturation, durationMs]
+  );
+}
+
+/** startFxTimelineSampler() が記録した広がり・輝度のタイムライン */
+export function fxTimelineMetrics(page) {
+  return page.evaluate(() => window.__fxTimelineMetrics ?? null);
+}
+
 /* ---------------- 飛行タイムライン(アニメーション検証用) ---------------- */
 
 /**

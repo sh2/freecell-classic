@@ -8,6 +8,7 @@
 import { SUITS, RANKS, NUM_CASCADES, NUM_FREE, NUM_HOME } from "./constants.js";
 import * as rules from "./rules.js";
 import * as gameState from "./game-state.js";
+import { burst, ORIGIN_Y_RATIO } from "./fx.js";
 
 /** View を生成する。DOM 要素の参照はクロージャ内に保持する */
 export function createView() {
@@ -42,6 +43,17 @@ export function createView() {
       return cardElMap.get(Number(cardId)) ?? null;
     }
     return document.querySelector(`#game .card[data-card-id="${cardId}"]`);
+  }
+
+  /** 指定カードが置かれたホームスロットの上端 33% の高さで花火を発火する */
+  function burstAtHome(cardId) {
+    const el = cardElById(cardId);
+    const slot = el && el.closest ? el.closest("#home-cells .slot") : null;
+    if (!slot) {
+      return false;
+    }
+    const r = slot.getBoundingClientRect();
+    return burst(r.left + r.width / 2, r.top + r.height * ORIGIN_Y_RATIO, r.width);
   }
 
   /* ---------------- 描画 ---------------- */
@@ -936,6 +948,7 @@ export function createView() {
     showConfirmRestart,
     resolveConfirmDialog,
     cardElById,
+    burstAtHome,
     setAnimationsEnabled,
     setNextRenderAnimation,
     showHint,

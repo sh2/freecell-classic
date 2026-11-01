@@ -68,13 +68,19 @@ export function createApp({ view, deps = {} }) {
 
   /* ---------------- モデル操作後の副作用 ---------------- */
 
-  /** 成功手の共通副作用: lastClick リセット → タイマー開始 → 描画 → 勝利・詰み処理 */
-  function onMoveSucceeded() {
+  /** 成功手の共通副作用: lastClick リセット → タイマー開始 → 描画 → ホーム到着演出 → 勝利・詰み処理 */
+  function onMoveSucceeded(homeCardId = null) {
     if (interactions) {
       interactions.resetLastClick();
     }
     startTimerIfNeeded();
     view.render(state);
+    if (homeCardId !== null && typeof view.burstAtHome === "function") {
+      // 飛行アニメーションがある場合は着地後に発火する(無ければ即時)
+      view.runAfterAnimations(() => {
+        view.burstAtHome(homeCardId);
+      });
+    }
     checkWin();
     checkStuck();
   }
@@ -107,14 +113,14 @@ export function createApp({ view, deps = {} }) {
       return;
     }
     view.setNextRenderAnimation([{ cardIds: [card.id], origins }]);
-    onMoveSucceeded();
+    onMoveSucceeded(card.id);
     view.runAfterAnimations(chainAutoNext);
   }
 
   /** 手動移動の描画・飛行を開始し、完了後に自動ホーム送りを連鎖させる */
-  function commitMove(manualSteps) {
+  function commitMove(manualSteps, homeCardId = null) {
     view.setNextRenderAnimation(manualSteps);
-    onMoveSucceeded();
+    onMoveSucceeded(homeCardId);
     if (autoMoveEnabled) {
       view.runAfterAnimations(chainAutoNext);
     }
@@ -136,7 +142,7 @@ export function createApp({ view, deps = {} }) {
     if (res.ok) {
       // 移動前の DOM はまだ古い位置にあるため、成功が確定してから矩形を取得できる
       const origins = opts.fromDrag ? view.getDragCardRects() : view.getCardRects(groupIds);
-      commitMove([{ cardIds: groupIds, origins }]);
+      commitMove([{ cardIds: groupIds, origins }], destZone === "home" ? groupIds[0] : null);
     }
     return res;
   }
@@ -148,7 +154,7 @@ export function createApp({ view, deps = {} }) {
     if (res.ok) {
       const origins = view.getCardRects(groupIds);
       view.setNextRenderAnimation([{ cardIds: groupIds, origins }]);
-      onMoveSucceeded();
+      onMoveSucceeded(destZone === "home" ? groupIds[0] : null);
     }
     return res;
   }
@@ -234,7 +240,8 @@ export function createApp({ view, deps = {} }) {
     if (view.clearHint) {
       view.clearHint();
     }
-    commitMove([{ cardIds: dblCardIds, origins: dblOrigins }]);
+    const movedToHome = state.foundations.some((pile) => pile.some((card) => card.id === dblCardIds[0]));
+    commitMove([{ cardIds: dblCardIds, origins: dblOrigins }], movedToHome ? dblCardIds[0] : null);
     return true;
   }
 
