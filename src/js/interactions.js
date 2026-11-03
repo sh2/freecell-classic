@@ -314,6 +314,8 @@ export function createInteractions({ view, app }) {
     dragState = null;
 
     if (st.active) {
+      // 離したら傾きを戻し、以降の移動アニメーションと競合しないようにする
+      view.prepareDragForDrop();
       view.clearDropHints();
       view.clearDropTargets();
       let handled = false;

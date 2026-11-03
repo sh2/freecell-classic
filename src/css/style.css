@@ -439,6 +439,8 @@ body {
 #drag-layer .card {
   position: absolute;
   left: 0;
+  transform-origin: 50% 0%;
+  will-change: transform;
 }
 
 /* ---------- 移動アニメーション(クローンの飛行) ---------- */

@@ -138,6 +138,15 @@ export function waitForAnimationsDone(page, timeout = 3000) {
   );
 }
 
+/* ---------------- ドラッグの物理 (drag physics) ---------------- */
+
+/** ドラッグ物理のデバッグ情報 (window.__dragDebug) を複製して返す */
+export function dragDebug(page) {
+  return page.evaluate(() =>
+    window.__dragDebug ? JSON.parse(JSON.stringify(window.__dragDebug)) : null
+  );
+}
+
 /* ---------------- パーティクル花火 (fx) ---------------- */
 
 /** パーティクル花火の発火回数 (window.__fxDebug.bursts) */

@@ -1,5 +1,64 @@
 # 変更履歴
 
+## 2026-11-03
+
+### 機能
+
+- **ドラッグ中のカードの物理**(tasteful-effects 第2弾)。ドラッグ中の列に
+  小さな手触りを加える。先頭カードは水平方向の移動速度に応じて上部中央を
+  軸に傾き(右へ速く動かすと右へ、上限 ±5°)、速度が落ちると滑らかに 0° へ
+  戻る。2 枚目以降は深さが増すほど柔らかくなるバネで追随し、列がわずかに
+  しなる。遅れはカードごとの相対オフセット(x/y 両方向)として付け、
+  深いカードほど上限も大きい(2 枚目 6px から最大 22px)。先頭カードの
+  「位置」は従来どおりポインタへ正確に追随させ、遅らせるのは後続の
+  オフセットと傾きだけにした。ドロップ時は傾きを即座に戻し、遅れは
+  バネで収束させながら既存の移動アニメーション(有効時)/
+  `animateDragLayerBack`(無効時)へ渡す。`prefers-reduced-motion: reduce`
+  と移動アニメーション無効時は物理を一切付けず、従来の剛体ドラッグと
+  同じ挙動になる。音・テキスト・画面シェイクは伴わない。
+  - `src/js/drag-physics.js`(新規): `MAX_TILT_DEG` / `TILT_FULL_SPEED` /
+    `VELOCITY_SMOOTHING_S` / `VELOCITY_STALE_MS` / `MAX_TRACKED_SPEED` /
+    `SPRING_STIFFNESS` / `SPRING_DEPTH_FALLOFF` / `SPRING_DAMPING_RATIO` /
+    `MAX_LAG_BASE_PX` / `MAX_LAG_STEP_PX` / `MAX_LAG_CAP_PX` /
+    `FIXED_STEP_S` / `MAX_FRAME_DT_S` / `SETTLED_EPSILON_*` を先頭に集約。
+    現在は `MAX_TILT_DEG=5` / `TILT_FULL_SPEED=1500` / `SPRING_STIFFNESS=1600` /
+    `SPRING_DEPTH_FALLOFF=0.35` / 上限 6px + 深さ 1 あたり 1.5px(最大 22px)。
+    DOM に触れない純粋な状態機械で、`tiltFromVelocity` /
+    `stiffnessForDepth` / `maxLagForDepth` / `stepSpring` と
+    `createDragPhysics` を export。
+  - `src/js/view.js`: ドラッグレイヤーのカードに transform を適用する rAF
+    ループを追加(カードごとの left/top は毎フレーム書き換えない)。
+    `positionDragLayer` はレイヤーの left/top を従来どおり同期更新し、
+    先頭カードの位置遅れはゼロ。`prepareDragForDrop()` で離した瞬間に
+    傾きを戻す。E2E 用 `window.__dragDebug = { enabled, active, tilt, velocity,
+    offsets }`(offsets[0] は常に先頭 = 0)を追加。
+  - `src/js/interactions.js`: pointerup 時に `prepareDragForDrop()` を呼び、
+    既存の移動アニメーション / 戻りアニメーションと競合しないようにした。
+  - `src/css/style.css`: `#drag-layer .card` に `transform-origin: 50% 0%` と
+    `will-change: transform` を追加。
+  - テスト: 単体 `tests/unit/drag-physics.test.js`(13 件)で傾きの符号・
+    ±5° クランプ・速度 0、深さごとのバネ/上限、バネの収束、先頭の遅れ 0、
+    release 時の挙動を照合。E2E `tests/e2e/drag-physics.spec.js`(4 件)で
+    複数枚を速くドラッグした際の傾きの符号と上限、深いカードほど遅れが
+    大きいこと、先頭の遅れ 0 とレイヤー位置のポインタ一致、ドロップ成功、
+    無効ドロップからの復帰、reduced-motion / アニメーション無効時の
+    非適用を確認。
+  - 検証: `npm test`(単体 179 / E2E 100。DP-9 のテスト追加後は 103)がすべて成功。
+
+### 修正
+
+- **ドラッグ開始時にカード間隔が変わって見える問題を修正**。場の列の
+  カード間隔は描画時に列の枚数と画面高から 20〜34px で変わるが、
+  ドラッグレイヤーは固定 30px で複製していたため、掴んだ瞬間に列が
+  広がったり縮んだりして見えていた。`view.js` の `buildDragLayer` で、
+  掴んだカード群の実際の `getBoundingClientRect()` から先頭カード基準の
+  相対オフセットを求め、その位置で複製を積むようにした。列の途中から
+  掴む場合も「今見えている位置」を正とする。バネ追随の自然位置もこの
+  実オフセット基準になる。実レイアウトが取得できない場合のみ従来の
+  30px をフォールバックに使う。E2E に、間隔 30px 未満の長い列と
+  34px の広い列で、ドラッグ開始直後の相対オフセットが元の列と一致
+  (誤差 2px 以内)することを確認するテストを追加した。
+
 ## 2026-11-01
 
 ### 機能

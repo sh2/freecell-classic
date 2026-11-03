@@ -9,6 +9,7 @@ import { SUITS, RANKS, NUM_CASCADES, NUM_FREE, NUM_HOME } from "./constants.js";
 import * as rules from "./rules.js";
 import * as gameState from "./game-state.js";
 import { burst, ORIGIN_Y_RATIO } from "./fx.js";
+import { createDragPhysics } from "./drag-physics.js";
 
 /** View を生成する。DOM 要素の参照はクロージャ内に保持する */
 export function createView() {
@@ -20,6 +21,24 @@ export function createView() {
   let dragLayer = null;
   let cardElMap = null; // render() 時に構築する cardId -> 要素のマップ
   let toastHandle = null;
+
+  /* ---------------- ドラッグの物理 ---------------- */
+
+  // ドラッグレイヤー内のカードに transform で傾き・追随遅れを付ける。
+  // 先頭カードの位置 (レイヤーの left/top) は従来どおりポインタへ直接合わせ、
+  // 遅らせるのは後続カードの相対オフセットと先頭の傾きだけ。
+  let dragPhysics = null;
+  let dragPhysicsEls = [];
+  let dragRafId = null;
+  let dragLastFrameTime = null;
+  let dragLastLeft = null;
+  let dragLastTop = null;
+
+  /** E2E 検証専用のデバッグ情報 (現在の傾き角と各カードの遅れ量) */
+  const dragDebug = { enabled: false, active: false, tilt: 0, velocity: 0, offsets: [] };
+  if (typeof window !== "undefined") {
+    window.__dragDebug = dragDebug;
+  }
 
   /* ---------------- カード要素の生成 ---------------- */
 
@@ -623,31 +642,169 @@ export function createView() {
     return dragLayer;
   }
 
+  /** 物理を付けてよいか。reduced-motion とアニメーション無効時は従来の剛体ドラッグ */
+  function dragPhysicsAllowed() {
+    if (!animationsEnabled) {
+      return false;
+    }
+    if (
+      typeof matchMedia === "function" &&
+      matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return false;
+    }
+    return true;
+  }
+
+  function stopDragRaf() {
+    if (dragRafId !== null) {
+      cancelAnimationFrame(dragRafId);
+      dragRafId = null;
+    }
+    dragLastFrameTime = null;
+  }
+
+  /** 物理状態と transform を破棄する (ドラッグ終了時) */
+  function resetDragPhysics() {
+    stopDragRaf();
+    for (const el of dragPhysicsEls) {
+      el.style.transform = "";
+    }
+    dragPhysics = null;
+    dragPhysicsEls = [];
+    dragLastLeft = null;
+    dragLastTop = null;
+    dragDebug.active = false;
+    dragDebug.tilt = 0;
+    dragDebug.velocity = 0;
+    dragDebug.offsets = [];
+  }
+
+  /** 物理状態を transform へ反映する */
+  function applyDragTransforms() {
+    if (!dragPhysics) {
+      return;
+    }
+    const state = dragPhysics.getState();
+    const head = dragPhysicsEls[0];
+    if (head) {
+      head.style.transform =
+        Math.abs(state.tilt) < 0.001 ? "" : `rotate(${state.tilt.toFixed(3)}deg)`;
+    }
+    for (let i = 1; i < dragPhysicsEls.length; i++) {
+      const offset = state.offsets[i] ?? { x: 0, y: 0 };
+      dragPhysicsEls[i].style.transform =
+        Math.abs(offset.x) < 0.01 && Math.abs(offset.y) < 0.01
+          ? ""
+          : `translate3d(${offset.x.toFixed(2)}px, ${offset.y.toFixed(2)}px, 0)`;
+    }
+    dragDebug.tilt = state.tilt;
+    dragDebug.velocity = state.velocity;
+    dragDebug.offsets = state.offsets.map((offset) => ({ x: offset.x, y: offset.y }));
+  }
+
+  function dragPhysicsFrame(now) {
+    dragRafId = null;
+    if (!dragPhysics) {
+      return;
+    }
+    const dt = dragLastFrameTime === null ? 1 / 60 : (now - dragLastFrameTime) / 1000;
+    dragLastFrameTime = now;
+    dragPhysics.tick(dt, now);
+    applyDragTransforms();
+    dragRafId = requestAnimationFrame(dragPhysicsFrame);
+  }
+
+  function startDragRaf() {
+    if (dragRafId !== null) {
+      return;
+    }
+    dragLastFrameTime = null;
+    dragRafId = requestAnimationFrame(dragPhysicsFrame);
+  }
+
+  /** 掴んだカード群の実際の表示位置を、先頭カード基準の相対オフセットで返す。
+   *  列のカード間隔は描画時に 20〜34px で変わるため、固定値で積み直すと
+   *  掴んだ瞬間に並びが変わって見える。実レイアウトが取れない場合だけ
+   *  従来の 30px をフォールバックに使う。 */
+  function dragLayoutOffsets(cards) {
+    const headEl = cards.length > 0 ? cardElById(cards[0].id) : null;
+    const headRect = headEl ? headEl.getBoundingClientRect() : null;
+    return cards.map((card, i) => {
+      if (!headRect) {
+        return { x: 0, y: i * 30 };
+      }
+      const el = cardElById(card.id);
+      if (!el) {
+        return { x: 0, y: i * 30 };
+      }
+      const rect = el.getBoundingClientRect();
+      return { x: rect.left - headRect.left, y: rect.top - headRect.top };
+    });
+  }
+
   /** ドラッグレイヤーにカード群を積んで表示する */
   function buildDragLayer(cards) {
+    resetDragPhysics();
     const layer = getDragLayer();
     layer.innerHTML = "";
-    const overlap = 30;
+    const offsets = dragLayoutOffsets(cards);
     cards.forEach((card, i) => {
       const el = makeCardEl(card);
-      el.style.top = i * overlap + "px";
-      el.style.left = "0px";
+      el.style.left = offsets[i].x + "px";
+      el.style.top = offsets[i].y + "px";
       layer.appendChild(el);
     });
     layer.style.width = "var(--card-w)";
     layer.style.display = "block";
+    dragLastLeft = null;
+    dragLastTop = null;
+    dragDebug.enabled = dragPhysicsAllowed();
+    dragDebug.active = false;
+    dragDebug.offsets = cards.map(() => ({ x: 0, y: 0 }));
+    if (dragDebug.enabled && cards.length > 0) {
+      dragPhysics = createDragPhysics(cards.length);
+      dragPhysicsEls = [...layer.querySelectorAll(".card")];
+      dragDebug.active = true;
+      startDragRaf();
+    }
   }
 
   function positionDragLayer(x, y, offsetX, offsetY) {
     const layer = getDragLayer();
-    layer.style.left = x - offsetX + "px";
-    layer.style.top = y - offsetY + "px";
+    const left = x - offsetX;
+    const top = y - offsetY;
+    let dx = 0;
+    let dy = 0;
+    if (dragLastLeft !== null) {
+      dx = left - dragLastLeft;
+      dy = top - dragLastTop;
+    }
+    dragLastLeft = left;
+    dragLastTop = top;
+    layer.style.left = left + "px";
+    layer.style.top = top + "px";
+    if (dragPhysics) {
+      dragPhysics.moveBy(dx, dy, x, performance.now());
+      applyDragTransforms();
+    }
+  }
+
+  /** ドロップ確定時の準備。先頭の傾きを即座に戻し、矩形を回転前の形にそろえる
+   *  (後続カードの遅れはそのまま。getDragCardRects は実際の見た目を返す) */
+  function prepareDragForDrop() {
+    if (!dragPhysics) {
+      return;
+    }
+    dragPhysics.release();
+    applyDragTransforms();
   }
 
   function hideDragLayer() {
     if (dragLayer) {
       dragLayer.style.display = "none";
     }
+    resetDragPhysics();
   }
 
   /** 移動元のカードを隠す(drag-hidden クラス付与) */
@@ -961,6 +1118,7 @@ export function createView() {
     getDragLayer,
     buildDragLayer,
     positionDragLayer,
+    prepareDragForDrop,
     hideDragLayer,
     hideCards,
     clearDropHints,
