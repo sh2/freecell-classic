@@ -1599,7 +1599,7 @@ test.describe("視覚効果 (ホーム移動の花火)", () => {
     expect(late.y).toBeGreaterThan(early.y + 10);
   });
 
-  test("中央30%円内と輪郭帯域に彩色ピクセルが十分ある", async ({ page }) => {
+  test("輪郭帯域に彩色ピクセルが十分ある", async ({ page }) => {
     await h.openGame(page, 1);
     await h.setAutoMove(page, false);
     await h.setBoard(page, aceBoard);
@@ -1620,7 +1620,8 @@ test.describe("視覚効果 (ホーム移動の花火)", () => {
         `outer=${metrics.peakOuterRatio.toFixed(3)} radius=${metrics.peakRadius.toFixed(1)}`
     );
     expect(metrics.peakCount).toBeGreaterThan(0);
-    expect(metrics.peakCenterRatio).toBeGreaterThanOrEqual(0.1);
+    // 中央30%円内の比率は旧・単一集団時代の「中心がスカスカ」対策 (FB-14) の名残で、
+    // 2集団化 (FB-23) 以降は前提が変わったため合否条件から外した (値はログに残す)。
     expect(metrics.peakOuterRatio).toBeGreaterThanOrEqual(0.3);
   });
 
