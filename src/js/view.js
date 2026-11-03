@@ -11,6 +11,15 @@ import * as gameState from "./game-state.js";
 import { burst, ORIGIN_Y_RATIO } from "./fx.js";
 import { createDragPhysics } from "./drag-physics.js";
 import {
+  DEAL_EASING,
+  DEAL_FLIGHT_MS,
+  buildDealOrder,
+  computeDealOrigin,
+  dealDebug,
+  dealDelayMs,
+  dealTotalDurationMs,
+} from "./deal-animation.js";
+import {
   SWEEP_DURATION_MS,
   SWEEP_BAND_RATIO,
   SWEEP_SKEW_DEG,
@@ -38,6 +47,7 @@ export function createView() {
   let dragLayer = null;
   let cardElMap = null; // render() 時に構築する cardId -> 要素のマップ
   let toastHandle = null;
+  let deal = null; // 進行中の配布アニメーション
 
   /* ---------------- ドラッグの物理 ---------------- */
 
@@ -95,7 +105,8 @@ export function createView() {
   /* ---------------- 描画 ---------------- */
 
   function render(state) {
-    // 再描画で DOM が作り直されるため、進行中の飛行アニメーションは即座に確定する
+    // 再描画で DOM が作り直されるため、進行中の配布と飛行は即座に確定する
+    finishDeal({ forced: true });
     cancelActiveFlight();
     cardElMap = new Map();
     // --- フリーセル ---
@@ -197,6 +208,7 @@ export function createView() {
     animationsEnabled = enabled;
     if (!enabled) {
       armedSteps = [];
+      finishDeal({ forced: true });
       cancelActiveFlight();
     }
   }
@@ -377,6 +389,197 @@ export function createView() {
       anim.cancel(); // transform を戻す(同じタスク内で隠すためスナップは見えない)
       onDone();
     };
+  }
+
+  /* =========================================================
+   * 配布アニメーション (deal animation)
+   * render() 済みの盤面を対象に、上部中央の起点から
+   * #anim-layer 上の表向きクローンを飛ばす。実カードは着地まで隠す。
+   * ゲーム状態には触れず、見た目の層だけで完結する。
+   * ========================================================= */
+
+  /** OS / ブラウザーの reduced-motion 設定が有効か */
+  function prefersReducedMotion() {
+    return (
+      typeof matchMedia === "function" &&
+      matchMedia("(prefers-reduced-motion: reduce)").matches
+    );
+  }
+
+  /** 配布を即座に確定する(スキップ・無効化・再描画時) */
+  function finishDeal({ skipped = false, forced = false } = {}) {
+    if (!deal) {
+      return false;
+    }
+    const current = deal;
+    deal = null;
+    for (const anim of current.animations) {
+      try {
+        anim.cancel();
+      } catch {
+        // 既に終了している場合は何もしない
+      }
+    }
+    for (const clone of current.clones) {
+      clone.remove();
+    }
+    for (const el of current.hiddenEls) {
+      el.classList.remove("anim-hidden");
+    }
+    dealDebug.dealtCount = current.total;
+    dealDebug.skipped = skipped;
+    dealDebug.active = false;
+    if (forced) {
+      dealDebug.forced++;
+    }
+    return true;
+  }
+
+  /** 配布中なら即座に全カードを配置し終えて終了する。スキップできたら true */
+  function skipDeal() {
+    return finishDeal({ skipped: true });
+  }
+
+  /** 配布中か */
+  function isDealActive() {
+    return deal !== null;
+  }
+
+  /**
+   * 新しいゲームの描画直後に呼ぶ。配布対象を状態から作り、起点と
+   * 着地先の位置をレイアウトから求めてクローン飛行を開始する。
+   * アニメーション無効・reduced-motion・対象 0 枚なら何も隠さない。
+   */
+  function startDealAnimation(state) {
+    finishDeal({ forced: true });
+    const order = buildDealOrder(state.cascades);
+    dealDebug.plays++;
+    dealDebug.cardCount = order.length;
+    dealDebug.durationMs = dealTotalDurationMs(order.length);
+    dealDebug.dealtCount = 0;
+    dealDebug.skipped = false;
+    dealDebug.active = false;
+
+    if (order.length === 0) {
+      return;
+    }
+    if (!animationsEnabled || prefersReducedMotion()) {
+      dealDebug.dealtCount = order.length;
+      dealDebug.immediate++;
+      return;
+    }
+
+    const topArea = document.querySelector(".top-area");
+    const cascadeArea = document.getElementById("cascade-area");
+    const freeArea = document.getElementById("free-cells");
+    const homeArea = document.getElementById("home-cells");
+    const gameEl = document.getElementById("game");
+    const firstEl = cardElById(order[0].cardId);
+    if (!topArea || !gameEl || !firstEl) {
+      dealDebug.dealtCount = order.length;
+      dealDebug.immediate++;
+      return;
+    }
+    const cardRect = firstEl.getBoundingClientRect();
+    const originRect = computeDealOrigin({
+      topArea: topArea.getBoundingClientRect(),
+      cascadeArea: cascadeArea ? cascadeArea.getBoundingClientRect() : null,
+      game: gameEl.getBoundingClientRect(),
+      freeArea: freeArea ? freeArea.getBoundingClientRect() : null,
+      homeArea: homeArea ? homeArea.getBoundingClientRect() : null,
+      cardWidth: cardRect.width,
+      cardHeight: cardRect.height,
+    });
+    if (!originRect) {
+      dealDebug.dealtCount = order.length;
+      dealDebug.immediate++;
+      return;
+    }
+
+    // 先に着地先を測り、全実カードを隠す(描画前に隠すのでチラつかない)
+    const entries = [];
+    const hiddenEls = [];
+    for (const item of order) {
+      const el = cardElById(item.cardId);
+      if (!el) {
+        continue;
+      }
+      const dest = el.getBoundingClientRect();
+      el.classList.add("anim-hidden");
+      hiddenEls.push(el);
+      entries.push({ ...item, el, dest });
+    }
+    if (entries.length === 0) {
+      return;
+    }
+
+    const layer = getAnimLayer();
+    const originX = originRect.left;
+    const originY = originRect.top;
+    const current = {
+      entries,
+      hiddenEls,
+      clones: [],
+      animations: [],
+      finishedCount: 0,
+      total: entries.length,
+    };
+    deal = current;
+    dealDebug.active = true;
+
+    for (let i = 0; i < entries.length; i++) {
+      const entry = entries[i];
+      const clone = entry.el.cloneNode(true);
+      clone.classList.remove(
+        "selected",
+        "movable",
+        "shake",
+        "anim-hidden",
+        "hint-source",
+        "hint-target",
+        "drop-hint",
+        "drop-target",
+        "drag-hidden"
+      );
+      clone.classList.add("deal-clone");
+      clone.style.left = `${originX}px`;
+      clone.style.top = `${originY}px`;
+      clone.style.width = `${entry.dest.width}px`;
+      clone.style.height = `${entry.dest.height}px`;
+      // 起点では次に飛ぶカードが一番上に見えるよう、先に配るカードほど
+      // 手前の z-index にする(全クローンは同じ起点に重なって待機する)。
+      clone.style.zIndex = String(entries.length - i);
+      layer.appendChild(clone);
+      const dx = entry.dest.left - originX;
+      const dy = entry.dest.top - originY;
+      if (typeof clone.animate !== "function") {
+        finishDeal({ forced: true });
+        return;
+      }
+      const anim = clone.animate(
+        [{ transform: "translate(0px, 0px)" }, { transform: `translate(${dx}px, ${dy}px)` }],
+        {
+          duration: DEAL_FLIGHT_MS,
+          delay: dealDelayMs(i),
+          easing: DEAL_EASING,
+          fill: "both",
+        }
+      );
+      anim.onfinish = () => {
+        entry.el.classList.remove("anim-hidden");
+        clone.remove();
+        if (deal !== current) {
+          return;
+        }
+        current.finishedCount++;
+        dealDebug.dealtCount = current.finishedCount;
+        if (current.finishedCount >= current.total) {
+          finishDeal();
+        }
+      };
+      current.animations.push(anim);
+      current.clones.push(clone);
+    }
   }
 
   function updateHighlights(state) {
@@ -1233,6 +1436,9 @@ export function createView() {
     cardElById,
     burstAtHome,
     setAnimationsEnabled,
+    startDealAnimation,
+    isDealActive,
+    skipDeal,
     setNextRenderAnimation,
     showHint,
     clearHint,

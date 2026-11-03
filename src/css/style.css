@@ -464,6 +464,13 @@ body {
   cursor: default;
 }
 
+/* ---------- 配布アニメーションの飛行クローン ---------- */
+
+#anim-layer .card.deal-clone {
+  cursor: default;
+  will-change: transform;
+}
+
 /* ---------- パーティクル花火 (ホーム移動) ---------- */
 
 #fx-canvas {

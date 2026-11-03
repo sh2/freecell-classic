@@ -282,6 +282,9 @@ export function createApp({ view, deps = {} }) {
     }
     resetTimerAndOverlay();
     view.render(state);
+    if (typeof view.startDealAnimation === "function") {
+      view.startDealAnimation(state);
+    }
   }
 
   function newGameFromInput() {
@@ -319,6 +322,85 @@ export function createApp({ view, deps = {} }) {
   /** main.js から呼ばれる。入力層と DOM イベントを配線し、初期ゲームを開始する */
   function mount(input) {
     interactions = input;
+
+    // 配布中の最初のポインタ / キー入力はスキップだけに使い、同じ入力で
+    // 盤面操作やボタン操作が走らないよう capture 段階で止める。
+    // スキップ後の click / keyup も 1 回だけ握りつぶす。
+    let dealClickGuard = false;
+    let dealKeyupGuard = false;
+    let dealGuardTimer = null;
+
+    function skipDealFromInput() {
+      if (typeof view.isDealActive !== "function" || !view.isDealActive()) {
+        return false;
+      }
+      view.skipDeal();
+      return true;
+    }
+
+    function armClickGuard() {
+      dealClickGuard = true;
+      if (dealGuardTimer !== null) {
+        clearTimeout(dealGuardTimer);
+      }
+      dealGuardTimer = setTimeout(() => {
+        dealClickGuard = false;
+        dealGuardTimer = null;
+      }, 600);
+    }
+
+    document.addEventListener(
+      "pointerdown",
+      (e) => {
+        if (!skipDealFromInput()) {
+          return;
+        }
+        armClickGuard();
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      },
+      true
+    );
+    document.addEventListener(
+      "click",
+      (e) => {
+        if (!dealClickGuard) {
+          return;
+        }
+        dealClickGuard = false;
+        if (dealGuardTimer !== null) {
+          clearTimeout(dealGuardTimer);
+          dealGuardTimer = null;
+        }
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      },
+      true
+    );
+    document.addEventListener(
+      "keydown",
+      (e) => {
+        if (!skipDealFromInput()) {
+          return;
+        }
+        dealKeyupGuard = true;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      },
+      true
+    );
+    document.addEventListener(
+      "keyup",
+      (e) => {
+        if (!dealKeyupGuard) {
+          return;
+        }
+        dealKeyupGuard = false;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      },
+      true
+    );
 
     document.getElementById("new-game-btn").addEventListener("click", newRandomGame);
     document.getElementById("start-game-btn").addEventListener("click", newGameFromInput);

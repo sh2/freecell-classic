@@ -138,6 +138,42 @@ export function waitForAnimationsDone(page, timeout = 3000) {
   );
 }
 
+/* ---------------- 配布アニメーション (deal animation) ---------------- */
+
+/** 指定ゲーム番号で開始する(アニメーション設定は呼び出し側で決める) */
+export function startGame(page, gameNumber) {
+  return page.evaluate((n) => window.__testApi.startGame(n), gameNumber);
+}
+
+/** 配布アニメーションのデバッグ情報 (window.__dealDebug) を複製して返す */
+export function dealDebug(page) {
+  return page.evaluate(() =>
+    window.__dealDebug ? JSON.parse(JSON.stringify(window.__dealDebug)) : null
+  );
+}
+
+/** 配布が始まる(active=true)まで待つ */
+export function waitForDealStart(page, timeout = 2000) {
+  return page.waitForFunction(
+    () => window.__dealDebug && window.__dealDebug.active === true,
+    undefined,
+    { timeout }
+  );
+}
+
+/** 配布が終わり、飛行クローン・隠しカードが片付くまで待つ */
+export function waitForDealEnd(page, timeout = 4000) {
+  return page.waitForFunction(
+    () =>
+      window.__dealDebug &&
+      window.__dealDebug.active === false &&
+      document.querySelectorAll("#anim-layer .card").length === 0 &&
+      document.querySelectorAll("#game .card.anim-hidden").length === 0,
+    undefined,
+    { timeout }
+  );
+}
+
 /* ---------------- ドラッグの物理 (drag physics) ---------------- */
 
 /** ドラッグ物理のデバッグ情報 (window.__dragDebug) を複製して返す */
