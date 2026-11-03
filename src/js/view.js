@@ -10,6 +10,23 @@ import * as rules from "./rules.js";
 import * as gameState from "./game-state.js";
 import { burst, ORIGIN_Y_RATIO } from "./fx.js";
 import { createDragPhysics } from "./drag-physics.js";
+import {
+  SWEEP_DURATION_MS,
+  SWEEP_BAND_RATIO,
+  SWEEP_SKEW_DEG,
+  SWEEP_LEAD,
+  SWEEP_MAIN,
+  SWEEP_WHITE,
+  SWEEP_TAIL,
+  SWEEP_GLOW,
+  STATIC_DURATION_MS,
+  STATIC_TOP,
+  STATIC_BOTTOM,
+  STATIC_GLOW,
+  chooseSheenMode,
+  visibleSheenHeight,
+  hintSheenDebug,
+} from "./hint-sheen.js";
 
 /** View を生成する。DOM 要素の参照はクロージャ内に保持する */
 export function createView() {
@@ -809,6 +826,8 @@ export function createView() {
 
   /** 移動元のカードを隠す(drag-hidden クラス付与) */
   function hideCards(cardIds) {
+    // ドラッグ開始時はヒントの発光も止める(見えているカードが消えるため)
+    clearHintSheen();
     cardIds.forEach((id) => {
       const el = cardElById(id);
       if (el) {
@@ -861,11 +880,117 @@ export function createView() {
   let hintTimer = null;
   const HINT_AUTO_HIDE_MS = 10000;
 
+  /* ---------------- ヒント時のカード発光 (hint sheen) ---------------- */
+
+  let sheenLayer = null;
+  let sheenEl = null;
+  let sheenTimer = null;
+
+  function getSheenLayer() {
+    if (!sheenLayer) {
+      sheenLayer = document.createElement("div");
+      sheenLayer.id = "hint-sheen-layer";
+      sheenLayer.setAttribute("aria-hidden", "true");
+      document.body.appendChild(sheenLayer);
+    }
+    return sheenLayer;
+  }
+
+  /** 発光要素とタイマーを片付ける (ヒント解除・ドラッグ開始・再表示時) */
+  function clearHintSheen() {
+    if (sheenTimer !== null) {
+      clearTimeout(sheenTimer);
+      sheenTimer = null;
+    }
+    if (sheenEl && sheenEl.parentNode) {
+      sheenEl.parentNode.removeChild(sheenEl);
+    }
+    sheenEl = null;
+    hintSheenDebug.active = false;
+  }
+
+  function finishHintSheen(el) {
+    if (sheenEl !== el) {
+      return;
+    }
+    clearHintSheen();
+  }
+
+  /**
+   * 移動元カードへ光を 1 回だけ走らせる。
+   * 発光要素は専用レイヤー上の別要素で、カード DOM を複製しないため
+   * ドラッグレイヤーへ持ち込まれない。後続カードに隠れる範囲は高さを
+   * 切り詰め、見えている部分の全体に帯が通るようにする。
+   */
+  function playHintSheen(srcEl) {
+    clearHintSheen();
+    if (!srcEl) {
+      return;
+    }
+    const rect = srcEl.getBoundingClientRect();
+    if (!(rect.width > 0) || !(rect.height > 0)) {
+      return;
+    }
+    const cover = srcEl.nextElementSibling;
+    const coverRect =
+      cover && cover.classList && cover.classList.contains("card")
+        ? cover.getBoundingClientRect()
+        : null;
+    const height = visibleSheenHeight(rect, coverRect);
+    if (!(height > 0)) {
+      return;
+    }
+    const reducedMotion =
+      typeof matchMedia === "function" &&
+      matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const mode = chooseSheenMode(animationsEnabled, reducedMotion);
+    const band = Math.max(12, Math.round(rect.width * SWEEP_BAND_RATIO));
+
+    const el = document.createElement("div");
+    el.className = `hint-sheen hint-sheen--${mode}`;
+    if (height < rect.height) {
+      el.classList.add("hint-sheen--clipped");
+    }
+    el.setAttribute("aria-hidden", "true");
+    el.style.left = `${rect.left}px`;
+    el.style.top = `${rect.top}px`;
+    el.style.width = `${rect.width}px`;
+    el.style.height = `${height}px`;
+    el.style.setProperty("--sheen-duration", `${SWEEP_DURATION_MS}ms`);
+    el.style.setProperty("--sheen-band", `${band}px`);
+    el.style.setProperty("--sheen-skew", `${SWEEP_SKEW_DEG}deg`);
+    el.style.setProperty("--sheen-lead", SWEEP_LEAD);
+    el.style.setProperty("--sheen-white", SWEEP_WHITE);
+    el.style.setProperty("--sheen-main", SWEEP_MAIN);
+    el.style.setProperty("--sheen-tail", SWEEP_TAIL);
+    el.style.setProperty("--sheen-glow", SWEEP_GLOW);
+    el.style.setProperty("--sheen-from", `${-band}px`);
+    el.style.setProperty("--sheen-to", `${Math.round(rect.width)}px`);
+    el.style.setProperty("--sheen-still-top", STATIC_TOP);
+    el.style.setProperty("--sheen-still-bottom", STATIC_BOTTOM);
+    el.style.setProperty("--sheen-still-glow", STATIC_GLOW);
+    getSheenLayer().appendChild(el);
+    sheenEl = el;
+
+    hintSheenDebug.plays++;
+    hintSheenDebug.active = true;
+    hintSheenDebug.mode = mode;
+    hintSheenDebug.cardId = Number(srcEl.dataset.cardId);
+    hintSheenDebug.left = rect.left;
+    hintSheenDebug.top = rect.top;
+    hintSheenDebug.width = rect.width;
+    hintSheenDebug.height = height;
+
+    const duration = mode === "sweep" ? SWEEP_DURATION_MS : STATIC_DURATION_MS;
+    sheenTimer = setTimeout(() => finishHintSheen(el), duration + 40);
+  }
+
   function clearHint() {
     if (hintTimer !== null) {
       clearTimeout(hintTimer);
       hintTimer = null;
     }
+    clearHintSheen();
     for (const el of hintEls) {
       el.classList.remove("hint-source", "hint-target");
     }
@@ -878,6 +1003,7 @@ export function createView() {
     if (srcEl) {
       srcEl.classList.add("hint-source");
       hintEls.push(srcEl);
+      playHintSheen(srcEl);
     }
     let targetEl = null;
     if (move.destZone === "free") {

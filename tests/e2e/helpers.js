@@ -147,6 +147,15 @@ export function dragDebug(page) {
   );
 }
 
+/* ---------------- ヒントの発光 (hint sheen) ---------------- */
+
+/** ヒント発光のデバッグ情報 (window.__hintSheenDebug) を複製して返す */
+export function hintSheenDebug(page) {
+  return page.evaluate(() =>
+    window.__hintSheenDebug ? JSON.parse(JSON.stringify(window.__hintSheenDebug)) : null
+  );
+}
+
 /* ---------------- パーティクル花火 (fx) ---------------- */
 
 /** パーティクル花火の発火回数 (window.__fxDebug.bursts) */

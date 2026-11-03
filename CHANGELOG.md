@@ -4,6 +4,37 @@
 
 ### 機能
 
+- **ヒント時のカード発光**(tasteful-effects 第3弾)。ヒントを表示した瞬間、
+  移動元カードの見えている範囲へ淡い白緑の光の帯を 1 回だけ走らせる。
+  移動先カードには付けず、複数枚移動のヒントでは移動元の先頭カードのみ。
+  帯は専用レイヤー上の別要素で、カードより上の重なりで描くため、列の
+  途中が移動元でも後続カードに隠れず、見えている帯の全体に光が通る。
+  ヒントが表示され続ける間は再発火せず、ヒントを出し直したときだけ
+  もう 1 回走る。発光要素は `pointer-events: none` で、ドラッグ開始時には
+  即座に片付けてドラッグレイヤーへ持ち込まない。音・テキスト・画面
+  シェイクは伴わない。`prefers-reduced-motion: reduce` と移動アニメーション
+  無効時は帯を走らせず、動かない淡い静止光を短く 1 回だけ添える。
+  - `src/js/hint-sheen.js`(新規): `SWEEP_DURATION_MS` / `SWEEP_BAND_RATIO` /
+    `SWEEP_SKEW_DEG` / `SWEEP_LEAD` / `SWEEP_GREEN` / `SWEEP_WHITE` /
+    `SWEEP_TAIL` / `SWEEP_GLOW` / `STATIC_DURATION_MS` / `STATIC_TOP` /
+    `STATIC_BOTTOM` / `STATIC_GLOW` を先頭に集約。現在は帯 620ms・幅は
+    カード幅の 50%・傾き 14°、静止光は 460ms。`chooseSheenMode` /
+    `visibleSheenHeight` を export し、E2E 用に `window.__hintSheenDebug`
+    (`plays` / `active` / `mode` / `cardId` / 発光矩形)を公開。
+  - `src/js/view.js`: `showHint` で移動元カードへ発光を再生し、`clearHint` /
+    ドラッグ開始(`hideCards`)で片付ける。後続カードの矩形から見えている
+    高さを求め、発光要素の高さを切り詰める(レイアウト・カード位置は不変)。
+  - `src/css/style.css`: `#hint-sheen-layer`(固定・`pointer-events: none`・
+    カードより上/移動アニメーションより下)と、掃引・静止光のスタイルを追加。
+  - テスト: 単体 `tests/unit/hint-sheen.test.js`(11 件)で定数の範囲・
+    発光モードの判定・見えている高さの切り詰めを照合。E2E
+    `tests/e2e/hint-sheen.spec.js`(6 件)で (a) 移動元だけに帯が出る、
+    (b) 1 回で終わり再表示でだけ再発火する、(c) reduced-motion /
+    アニメーション無効では帯が走らず静止光になる、(d) 発光中でも
+    ドラッグできてドラッグレイヤーに残らない、移動元が無いときは
+    発光しないことを確認。
+  - 検証: `npm test`(単体 190 / E2E 109)がすべて成功。
+
 - **ドラッグ中のカードの物理**(tasteful-effects 第2弾)。ドラッグ中の列に
   小さな手触りを加える。先頭カードは水平方向の移動速度に応じて上部中央を
   軸に傾き(右へ速く動かすと右へ、上限 ±5°)、速度が落ちると滑らかに 0° へ
