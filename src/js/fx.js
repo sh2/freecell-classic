@@ -376,15 +376,17 @@ function drawFrame(now) {
  * 指定座標 (ビューポート座標) でパーティクル花火を 1 回発火する。
  * cardWidth が基準幅より小さい場合は、広がり・粒・重力を比例縮小する。
  * reduced-motion 時、同時バースト上限超過時は何もせず false を返す。
+ * maxBursts は 1 回の呼び出しだけ同時上限を引き上げる(既定は MAX_BURSTS)。
+ * 勝利時カスケードの仕上げ花火で 20 発を落とさずに上げるための最小拡張。
  */
-export function burst(x, y, cardWidth = BASE_CARD_WIDTH) {
+export function burst(x, y, cardWidth = BASE_CARD_WIDTH, maxBursts = MAX_BURSTS) {
   if (prefersReducedMotion()) {
     return false;
   }
   if (!Number.isFinite(x) || !Number.isFinite(y)) {
     return false;
   }
-  if (activeBursts.length >= MAX_BURSTS) {
+  if (activeBursts.length >= maxBursts) {
     return false;
   }
   if (!ensureCanvas()) {

@@ -257,8 +257,18 @@ export function createApp({ view, deps = {} }) {
       timerHandle = null;
     }
     updateTimerLabel();
-    // DOM の時刻テキストは読まず、タイマー状態から経過時間を生成して渡す
-    view.showWin(state.gameNumber, state.moveCount, formatElapsedTime());
+    // DOM の時刻テキストは読まず、タイマー状態から経過時間を生成して渡す。
+    // カスケードが使える場合は完了後にオーバーレイを出す(順序だけを変える)。
+    const showWinOverlay = () => {
+      view.showWin(state.gameNumber, state.moveCount, formatElapsedTime());
+    };
+    if (
+      typeof view.startVictoryCascade === "function" &&
+      view.startVictoryCascade(state, showWinOverlay)
+    ) {
+      return;
+    }
+    showWinOverlay();
   }
 
   /** 詰み判定。詰んでいれば詰みオーバーレイを表示する(タイマーは止めない) */
@@ -434,7 +444,7 @@ export function createApp({ view, deps = {} }) {
     // オーバーレイ: カード外クリックで閉じる(盤面を眺められるように)
     view.overlayEl().addEventListener("click", (e) => {
       if (e.target.id === "overlay") {
-        e.target.classList.add("hidden");
+        view.hideOverlay();
       }
     });
 

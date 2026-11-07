@@ -127,12 +127,15 @@ export function setAnimations(page, enabled) {
   return page.evaluate((v) => window.__testApi.setAnimationsEnabled(v), enabled);
 }
 
-/** 移動アニメーションの完了を待つ(飛行クローン・隠しカードがなくなったら解決) */
+/** 移動アニメーションの完了を待つ(飛行クローン・隠しカードがなくなったら解決)。
+ *  勝利時カスケードのクローンと、演出中に隠れるホームの実カードは対象外。 */
 export function waitForAnimationsDone(page, timeout = 3000) {
   return page.waitForFunction(
     () =>
-      document.querySelectorAll("#anim-layer .card").length === 0 &&
-      document.querySelectorAll("#game .card.anim-hidden").length === 0,
+      document.querySelectorAll("#anim-layer .card:not(.victory-clone)").length === 0 &&
+      [...document.querySelectorAll("#game .card.anim-hidden")].filter(
+        (el) => !el.closest("#home-cells")
+      ).length === 0,
     undefined,
     { timeout }
   );
@@ -172,6 +175,94 @@ export function waitForDealEnd(page, timeout = 4000) {
     undefined,
     { timeout }
   );
+}
+
+/* ---------------- 勝利時カスケード (victory cascade) ---------------- */
+
+/** 勝利時カスケードのデバッグ情報 (window.__victoryDebug) を複製して返す */
+export function victoryDebug(page) {
+  return page.evaluate(() =>
+    window.__victoryDebug ? JSON.parse(JSON.stringify(window.__victoryDebug)) : null
+  );
+}
+
+/** カスケードが始まる(active=true)まで待つ */
+export function waitForVictoryStart(page, timeout = 2000) {
+  return page.waitForFunction(
+    () => window.__victoryDebug && window.__victoryDebug.active === true,
+    undefined,
+    { timeout }
+  );
+}
+
+/** カスケードの進行が終わる(active=false)まで待つ。
+ *  勝利オーバーレイ表示後も画像(クローン・スタンプ)は残る。 */
+export function waitForVictoryEnd(page, timeout = 30000) {
+  return page.waitForFunction(
+    () =>
+      window.__victoryDebug &&
+      window.__victoryDebug.active === false &&
+      window.__victoryDebug.fires > 0,
+    undefined,
+    { timeout }
+  );
+}
+
+/** オーバーレイを閉じた後にカスケード画像が片付くまで待つ */
+export function waitForVictoryVisualsCleared(page, timeout = 3000) {
+  return page.waitForFunction(
+    () => {
+      const debug = window.__victoryDebug;
+      return (
+        debug &&
+        debug.visualsRemaining === false &&
+        debug.cleared === true &&
+        document.querySelectorAll("#anim-layer .card").length === 0 &&
+        document.querySelectorAll("#game .card.anim-hidden").length === 0
+      );
+    },
+    undefined,
+    { timeout }
+  );
+}
+
+/** 仕上げ花火が 20 発打ち上がるまで待つ */
+export function waitForVictoryFireworks(page, timeout = 25000) {
+  return page.waitForFunction(
+    () => window.__victoryDebug && window.__victoryDebug.fireworks >= 20,
+    undefined,
+    { timeout }
+  );
+}
+
+/** #stamp-canvas 上の不透明ピクセル数 */
+export function stampPixelCount(page) {
+  return page.evaluate(() => {
+    const canvas = document.getElementById("stamp-canvas");
+    if (!canvas) {
+      return 0;
+    }
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      return 0;
+    }
+    const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let count = 0;
+    for (let i = 3; i < data.length; i += 4) {
+      if (data[i] > 0) {
+        count++;
+      }
+    }
+    return count;
+  });
+}
+
+/** 勝利オーバーレイが表示されているか */
+export function overlayVisible(page) {
+  return page.evaluate(() => {
+    const overlay = document.getElementById("overlay");
+    return overlay ? !overlay.classList.contains("hidden") : false;
+  });
 }
 
 /* ---------------- ドラッグの物理 (drag physics) ---------------- */
