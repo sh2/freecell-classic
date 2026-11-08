@@ -1,11 +1,10 @@
 import { test, expect } from "@playwright/test";
-import * as h from "./helpers.js";
+import * as state from "./helpers/state.js";
+import * as effects from "./helpers/effects.js";
+import * as canvas from "./helpers/canvas.js";
+import * as input from "./helpers/input.js";
 
-/** 盤面中央の座標(配布スキップ用) */
-async function gameCenter(page) {
-  const box = await page.locator("#game").boundingBox();
-  return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
-}
+const h = { ...state, ...effects, ...canvas, ...input };
 
 test.describe("配布アニメーション", () => {
   test("アニメーション有効で新しいゲームを開始すると配布が走り、全 52 枚が表示される", async ({
@@ -103,7 +102,7 @@ test.describe("配布アニメーション", () => {
     await h.startGame(page, 3);
     await h.waitForDealStart(page);
 
-    const center = await gameCenter(page);
+    const center = await h.gameCenter(page);
     await page.mouse.click(center.x, center.y);
     await h.waitForDealEnd(page);
 

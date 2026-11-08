@@ -1,15 +1,10 @@
 import { test, expect } from "@playwright/test";
-import * as h from "./helpers.js";
+import * as state from "./helpers/state.js";
+import * as effects from "./helpers/effects.js";
+import * as canvas from "./helpers/canvas.js";
+import * as input from "./helpers/input.js";
 
-/** あと 1 手で勝利する盤面(♠K がフリーセル、♠ は A〜Q までホーム) */
-function nearWinBoard() {
-  const pile = (suit) => Array.from({ length: 13 }, (_, r) => r * 4 + suit);
-  return {
-    cascades: Array.from({ length: 8 }, () => []),
-    freeCells: [null, null, null, 51],
-    foundations: [pile(0), pile(1), pile(2), pile(3).slice(0, 12)],
-  };
-}
+const h = { ...state, ...effects, ...canvas, ...input };
 
 /**
  * 発光要素の出現を MutationObserver で記録する。
@@ -89,7 +84,7 @@ async function waitForSheenGone(page, timeout = 2000) {
 test.describe("ヒント時のカード発光", () => {
   test("ヒント表示で移動元カードにだけ帯が 1 回走る", async ({ page }) => {
     await h.openGame(page, 1);
-    await h.setBoard(page, nearWinBoard());
+    await h.setBoard(page, h.nearWinBoard());
     await h.setAnimations(page, true);
     await startSheenProbe(page);
 
@@ -137,7 +132,7 @@ test.describe("ヒント時のカード発光", () => {
 
   test("発光は 1 回で終わり、ヒントの枠は残る。再表示でまた 1 回だけ", async ({ page }) => {
     await h.openGame(page, 1);
-    await h.setBoard(page, nearWinBoard());
+    await h.setBoard(page, h.nearWinBoard());
     await h.setAnimations(page, true);
     await startSheenProbe(page);
 
@@ -161,7 +156,7 @@ test.describe("ヒント時のカード発光", () => {
   test("reduced-motion では帯を走らせず静止光を添える", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await h.openGame(page, 1);
-    await h.setBoard(page, nearWinBoard());
+    await h.setBoard(page, h.nearWinBoard());
     // in-game 設定は有効にしても reduced-motion が優先される
     await h.setAnimations(page, true);
     await startSheenProbe(page);
@@ -180,7 +175,7 @@ test.describe("ヒント時のカード発光", () => {
 
   test("ゲーム内アニメーション無効でも帯を走らせず静止光を添える", async ({ page }) => {
     await h.openGame(page, 1);
-    await h.setBoard(page, nearWinBoard());
+    await h.setBoard(page, h.nearWinBoard());
     await h.setAnimations(page, false);
     await startSheenProbe(page);
 
@@ -196,7 +191,7 @@ test.describe("ヒント時のカード発光", () => {
 
   test("発光中でもドラッグでき、発光はドラッグレイヤーに残らない", async ({ page }) => {
     await h.openGame(page, 1);
-    await h.setBoard(page, nearWinBoard());
+    await h.setBoard(page, h.nearWinBoard());
     await h.setAnimations(page, true);
 
     await requestHint(page);
@@ -275,7 +270,7 @@ test.describe("ヒント時のカード発光", () => {
     });
 
     await h.openGame(page, 1);
-    await h.setBoard(page, nearWinBoard());
+    await h.setBoard(page, h.nearWinBoard());
     await h.setAnimations(page, true);
     await startSheenProbe(page);
 

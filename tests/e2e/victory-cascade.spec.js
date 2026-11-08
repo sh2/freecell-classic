@@ -1,11 +1,10 @@
 import { test, expect } from "@playwright/test";
-import * as h from "./helpers.js";
+import * as state from "./helpers/state.js";
+import * as effects from "./helpers/effects.js";
+import * as canvas from "./helpers/canvas.js";
+import * as input from "./helpers/input.js";
 
-/** 盤面中央の座標 */
-async function gameCenter(page) {
-  const box = await page.locator("#game").boundingBox();
-  return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
-}
+const h = { ...state, ...effects, ...canvas, ...input };
 
 /** 勝利盤面にしてカスケードを開始する(アニメーション有効) */
 async function startVictory(page) {
@@ -19,37 +18,6 @@ async function startVictory(page) {
 async function closeOverlayByBackdrop(page) {
   await page.click("#overlay", { position: { x: 10, y: 10 } });
   await h.waitForVictoryVisualsCleared(page);
-}
-
-/** スクリーンショットの矩形内の平均色と平均輝度 (Rec.709) */
-async function averagePixels(page, box) {
-  const png = await page.screenshot({ clip: box });
-  return page.evaluate(async (base64) => {
-    const img = new Image();
-    img.src = `data:image/png;base64,${base64}`;
-    await img.decode();
-    const canvas = document.createElement("canvas");
-    canvas.width = img.naturalWidth;
-    canvas.height = img.naturalHeight;
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(img, 0, 0);
-    const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    let r = 0;
-    let g = 0;
-    let b = 0;
-    for (let i = 0; i < data.length; i += 4) {
-      r += data[i];
-      g += data[i + 1];
-      b += data[i + 2];
-    }
-    const n = data.length / 4;
-    return {
-      r: r / n,
-      g: g / n,
-      b: b / n,
-      lum: (0.2126 * r + 0.7152 * g + 0.0722 * b) / n,
-    };
-  }, png.toString("base64"));
 }
 
 test.describe("勝利時カスケード", () => {
@@ -194,7 +162,7 @@ test.describe("勝利時カスケード", () => {
     await page.waitForFunction(() => window.__victoryDebug.released >= 3, undefined, {
       timeout: 5000,
     });
-    const center = await gameCenter(page);
+    const center = await h.gameCenter(page);
     await page.mouse.click(center.x, center.y);
     await h.waitForVictoryEnd(page);
 
@@ -321,7 +289,7 @@ test.describe("勝利時カスケード", () => {
       width: Math.max(4, Math.round(position.width * 0.25)),
       height: Math.max(4, Math.round(position.height * 0.12)),
     };
-    const mean = await averagePixels(page, box);
+    const mean = await h.averagePixels(page, box);
     console.log(
       `[resting card] rgb=(${mean.r.toFixed(1)},${mean.g.toFixed(1)},${mean.b.toFixed(1)}) ` +
         `lum=${mean.lum.toFixed(1)}`

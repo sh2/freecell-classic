@@ -1,5 +1,10 @@
 import { test, expect } from "@playwright/test";
-import * as h from "./helpers.js";
+import * as state from "./helpers/state.js";
+import * as effects from "./helpers/effects.js";
+import * as canvas from "./helpers/canvas.js";
+import * as input from "./helpers/input.js";
+
+const h = { ...state, ...effects, ...canvas, ...input };
 
 /**
  * ドラッグの物理 (tasteful-effects 第2弾)。

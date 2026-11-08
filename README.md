@@ -119,14 +119,27 @@ python3 -m http.server 8000
   - `src/js/hint-sheen.js`: ヒント時の移動元カードの発光(調整用定数・表示判定)
   - `src/js/deal-animation.js`: 配布アニメーション(調整用定数・配布順・総時間・起点位置の計算)
   - `src/js/victory-cascade.js`: 勝利時カスケード(調整用定数・放出順・飛行物理・花火の倍率 / ため / 位置の純粋ヘルパー)
-  - `src/js/view.js`: DOM 構築・描画(差分更新・盤面ジオメトリ)、カード移動 /
-    配布アニメーション、セル着地エフェクト、勝利時カスケード、ドラッグ &
-    ドロップの DOM と物理、コントロールの有効 / 無効同期、トースト /
-    ヒント / 自動解答(ソルバー UI)、勝利 / 詰み / 確認ダイアログ
+  - `src/js/view.js`: カード DOM の差分描画、盤面ジオメトリ、`render()`、
+    コントロールの有効 / 無効同期、トースト / オーバーレイ / 確認ダイアログ、
+    ドラッグ & ドロップの DOM と物理、各表示モジュールの接続(991行)
+  - `src/js/hint-view.js`: ヒント発光、`showHint` / `clearHint`、
+    ヒント / 自動解答の busy / stage 表示
+  - `src/js/landing-effects.js`: 着地スナップ、スロットグロー、
+    小破裂と canvas プール
+  - `src/js/card-animations.js`: カード移動の飛行、配布アニメーション、
+    着地時の will-change、矩形取得、ドラッグ中断時の戻し
+  - `src/js/victory-cascade-view.js`: 勝利時カスケードの状態、カード面
+    スプライト、stamp / trail canvas、入力抑止、放出・花火・片付け
   - `src/js/interactions.js`: クリック・Pointer Events・ドラッグ&ドロップ
   - `src/js/app.js`: ゲーム開始・モデルと View の調停・タイマー
   - `src/js/main.js`: エントリポイント(初期化とテスト API の公開)
 - テストは Vitest(単体)+ Playwright(ブラウザー E2E)。
+  - E2E は責務別に `tests/e2e/gameplay.spec.js`、`rules-ui.spec.js`、
+    `solver.spec.js`、`rendering.spec.js` と効果別スペック
+    (`deal-animation` / `drag-physics` / `hint-sheen` /
+    `victory-cascade`)に分かれている。
+  - E2E の共通処理は `tests/e2e/helpers/` の `state.js`、`effects.js`、
+    `canvas.js`、`input.js` に分けている。
 
 ## ドキュメント
 
