@@ -9,7 +9,7 @@
 
 - 自動解答トグルをONにすると「高速探索中…」→「自動解答中…」へ表示が遷移するが、
   トグルをOFFにしてもラベルが「自動解答」に戻らない
-- 自動解答中（盤面操作がブロックされる状態）にもかかわらず「自動でホームへ送る」
+- 自動解答中（盤面操作がブロックされる状態）にもかかわらず「自動で送る」
   チェックボックスを操作できてしまい、意味のないUIになっている
 
 これらの不整合は `view.js: syncControls()` の導入(2026-08-20)で解消済みであり、
@@ -103,7 +103,6 @@ graph TD
     Won -- 新しいゲーム/開始 --> Idle
     Stuck -- 新しいゲーム/開始 --> Idle
     Idle -- やり直す(進行あり) --> Confirm
-    Won -- やり直す(進行あり) --> Confirm
     Stuck -- やり直す(進行あり) --> Confirm
     Confirm -- 承諾(リセット)/中止 --> Idle
 
@@ -114,6 +113,9 @@ graph TD
 
 到達不能な組合せ:
 
+- 勝利状態からやり直し確認へは遷移しない。`app.needsRestartConfirm()` は
+  `historyStack.length > 0 && !state.won` を条件とするため、勝利後の
+  「やり直す」は確認なしで即座に実行する
 - 勝利中にヒント/自動解答の計算・再生は開始しない（`boardSnapshot` 不一致で破棄される）
 - 詰みと勝利は排他（`game-state.js: checkStuck()` は `won` なら詰みにしない）
 
@@ -127,15 +129,15 @@ graph TD
 | `new-game-btn` | 新しいゲーム | ランダム番号で `startGame()` | `view.js: syncControls()` で `autoSolving` 時に `disabled` |
 | `restart-btn` | やり直す | 同じ番号で `startGame(state.gameNumber)` | `view.js: syncControls()` で `autoSolving` 時に `disabled` |
 | `undo-btn` | 元に戻す | `gameState.undo()` | `view.js: syncControls()` で `won \|\| !hasHistory \|\| autoSolving` 時に `disabled` |
-| `auto-move-btn` | 自動移動 | `gameState.hasAutoMove()` があれば `chainAutoNext()` | `view.js: syncControls()` で `won \|\| autoSolving \|\| busyHint \|\| !hasAutoMove` 時に `disabled` |
+| `auto-move-btn` | ホームへ送る | `gameState.hasAutoMove()` があれば `chainAutoNext()` | `view.js: syncControls()` で `won \|\| autoSolving \|\| busyHint \|\| !hasAutoMove` 時に `disabled` |
 | `hint-btn` | ヒント | `solverClient.requestSolution({autoPlay:false})` | `view.js: syncControls()` で `won \|\| busyHint \|\| busyAuto` 時に `disabled` |
 | `auto-solve-toggle` | 自動解答 | ONで `requestSolution({autoPlay:true})`、OFFで `cancelAutoSolve()` | `view.js: syncControls()` で `won \|\| busyHint` 時に `disabled` |
-| `auto-move-toggle` | 自動でホームへ送る | `autoMoveEnabled` を切替 | `view.js: syncControls()` で `won \|\| autoSolving` 時に `disabled` |
+| `auto-move-toggle` | 自動で送る | `autoMoveEnabled` を切替 | `view.js: syncControls()` で `won \|\| autoSolving` 時に `disabled` |
 | `seed-input` | No. | ゲーム番号入力 | `view.js: syncControls()` で `autoSolving` 時に `disabled` |
 | `start-game-btn` | 開始 | `normalizeGameNumber()` して `startGame()` | `view.js: syncControls()` で `autoSolving` 時に `disabled` |
 | `#game` 盤面 | 盤面操作 | クリック / ドラッグ&ドロップ / ダブルクリック | `interactions.js: isBlocked()` と `app.js: attemptMove()` の `autoSolving` ガード、`game-state.js: attemptMove()` の `won` ガード |
-| `#overlay` | オーバーレイ | 詰み/勝利の通知。背景クリックで閉じる | `view.js: showWin()` / `showStuck()` / `hideOverlay()` |
-| `#confirm-dialog` | やり直し確認 | 進行があるときの「やり直す」確認。OK/Enter でリスタート、キャンセル/Esc/背景クリックで中止 | `main.js: requestRestart()` が `app.needsRestartConfirm()` で表示を判定、`view.js: showConfirmRestart()` / `resolveConfirmDialog()` が表示と確定を担当 |
+| `#overlay` | オーバーレイ | 詰み / クリア（勝利）の通知。背景クリックで閉じる | `view.js: showWin()` / `showStuck()` / `hideOverlay()` |
+| `#confirm-dialog` | やり直し確認 | 進行があるときの「やり直す」確認。OK/Enter でやり直し（リスタート）、キャンセル/Esc/背景クリックで中止 | `main.js: requestRestart()` が `app.needsRestartConfirm()` で表示を判定、`view.js: showConfirmRestart()` / `resolveConfirmDialog()` が表示と確定を担当 |
 | `overlay-undo` | 1手戻す | 詰み時のみ表示される Undo | `view.js: showWin()` で `hidden`、 `showStuck()` で表示 |
 | `overlay-new-game` | 新しいゲーム | オーバーレイ内の新規ゲーム | 制御なし |
 
@@ -149,7 +151,7 @@ graph TD
 
 ### 4.1 ツールバー（主要ボタン）
 
-| 状態 | 新しいゲーム | やり直す | 元に戻す | 自動移動 | ヒント | 自動解答トグル | 自動でホームへ送る |
+| 状態 | 新しいゲーム | やり直す | 元に戻す | ホームへ送る | ヒント | 自動解答トグル | 自動で送る |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | アイドル（通常・履歴なし） | ◎ | ◎ | × 履歴なし | △ 送れるカードがあれば◎ | ◎ | ◎ OFF | ◎ |
 | アイドル（通常・履歴あり） | ◎ | ◎ | ◎ | △ 同上 | ◎ | ◎ OFF | ◎ |
@@ -174,20 +176,22 @@ graph TD
 ### 4.3 補足
 
 - 「新しいゲーム」「やり直す」「開始」「No.入力」を自動解答中に × とする理由:
-  現在の `main.js: clearSolutionOnNewGame` は新しいゲーム開始時に
-  `cancelAutoSolve()` を呼ぶが、自動解答トグルがONのまま計算・再生が
-  走っている間に新規ゲームを始めると `boardSnapshot` 不一致で破棄される
-  競合が起きる。トグルOFFによる明示的な中断を経由させる方が一貫する。
+  `view.js: syncControls()` が `autoSolving` 中にこれらを `disabled` にし、
+  自動解答トグルOFFによる明示的な中断を経由させる。以前は
+  `main.js: clearSolutionOnNewGame` が `cancelAutoSolve()` を呼ぶだけで、
+  計算・再生中に新規ゲームを始めると `boardSnapshot` 不一致で破棄される
+  競合があり得たが、現在は UI からその経路に入れない。
 - 詰み状態の盤面操作は「×」としたが、厳密には `hasAnyMove()===false` のため
   どの移動も失敗する。UI上は盤面クリック自体は受け付けるが結果が変わらない。
-- 勝利状態の「自動でホームへ送る」は全カードがホームにあるため操作の意味がない。
-  `disabled` にして意図を明示すべきである。
+- 勝利状態の「自動で送る」は全カードがホームにあるため操作の意味がない。
+  `syncControls()` が `disabled` にして意図を明示する（実装済み）。
 - ヒントのハイライト(`hint-source` / `hint-target`)は 10 秒で自動消去される
   (2026-08-21 追加)。手動操作(移動・Undo・自動解答開始・新規ゲーム)でも解除される。
 - 「やり直す」は進行がある(Undo 履歴があり勝利済みでない)ときだけ確認ダイアログ
-  (`#confirm-dialog`)を挟む(2026-08-23 追加)。承諾で同じ番号でリスタート、
-  中止(キャンセル / Esc / 背景クリック)なら盤面を維持する。進行がない場合と
-  勝利後は確認なしで即座にリスタートする(フル Undo 後のタイマーリセットなど、
+  (`#confirm-dialog`)を挟む(2026-08-23 追加)。承諾で同じ番号でやり直し
+  （リスタート）、中止(キャンセル / Esc / 背景クリック)なら盤面を維持する。
+  進行がない場合と勝利後は確認なしで即座に実行する
+  (フル Undo 後のタイマーリセットなど、
   無確認で押す意味のある操作を妨げないため)。ダイアログ表示中は背景が全画面を
   覆うため盤面操作・ツールバーとも操作できず、Enter / Esc 以外のショートカットも
   無効(`stopPropagation`)。
@@ -205,11 +209,11 @@ graph TD
 | 解決 | `solver-client.js: finishAutoSolve()` / `cancelAutoSolve()` の全パスで `view.setSolverBusy(false, "auto")` を経由し、`label.dataset.prevText` を確実にクリアするよう修正。`setSolverBusy()` は `solverMode` を `null` に戻し、ラベルを「自動解答」へ復元する |
 | 関連コード | `src/js/view.js: setSolverBusy()` / `setSolverStage()` / `solverMode` / `label.dataset.prevText`, `src/js/solver-client.js: cancelAutoSolve()` / `finishAutoSolve()` / `setBusy()` |
 
-### 5.2 自動解答中に「自動でホームへ送る」を操作できてしまう
+### 5.2 自動解答中に「自動で送る」を操作できてしまう
 
 | 項目 | 内容 |
 | --- | --- |
-| 現象 | 自動解答中（`autoSolving===true`、盤面操作はブロック）に「自動でホームへ送る」チェックボックスをON/OFFできる。終了後に意図しない `autoMoveEnabled` が残る |
+| 現象 | 自動解答中（`autoSolving===true`、盤面操作はブロック）に「自動で送る」チェックボックスをON/OFFできる。終了後に意図しない `autoMoveEnabled` が残る |
 | 解決 | `view.js: syncControls()` が `autoSolving` 中に `auto-move-toggle` を `disabled` にする。`solver-client.js: startAnimatedReplay()` で `savedAutoMoveEnabled` に現在値を保存し、`finishAutoSolve()` で保存値へ復元する(`true` 固定にしない) |
 | 関連コード | `src/js/solver-client.js: startAnimatedReplay()` / `finishAutoSolve()`、`src/js/view.js: syncControls()`、`src/js/app.js: setAutoMoveEnabled()` |
 
@@ -231,7 +235,7 @@ graph TD
 
 2. **排他状態ではトグルを `disabled` にする**
    - ヒント計算中は自動解答トグルを `disabled`
-   - 自動解答 計算中・再生中は「自動でホームへ送る」トグルを `disabled`
+   - 自動解答 計算中・再生中は「自動で送る」トグルを `disabled`
    - 自動解答トグル自体は計算中・再生中に `disabled=false` を維持し、OFFでキャンセルできる唯一の手段とする
 
 3. **盤面操作のブロックは `autoSolving` と `won` で一元化する**

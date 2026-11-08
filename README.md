@@ -106,7 +106,7 @@ python3 -m http.server 8000
 - 静的な 1 ページ構成(`index.html` + `src/css/style.css` + `src/js/*.js`)。
 - ブラウザーコードはネイティブ ES Modules で責務を分割している。
   - `src/js/constants.js`: 定数(スート、ランク、各セル数、最大ゲーム番号)
-  - `src/js/deal.js`: ディール生成(Microsoft FreeCell 互換)
+  - `src/js/deal.js`: ディール生成(Microsoft 版 FreeCell 互換)
   - `src/js/rules.js`: 移動ルール・最大移動枚数・安全な自動移動の判定
   - `src/js/game-state.js`: 状態遷移・履歴・Undo・勝利判定・番号補正
   - `src/js/solver.js`: ソルバー本体(IDA\* 探索 + Zobrist ハッシュ置換表、二段階探索)
@@ -119,7 +119,10 @@ python3 -m http.server 8000
   - `src/js/hint-sheen.js`: ヒント時の移動元カードの発光(調整用定数・表示判定)
   - `src/js/deal-animation.js`: 配布アニメーション(調整用定数・配布順・総時間・起点位置の計算)
   - `src/js/victory-cascade.js`: 勝利時カスケード(調整用定数・放出順・飛行物理・花火の倍率 / ため / 位置の純粋ヘルパー)
-  - `src/js/view.js`: DOM 構築・描画・トースト・ヒントハイライト・勝利 / 詰みオーバーレイ
+  - `src/js/view.js`: DOM 構築・描画(差分更新・盤面ジオメトリ)、カード移動 /
+    配布アニメーション、セル着地エフェクト、勝利時カスケード、ドラッグ &
+    ドロップの DOM と物理、コントロールの有効 / 無効同期、トースト /
+    ヒント / 自動解答(ソルバー UI)、勝利 / 詰み / 確認ダイアログ
   - `src/js/interactions.js`: クリック・Pointer Events・ドラッグ&ドロップ
   - `src/js/app.js`: ゲーム開始・モデルと View の調停・タイマー
   - `src/js/main.js`: エントリポイント(初期化とテスト API の公開)
@@ -129,6 +132,8 @@ python3 -m http.server 8000
 
 - UI の状態遷移とコントロールの有効 / 無効対応表:
   [`docs/ui-state-matrix.md`](./docs/ui-state-matrix.md)
+- ソルバーの解法キャッシュ設計(実装済み):
+  [`docs/solution-cache-plan.md`](./docs/solution-cache-plan.md)
 - ソルバーの改善記録と評価データ(アーカイブ):
   [`docs/archive/solver-insights-and-improvement-plan.md`](./docs/archive/solver-insights-and-improvement-plan.md)
 - ソルバーベンチマークの使い方と計測結果:
