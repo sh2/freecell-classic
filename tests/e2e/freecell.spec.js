@@ -1054,7 +1054,7 @@ test.describe("ソルバー", () => {
     await h.setBoard(page, nearWinBoard());
     await page.click("#hint-btn");
     await expect(page.locator("#toast")).toContainText("ヒント", { timeout: 10000 });
-    await expect(page.locator("#solution-panel")).toBeHidden();
+    await expect(page.locator("#solution-panel")).toHaveCount(0);
     // ヒント中は自動解答ラベルが変化しない(ボタン位置のチカチカ防止)
     await expect(page.locator("#auto-solve-label")).toHaveText("自動解答");
     // ヒントハイライトが付く(移動元カードと移動先(ホームは山の最上段カード))
@@ -1143,15 +1143,14 @@ test.describe("ソルバー", () => {
     await expect(page.locator("#hint-btn")).toBeEnabled();
   });
 
-  test("自動解答: トグルで1手ずつアニメーションし、完了後に全手順パネルとトグルOFFを表示する", async ({ page }) => {
+  test("自動解答: トグルで1手ずつアニメーションし、通常の勝利フロー(オーバーレイ)で終わる", async ({ page }) => {
     await h.openGame(page, 1);
     await h.setBoard(page, nearWinBoard());
     await page.locator("#auto-solve-toggle").check();
     await expect(page.locator("#overlay")).toBeVisible({ timeout: 10000 });
     await expect(page.locator("#overlay-title")).toHaveText("🎉 クリア！");
-    // 完了後は全手順パネルが表示され、トグルはOFFに戻る
-    await expect(page.locator("#solution-panel")).toBeVisible({ timeout: 2000 });
-    await expect(page.locator("#solution-list li")).toHaveCount(1);
+    // 手順パネルは廃止され、完了後はトグルがOFFに戻るだけ
+    await expect(page.locator("#solution-panel")).toHaveCount(0);
     await expect(page.locator("#auto-solve-toggle")).not.toBeChecked();
     const s = await h.state(page);
     expect(s.won).toBe(true);
@@ -1291,13 +1290,21 @@ test.describe("ソルバー", () => {
     expect((await h.state(page)).selected).toEqual({ zone: "free", index: 3, cardIndex: 0 });
   });
 
-  test("解答パネルは閉じるボタンで閉じられる(自動解答完了後)", async ({ page }) => {
+  test("自動解答完了後も #solution-panel は存在せず、手動クリアと同じ流れで終わる", async ({ page }) => {
     await h.openGame(page, 1);
+    await h.setAnimations(page, true);
     await h.setBoard(page, nearWinBoard());
     await page.locator("#auto-solve-toggle").check();
-    await expect(page.locator("#solution-panel")).toBeVisible({ timeout: 10000 });
-    await page.click("#solution-close-btn");
-    await expect(page.locator("#solution-panel")).toBeHidden();
+    // 自動解答の最終手で勝利時カスケードが始まる(手動クリアと同じ checkWin 経路)
+    await h.waitForVictoryStart(page, 10000);
+    expect((await h.victoryDebug(page)).fires).toBe(1);
+    // カスケード中の入力でスキップし、オーバーレイ表示まで進める
+    await page.mouse.click(10, 10);
+    await expect(page.locator("#overlay")).toBeVisible({ timeout: 10000 });
+    await expect(page.locator("#overlay-title")).toHaveText("🎉 クリア！");
+    await expect(page.locator("#solution-panel")).toHaveCount(0);
+    await expect(page.locator("#solution-close-btn")).toHaveCount(0);
+    await expect(page.locator("#auto-solve-toggle")).not.toBeChecked();
   });
 });
 

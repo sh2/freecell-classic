@@ -2048,33 +2048,6 @@ export function createView() {
     }
   }
 
-  /** 解答手順パネルを表示する(lines は表示用文字列の配列) */
-  function showSolution(lines) {
-    const panel = document.getElementById("solution-panel");
-    const summary = document.getElementById("solution-summary");
-    const list = document.getElementById("solution-list");
-    if (!panel || !list) {
-      return;
-    }
-    if (summary) {
-      summary.textContent = `全 ${lines.length} 手`;
-    }
-    list.innerHTML = "";
-    for (const line of lines) {
-      const li = document.createElement("li");
-      li.textContent = line;
-      list.appendChild(li);
-    }
-    panel.classList.remove("hidden");
-  }
-
-  function hideSolution() {
-    const panel = document.getElementById("solution-panel");
-    if (panel) {
-      panel.classList.add("hidden");
-    }
-  }
-
   return {
     render,
     buildBoard,
@@ -2119,8 +2092,6 @@ export function createView() {
     overlayEl,
     setSolverBusy,
     setSolverStage,
-    showSolution,
-    hideSolution,
     startVictoryCascade,
     isVictoryCascadeActive,
     skipVictoryCascade,

@@ -138,7 +138,6 @@ graph TD
 | `#confirm-dialog` | やり直し確認 | 進行があるときの「やり直す」確認。OK/Enter でリスタート、キャンセル/Esc/背景クリックで中止 | `main.js: requestRestart()` が `app.needsRestartConfirm()` で表示を判定、`view.js: showConfirmRestart()` / `resolveConfirmDialog()` が表示と確定を担当 |
 | `overlay-undo` | 1手戻す | 詰み時のみ表示される Undo | `view.js: showWin()` で `hidden`、 `showStuck()` で表示 |
 | `overlay-new-game` | 新しいゲーム | オーバーレイ内の新規ゲーム | 制御なし |
-| `solution-panel` | 解答手順パネル | 自動解答完了後に全手順を表示 | `view.js: showSolution()` / `hideSolution()` |
 
 `move-counter` / `timer` は表示のみで操作対象外のため表から除外する。
 

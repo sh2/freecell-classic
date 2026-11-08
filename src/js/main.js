@@ -36,11 +36,7 @@ export function init() {
       }
     });
   }
-  document.getElementById("solution-close-btn").addEventListener("click", () => {
-    view.hideSolution();
-  });
-
-  // 新しいゲームを開始したら古い解答パネル・ヒント・自動解答をリセットする
+  // 新しいゲームを開始したらヒント・自動解答をリセットする
   // (解法キャッシュは破棄しない。寿命は盤面照合に一任され、リスタート後の
   // 同一盤面ではキャッシュが即答に使われる)
   const clearSolutionOnNewGame = () => {
@@ -51,7 +47,6 @@ export function init() {
       t.checked = false;
     }
     app.setAutoSolving(false);
-    view.hideSolution();
     if (view.clearHint) {
       view.clearHint();
     }

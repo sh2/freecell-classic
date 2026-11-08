@@ -2,6 +2,27 @@
 
 ## 2026-11-08
 
+### 廃止
+
+- **自動解答の「解答手順」パネルを廃止**。再生アニメーション自体が手順の
+  提示であり、完了後に同じ内容を文字で再掲する必然性が薄いため、自動解答の
+  再生完了後に表示していた全手順のテキストリストを削除した。副次効果として
+  自動解答の終わりが手動クリアと完全に同じ流れ(勝利時カスケード →
+  クリアモーダル)になり、最終手で手順パネル・カスケード・クリアモーダルが
+  重なる問題も解消する。
+  - `src/js/solver-client.js`: 再生完了時と勝利検出時の `view.showSolution()`
+    呼び出しを削除し、完了処理を `finishAutoSolve()` のみにした。勝利後の
+    演出は app 側の勝利判定に任せる。冒頭コメントを実態に合わせて修正。
+  - `src/js/view.js`: `showSolution` / `hideSolution` と export を削除。
+  - `src/js/main.js`: `solution-close-btn` のイベント登録を削除。
+  - `index.html`: `#solution-panel` のブロックを削除。
+  - `src/css/style.css`: `.solution-panel` / `.solution-card` / `.solution-head`
+    などパネル専用の規則を削除。
+  - テスト: E2E の手順パネル前提の検証(表示・件数・閉じる操作)を、
+    自動解答が通常の勝利フロー(オーバーレイ表示)で終わることと
+    `#solution-panel` が存在しないことの検証に置き換え。
+  - `docs/ui-state-matrix.md`: 解答手順パネルの行を削除。
+
 ### 機能
 
 - **勝利時カスケード**(tasteful-effects 最終弾)。全カードがホームに揃った

@@ -2,8 +2,9 @@
  * ソルバー UI クライアント
  * Web Worker で solver.solve() を実行し、結果の解答手順を
  * 表示・再生する。DOM への書き込みは view へ委譲する。
- * ヒント: 次の一手だけをハイライト+トーストで表示(解答パネルは出さない)。
- * 自動解答: トグルONで解を探索→1手ずつ飛行アニメーションで再生→完了後に全手順パネル表示。
+ * ヒント: 次の一手だけをハイライト+トーストで表示。
+ * 自動解答: トグルONで解を探索→1手ずつ飛行アニメーションで再生→完了後は通常の
+ * 勝利フロー(カスケード→クリアモーダル)に任せる。
  * 自動解答中は盤面操作をブロックする(app.setAutoSolving)。
  * ========================================================= */
 
@@ -99,7 +100,7 @@ export function createSolverClient({ app, view }) {
     return app.applyMoveAnimated(loc, mv.destZone, mv.destIndex).ok;
   }
 
-  /** アニメーション付きで1手ずつ再生する(250ms待機を挟む)。完了後に全手順パネル表示 */
+  /** アニメーション付きで1手ずつ再生する(250ms待機を挟む)。完了時は finishAutoSolve のみ */
   function startAnimatedReplay(moves) {
     if (!moves || moves.length === 0) {
       finishAutoSolve();
@@ -119,8 +120,7 @@ export function createSolverClient({ app, view }) {
         return;
       }
       if (replayIndex >= replayMoves.length) {
-        // 完了: 全手順パネルを表示してトグルOFF
-        view.showSolution(replayMoves.map((mv) => formatMove(mv)));
+        // 完了: トグルOFF(勝利演出は app 側の勝利判定に任せる)
         finishAutoSolve();
         return;
       }
@@ -134,7 +134,6 @@ export function createSolverClient({ app, view }) {
       }
       // 勝利していたら即座に完了(残り手順は不要)
       if (app.getState().won) {
-        view.showSolution(replayMoves.map((m) => formatMove(m)));
         finishAutoSolve();
         return;
       }
@@ -236,7 +235,7 @@ export function createSolverClient({ app, view }) {
       }
       return;
     }
-    // ヒントは解答パネルを出さない・トースト+ハイライトのみ
+    // ヒントはトースト+ハイライトのみ
     // 自動解答はトグルON状態で開始される想定
     stopWorker();
     const requestId = nextRequestId++;
