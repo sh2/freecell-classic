@@ -2172,6 +2172,9 @@ export function createView() {
     if (gameEl) {
       gameEl.classList.toggle("auto-solving", solving);
     }
+    // 自動解答の再生中は飛行クローンも盤面と同じ暗さに揃える
+    // (通常プレイ・配布・勝利カスケードではクラスを付けない)
+    getAnimLayer().classList.toggle("auto-solving", solving);
     syncControls();
   }
 

@@ -13,6 +13,23 @@ import { formatMove } from "./solver.js";
 import { boardFingerprint, buildSolutionCacheEntry, findProgressIndex } from "./solution-cache.js";
 import { groupFrom } from "./game-state.js";
 
+/** 自動解答の再生で、ホーム行き以外の手の直後に置く待ち時間(ms) */
+export const REPLAY_WAIT_MS = 250;
+
+/** 自動解答の再生で、ホーム行きの手の直後に置く待ち時間(ms)。
+ *  通常プレイの自動ホーム送りと同じく待たずに次へ連鎖させる */
+export const REPLAY_HOME_WAIT_MS = 0;
+
+/** 直前に再生した手の後に置く待ち時間(ms)を返す。
+ *  ホーム行き(destZone === "home")は待ちゼロ、それ以外は 250ms。
+ *  手がない(再生の先頭)場合も待たない。 */
+export function replayWaitMs(mv) {
+  if (!mv || mv.destZone === "home") {
+    return REPLAY_HOME_WAIT_MS;
+  }
+  return REPLAY_WAIT_MS;
+}
+
 /** ソルバークライアントを生成する */
 export function createSolverClient({ app, view }) {
   let worker = null;
@@ -100,7 +117,8 @@ export function createSolverClient({ app, view }) {
     return app.applyMoveAnimated(loc, mv.destZone, mv.destIndex).ok;
   }
 
-  /** アニメーション付きで1手ずつ再生する(250ms待機を挟む)。完了時は finishAutoSolve のみ */
+  /** アニメーション付きで1手ずつ再生する(直前に再生した手に応じた待機を挟む)。
+   *  完了時は finishAutoSolve のみ */
   function startAnimatedReplay(moves) {
     if (!moves || moves.length === 0) {
       finishAutoSolve();
@@ -137,13 +155,19 @@ export function createSolverClient({ app, view }) {
         finishAutoSolve();
         return;
       }
-      // 飛行完了後に250ms待って次へ
+      // 飛行完了後、直前に再生した手の種類に応じて待ってから次へ。
+      // ホーム行きは通常プレイの自動ホーム送りと同じく待たずに連鎖させる
+      const waitMs = replayWaitMs(mv);
       view.runAfterAnimations(() => {
         if (!autoSolving) {
           return;
         }
         clearReplayTimer();
-        replayTimer = setTimeout(step, 250);
+        if (waitMs === REPLAY_HOME_WAIT_MS) {
+          step();
+        } else {
+          replayTimer = setTimeout(step, waitMs);
+        }
       });
     };
     step();

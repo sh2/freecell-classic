@@ -959,6 +959,87 @@ test.describe("ソルバー", () => {
     };
   }
 
+  /** 2 手で勝利する盤面(♠K・♠Q がフリーセル、♠ は A〜J までホーム)。
+   *  自動解答の暗さ検証で、ホーム以外の手を先頭に挟むモック手順と組み合わせる */
+  function twoMoveBoard() {
+    const pile = (suit) => Array.from({ length: 13 }, (_, r) => r * 4 + suit);
+    return {
+      cascades: Array.from({ length: 8 }, () => []),
+      freeCells: [51, 47, null, null], // ♠K, ♠Q
+      foundations: [pile(0), pile(1), pile(2), pile(3).slice(0, 11)],
+    };
+  }
+
+  /** 列の上を横切る飛行を作る盤面。c0 の 6♠ を c7 の 7♦ へ移す手をモックで返す。
+   *  中央の列はすべて 6 枚以上にして、飛行カードがカード面の上を通るようにする */
+  function flyoverBoard() {
+    const used = new Set([23, 25]); // 6♠(移動元), 7♦(移動先)
+    const rest = [];
+    for (let id = 0; id < 52; id += 1) {
+      if (!used.has(id)) {
+        rest.push(id);
+      }
+    }
+    const cascades = Array.from({ length: 8 }, () => []);
+    cascades[0] = rest.splice(0, 6).concat(23);
+    cascades[7] = rest.splice(0, 3).concat(25);
+    for (let i = 1; i <= 6; i += 1) {
+      cascades[i] = rest.splice(0, 7);
+    }
+    return { cascades, freeCells: [], foundations: [] };
+  }
+
+  /** 盤面と #anim-layer の不透明度/フィルタ、auto-solving クラスの有無 */
+  function dimState(page) {
+    return page.evaluate(() => {
+      const game = document.getElementById("game");
+      const layer = document.getElementById("anim-layer");
+      const gameStyle = getComputedStyle(game);
+      const layerStyle = layer ? getComputedStyle(layer) : null;
+      return {
+        gameOpacity: gameStyle.opacity,
+        gameFilter: gameStyle.filter,
+        layerOpacity: layerStyle ? layerStyle.opacity : "1",
+        layerFilter: layerStyle ? layerStyle.filter : "none",
+        gameClass: game.classList.contains("auto-solving"),
+        layerClass: layer ? layer.classList.contains("auto-solving") : false,
+      };
+    });
+  }
+
+  /** スクリーンショットの矩形内の平均色と平均輝度(Rec.709 係数)。PNG は
+   *  ブラウザーで canvas へ描いて画素を読む(テスト側に画像デコーダー依存を
+   *  持たない) */
+  async function averagePixels(page, box) {
+    const png = await page.screenshot({ clip: box });
+    return page.evaluate(async (base64) => {
+      const img = new Image();
+      img.src = `data:image/png;base64,${base64}`;
+      await img.decode();
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+      const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      let r = 0;
+      let g = 0;
+      let b = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        r += data[i];
+        g += data[i + 1];
+        b += data[i + 2];
+      }
+      const n = data.length / 4;
+      return {
+        r: r / n,
+        g: g / n,
+        b: b / n,
+        lum: (0.2126 * r + 0.7152 * g + 0.0722 * b) / n,
+      };
+    }, png.toString("base64"));
+  }
+
   /** Worker 生成時に必ず onerror を発火させるモックを注入する(エラー復帰の検証用) */
   async function installErrorWorker(page) {
     await page.addInitScript(() => {
@@ -1306,6 +1387,216 @@ test.describe("ソルバー", () => {
     await expect(page.locator("#solution-close-btn")).toHaveCount(0);
     await expect(page.locator("#auto-solve-toggle")).not.toBeChecked();
   });
+
+  test("自動解答の再生中だけ盤面と飛行クローンが同じ暗さ・色味になる", async ({ page }) => {
+    // 解の先頭にホーム以外の手(♠K を空フリーセルへ)を挟み、暗さの観測中も
+    // 飛行が続くようにする(モック Worker で手順を固定)
+    await page.addInitScript(() => {
+      const moves = [
+        { cardId: 51, count: 1, destZone: "free", destIndex: 2 },
+        { cardId: 47, count: 1, destZone: "home", destIndex: 3 },
+        { cardId: 51, count: 1, destZone: "home", destIndex: 3 },
+      ];
+      window.Worker = class MockSolverWorker {
+        constructor() {
+          this.onmessage = null;
+          this.onerror = null;
+          this.terminated = false;
+        }
+        postMessage(message) {
+          setTimeout(() => {
+            if (this.terminated) {
+              return;
+            }
+            this.onmessage?.({
+              data: {
+                type: "result",
+                requestId: message.requestId,
+                result: {
+                  solved: true,
+                  status: "solved",
+                  moves,
+                  nodes: 3,
+                  timeMs: 1,
+                  totalNodes: 3,
+                  totalTimeMs: 1,
+                  finalMode: "fast",
+                  strategy: "fast-safe",
+                  fallbackUsed: false,
+                  attempts: {},
+                },
+              },
+            });
+          }, 0);
+        }
+        terminate() {
+          this.terminated = true;
+        }
+      };
+    });
+    await h.openGame(page, 1);
+    await h.setAutoMove(page, false);
+    await h.setAnimations(page, true);
+    await h.setBoard(page, twoMoveBoard());
+
+    // 通常プレイ(手動移動)の飛行中は #anim-layer に暗さが掛からない
+    await h.clickCard(page, 51);
+    await h.clickSlot(page, "free", 2);
+    await expect(page.locator("#anim-layer .card")).toHaveCount(1);
+    expect(await dimState(page)).toEqual({
+      gameOpacity: "1",
+      gameFilter: "none",
+      layerOpacity: "1",
+      layerFilter: "none",
+      gameClass: false,
+      layerClass: false,
+    });
+    await h.waitForAnimationsDone(page);
+
+    // 盤面を戻して自動解答を再生する
+    await h.setBoard(page, twoMoveBoard());
+    await page.locator("#auto-solve-toggle").check();
+    // ホーム以外の手(♠K → フリーセル)の飛行中を捉える
+    await expect(page.locator("#anim-layer .card")).toHaveCount(1);
+    await expect
+      .poll(() => dimState(page))
+      .toEqual({
+        gameOpacity: "1", // 盤面も opacity ではなく filter で暗くする
+        gameFilter: "brightness(0.83)",
+        layerOpacity: "1", // 透けない
+        layerFilter: "brightness(0.83)", // 盤面と同じ係数を共有
+        gameClass: true,
+        layerClass: true,
+      });
+
+    // 中断すると盤面・飛行クローンとも通常の明るさへ戻る
+    await page.locator("#auto-solve-toggle").uncheck();
+    await expect
+      .poll(() => dimState(page))
+      .toEqual({
+        gameOpacity: "1",
+        gameFilter: "none",
+        layerOpacity: "1",
+        layerFilter: "none",
+        gameClass: false,
+        layerClass: false,
+      });
+  });
+
+  test("自動解答中の飛行カードの輝度と色味が盤面の静止カードと一致する", async ({ page }) => {
+    // 列の上を横切る 1 手(6♠ → 7♦)をモックで返す。勝敗は問わず、飛行中を
+    // 一時停止してピクセルを測る
+    await page.addInitScript(() => {
+      window.Worker = class MockSolverWorker {
+        constructor() {
+          this.onmessage = null;
+          this.onerror = null;
+          this.terminated = false;
+        }
+        postMessage(message) {
+          setTimeout(() => {
+            if (this.terminated) {
+              return;
+            }
+            this.onmessage?.({
+              data: {
+                type: "result",
+                requestId: message.requestId,
+                result: {
+                  solved: true,
+                  status: "solved",
+                  moves: [{ cardId: 23, count: 1, destZone: "cascade", destIndex: 7 }],
+                  nodes: 1,
+                  timeMs: 1,
+                  totalNodes: 1,
+                  totalTimeMs: 1,
+                  finalMode: "fast",
+                  strategy: "fast-safe",
+                  fallbackUsed: false,
+                  attempts: {},
+                },
+              },
+            });
+          }, 0);
+        }
+        terminate() {
+          this.terminated = true;
+        }
+      };
+    });
+    await h.openGame(page, 1);
+    await h.setAutoMove(page, false);
+    await h.setAnimations(page, true);
+    await h.setBoard(page, flyoverBoard());
+    await page.locator("#auto-solve-toggle").check();
+
+    // クローンが現れたフレームで飛行を 70% 時点に固定する(イージングで
+    // 実際の位置は終点近くになり、移動先 c7 のカード面の上に来る)
+    await page.waitForFunction(() => {
+      const clone = document.querySelector("#anim-layer .card");
+      if (!clone) {
+        return false;
+      }
+      const anims = clone.getAnimations();
+      if (anims.length === 0) {
+        return false;
+      }
+      for (const anim of anims) {
+        anim.pause();
+        anim.currentTime = (anim.effect.getTiming().duration ?? 0) * 0.7;
+      }
+      return true;
+    });
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+
+    const boxes = await page.evaluate(() => {
+      const patch = (rect) => ({
+        x: Math.round(rect.left + rect.width * 0.62),
+        y: Math.round(rect.top + rect.height * 0.1),
+        width: Math.round(rect.width * 0.22),
+        height: Math.round(rect.height * 0.11),
+      });
+      const clone = document.querySelector("#anim-layer .card");
+      const cascade3 = document.querySelectorAll("#game .cascade")[3];
+      const cards = cascade3.querySelectorAll(".card");
+      const staticCard = cards[cards.length - 1];
+      return {
+        flight: patch(clone.getBoundingClientRect()),
+        static: patch(staticCard.getBoundingClientRect()),
+        cloneOpacity: getComputedStyle(clone).opacity,
+        layerFilter: getComputedStyle(document.getElementById("anim-layer")).filter,
+        // 測色点が(隠れていない)盤面カードの上にあるか
+        overCard: (() => {
+          const r = clone.getBoundingClientRect();
+          const cx = r.left + r.width * 0.73;
+          const cy = r.top + r.height * 0.155;
+          return [...document.querySelectorAll("#game .card:not(.anim-hidden)")].some((el) => {
+            const b = el.getBoundingClientRect();
+            return cx >= b.left && cx <= b.right && cy >= b.top && cy <= b.bottom;
+          });
+        })(),
+      };
+    });
+
+    // 飛行クローンは不透明(opacity 1)で、暗さは brightness フィルタのみ
+    expect(boxes.cloneOpacity).toBe("1");
+    expect(boxes.layerFilter).toBe("brightness(0.83)");
+    // 測色しているのはフェルトではなく列カードの面の上
+    expect(boxes.overCard).toBe(true);
+
+    const flight = await averagePixels(page, boxes.flight);
+    const still = await averagePixels(page, boxes.static);
+    const diffLum = flight.lum - still.lum;
+    const diffRG = flight.r - flight.g - (still.r - still.g);
+    console.log(
+      `[pixels] flight=(${flight.r.toFixed(1)},${flight.g.toFixed(1)},${flight.b.toFixed(1)}) ` +
+        `lum=${flight.lum.toFixed(1)} static=(${still.r.toFixed(1)},${still.g.toFixed(1)},` +
+        `${still.b.toFixed(1)}) lum=${still.lum.toFixed(1)} ` +
+        `diffLum=${diffLum.toFixed(1)} diffRG=${diffRG.toFixed(1)}`
+    );
+    expect(Math.abs(diffLum)).toBeLessThanOrEqual(8);
+    expect(Math.abs(diffRG)).toBeLessThanOrEqual(4);
+  });
 });
 
 test.describe("解法キャッシュ", () => {
@@ -1475,10 +1766,14 @@ test.describe("解法キャッシュ", () => {
     await expect(page.locator("#toast")).toContainText("ヒント: ♠Q → ホーム", { timeout: 10000 });
     expect(await workerCount(page)).toBe(1);
 
-    // 自動解答トグル ON → キャッシュ命中で Worker を起こさず再生する
-    await page.locator("#auto-solve-toggle").check();
+    // 自動解答トグル ON → キャッシュ命中で Worker を起こさず再生する。
+    // この盤面の解はホーム行き2手のみで待ちが無く、アニメーション無効時は
+    // クリック処理中に再生が完了してトグルがOFFへ戻るため check() ではなく
+    // click() で開始し、完了後の状態を検証する
+    await page.locator("#auto-solve-toggle").click();
     await expect(page.locator("#overlay")).toBeVisible({ timeout: 10000 });
     expect(await workerCount(page)).toBe(1);
+    await expect(page.locator("#auto-solve-toggle")).not.toBeChecked();
     const s = await h.state(page);
     expect(s.won).toBe(true);
     expect(s.foundations[3]).toHaveLength(13);
