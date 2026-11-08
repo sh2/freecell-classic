@@ -49,7 +49,7 @@ export const SHARD_LENGTH = 10;
 
 /** 破片の色 (赤スート / 黒スート) */
 export const SHARD_RED = "#ff7a72";
-export const SHARD_BLACK = "#9fd8ff";
+export const SHARD_BLACK = "#1f8fff";
 
 /** 同時に存在できる小破裂の上限。超過分は捨てる */
 export const MAX_SHARD_BURSTS = 3;

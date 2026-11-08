@@ -93,33 +93,19 @@ export function createApp({ view, deps = {} }) {
     checkStuck();
   }
 
-  /** 盤面上の動かし得るカード(フリーセル・カスケード全枚)の現在の矩形を集める。
-   *  自動移動の前に取得することで、はしご状アニメーションの移動元になる */
-  function collectAllCardRects() {
-    const ids = [];
-    for (const c of state.freeCells) {
-      if (c) {
-        ids.push(c.id);
-      }
-    }
-    for (const pile of state.cascades) {
-      for (const c of pile) {
-        ids.push(c.id);
-      }
-    }
-    return view.getCardRects(ids);
-  }
-
   /** 自動ホーム送りを 1 枚ずつ「描画 → 飛行」の連鎖で進める。
-   *  移動元の矩形は前の描画が終わった DOM から毎回収集するため、フリーセル経由の
+   *  移動元の矩形は前の描画が終わった DOM から、その段で動くカードだけを
+   *  毎回収集する。状態を進めても DOM はまだ前の描画のままなので、
+   *  移動後(描画前)に測れば前の位置が取れる。フリーセル経由の
    *  2 段階移動(例: ♠2 をフリーセルへ → 露出した ♠1 をホームへ → ♠2 を
    *  フリーセルからホームへ)でも、2 回目の移動が正しい位置から飛ぶ */
   function chainAutoNext() {
-    const origins = collectAllCardRects();
     const card = gameState.autoMoveOne(state);
     if (!card) {
       return;
     }
+    // 全カードではなく、この段で動くカードの矩形だけを実測する
+    const origins = view.getCardRects([card.id]);
     view.setNextRenderAnimation([{ cardIds: [card.id], origins }]);
     onMoveSucceeded(landingInfoFor("home", card));
     view.runAfterAnimations(chainAutoNext);

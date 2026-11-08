@@ -38,9 +38,9 @@ describe("セル着地エフェクトの調整用定数", () => {
     expect(MAX_SHARD_BURSTS).toBe(3);
   });
 
-  it("小破裂の色は赤 #ff7a72 / 黒 #9fd8ff", () => {
+  it("小破裂の色は赤 #ff7a72 / 黒 #1f8fff", () => {
     expect(SHARD_RED).toBe("#ff7a72");
-    expect(SHARD_BLACK).toBe("#9fd8ff");
+    expect(SHARD_BLACK).toBe("#1f8fff");
   });
 });
 

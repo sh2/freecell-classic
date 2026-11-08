@@ -21,6 +21,7 @@ import {
   EMBER_THRESHOLD_MAX,
   EMBER_TRANSITION,
   MAX_BURSTS,
+  canvasDpr,
   groupForIndex,
   speedRangeForGroup,
   pickBurstColor,
@@ -180,5 +181,22 @@ describe("余燼", () => {
       expect(emberColorForProgress(base, 0.5, 1)).toBe(EMBER_COLOR);
       expect(emberColorForProgress(base, 0.5, 0.5 + EMBER_TRANSITION, false)).toBe(base);
     }
+  });
+});
+
+describe("キャンバス解像度の上限", () => {
+  it("devicePixelRatio が 2 を超えても 2 に抑える", () => {
+    expect(canvasDpr(1)).toBe(1);
+    expect(canvasDpr(1.5)).toBe(1.5);
+    expect(canvasDpr(2)).toBe(2);
+    expect(canvasDpr(2.625)).toBe(2);
+    expect(canvasDpr(3)).toBe(2);
+  });
+
+  it("不正値は 1 として扱う", () => {
+    expect(canvasDpr(0)).toBe(1);
+    expect(canvasDpr(-1)).toBe(1);
+    expect(canvasDpr(Number.NaN)).toBe(1);
+    expect(canvasDpr(undefined)).toBe(1);
   });
 });

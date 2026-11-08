@@ -21,6 +21,37 @@ async function closeOverlayByBackdrop(page) {
   await h.waitForVictoryVisualsCleared(page);
 }
 
+/** スクリーンショットの矩形内の平均色と平均輝度 (Rec.709) */
+async function averagePixels(page, box) {
+  const png = await page.screenshot({ clip: box });
+  return page.evaluate(async (base64) => {
+    const img = new Image();
+    img.src = `data:image/png;base64,${base64}`;
+    await img.decode();
+    const canvas = document.createElement("canvas");
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0);
+    const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let r = 0;
+    let g = 0;
+    let b = 0;
+    for (let i = 0; i < data.length; i += 4) {
+      r += data[i];
+      g += data[i + 1];
+      b += data[i + 2];
+    }
+    const n = data.length / 4;
+    return {
+      r: r / n,
+      g: g / n,
+      b: b / n,
+      lum: (0.2126 * r + 0.7152 * g + 0.0722 * b) / n,
+    };
+  }, png.toString("base64"));
+}
+
 test.describe("勝利時カスケード", () => {
   test("勝利直後に 1 回だけ発火し、ホーム山が減り、スタンプが蓄積する", async ({ page }) => {
     await startVictory(page);
@@ -31,12 +62,15 @@ test.describe("勝利時カスケード", () => {
       active: window.__victoryDebug.active,
       stampCanvases: document.querySelectorAll("#stamp-canvas").length,
       stampZ: Number(getComputedStyle(document.getElementById("stamp-canvas")).zIndex),
+      trailZ: Number(getComputedStyle(document.getElementById("trail-canvas")).zIndex),
       animZ: Number(getComputedStyle(document.getElementById("anim-layer")).zIndex),
     }));
     expect(atStart.active).toBe(true);
     expect(atStart.fires).toBe(1);
     expect(atStart.overlayHidden).toBe(true);
     expect(atStart.stampCanvases).toBe(1);
+    // 軌跡(#trail-canvas) < 静止カード(#stamp-canvas) < 飛行クローン
+    expect(atStart.trailZ).toBeLessThan(atStart.stampZ);
     expect(atStart.stampZ).toBeLessThan(atStart.animZ);
 
     await page.waitForFunction(() => window.__victoryDebug.released >= 8, undefined, {
@@ -55,10 +89,12 @@ test.describe("勝利時カスケード", () => {
     expect(during.hiddenHome).toBe(during.debug.released);
     expect(during.visibleHome).toBe(52 - during.debug.released);
     expect(during.overlayHidden).toBe(true);
-    expect(during.clones).toBeGreaterThanOrEqual(during.debug.released);
-    // スタンプ用の DOM 要素は #stamp-canvas だけ (#fx-canvas / #landing-fx-canvas は既存)
-    expect(during.canvases).toBe(3);
-    expect(await h.stampPixelCount(page)).toBeGreaterThan(0);
+    // 風船の DOM クローンは「放出済み - 静止済み」だけ残る(B2)
+    expect(during.clones).toBe(during.debug.released - during.debug.resting);
+    // canvas は #stamp-canvas / #trail-canvas / #fx-canvas と、小破裂用の 3 枚
+    expect(during.canvases).toBe(6);
+    // まだ静止前なので軌跡キャンバスに描かれている
+    expect(await h.trailPixelCount(page)).toBeGreaterThan(0);
 
     // Escape でスキップし、その入力がゲーム操作にならない
     await page.keyboard.press("Escape");
@@ -72,9 +108,11 @@ test.describe("勝利時カスケード", () => {
     expect(after.cleared).toBe(false);
     expect(await h.overlayVisible(page)).toBe(true);
     // モーダルの背後には、スキップした時点の画像が残っている
-    expect(await page.locator("#anim-layer .card").count()).toBeGreaterThan(0);
+    expect(await page.locator("#anim-layer .card").count()).toBe(after.released - after.resting);
     expect(await page.locator("#game .card.anim-hidden").count()).toBeGreaterThan(0);
-    expect(await h.stampPixelCount(page)).toBeGreaterThan(0);
+    expect(
+      (await h.stampPixelCount(page)) + (await h.trailPixelCount(page))
+    ).toBeGreaterThan(0);
 
     // モーダルを閉じたタイミングで片付く
     await closeOverlayByBackdrop(page);
@@ -84,6 +122,7 @@ test.describe("勝利時カスケード", () => {
     expect(await page.locator("#anim-layer .card").count()).toBe(0);
     expect(await page.locator("#game .card.anim-hidden").count()).toBe(0);
     expect(await h.stampPixelCount(page)).toBe(0);
+    expect(await h.trailPixelCount(page)).toBe(0);
     expect(await page.locator("#home-cells .card").count()).toBe(52);
 
     const state = await h.state(page);
@@ -126,9 +165,13 @@ test.describe("勝利時カスケード", () => {
     await page.keyboard.press("Escape");
     await h.waitForVictoryEnd(page);
     expect(await h.overlayVisible(page)).toBe(true);
-    expect((await h.victoryDebug(page)).visualsRemaining).toBe(true);
-    expect(await page.locator("#anim-layer .card").count()).toBeGreaterThan(0);
+    const skipped = await h.victoryDebug(page);
+    expect(skipped.visualsRemaining).toBe(true);
+    expect(await page.locator("#anim-layer .card").count()).toBe(skipped.released - skipped.resting);
     expect(await page.locator("#game .card.anim-hidden").count()).toBeGreaterThan(0);
+    expect(
+      (await h.stampPixelCount(page)) + (await h.trailPixelCount(page))
+    ).toBeGreaterThan(0);
 
     // 新しいゲームでモーダルを閉じても片付けが漏れない
     await page.click("#overlay-new-game");
@@ -139,6 +182,7 @@ test.describe("勝利時カスケード", () => {
     expect(await page.locator("#anim-layer .card").count()).toBe(0);
     expect(await page.locator("#game .card.anim-hidden").count()).toBe(0);
     expect(await h.stampPixelCount(page)).toBe(0);
+    expect(await h.trailPixelCount(page)).toBe(0);
     expect(await h.overlayVisible(page)).toBe(false);
     expect((await h.state(page)).won).toBe(false);
   });
@@ -160,19 +204,156 @@ test.describe("勝利時カスケード", () => {
     expect(debug.released).toBeLessThan(52);
     expect(debug.visualsRemaining).toBe(true);
     expect(await h.overlayVisible(page)).toBe(true);
-    expect(await page.locator("#anim-layer .card").count()).toBeGreaterThan(0);
+    expect(await page.locator("#anim-layer .card").count()).toBe(debug.released - debug.resting);
     expect(await page.locator("#game .card.anim-hidden").count()).toBeGreaterThan(0);
-    expect(await h.stampPixelCount(page)).toBeGreaterThan(0);
+    expect(
+      (await h.stampPixelCount(page)) + (await h.trailPixelCount(page))
+    ).toBeGreaterThan(0);
 
     await closeOverlayByBackdrop(page);
     expect(await page.locator("#anim-layer .card").count()).toBe(0);
     expect(await page.locator("#game .card.anim-hidden").count()).toBe(0);
     expect(await h.stampPixelCount(page)).toBe(0);
+    expect(await h.trailPixelCount(page)).toBe(0);
 
     const state = await h.state(page);
     expect(state.moveCount).toBe(52);
     expect(state.historyLength).toBe(0);
     expect(state.selected).toBeNull();
+  });
+
+  test("カスケードのクローンには影がない(B1)", async ({ page }) => {
+    await startVictory(page);
+
+    const shadows = await page.evaluate(() => {
+      const clones = [...document.querySelectorAll("#anim-layer .victory-clone")];
+      const boardCard = document.querySelector("#game .card");
+      return {
+        cloneCount: clones.length,
+        cloneShadow: clones.length > 0 ? getComputedStyle(clones[0]).boxShadow : null,
+        boardShadow: boardCard ? getComputedStyle(boardCard).boxShadow : null,
+      };
+    });
+    expect(shadows.cloneCount).toBeGreaterThan(0);
+    expect(shadows.cloneShadow).toBe("none");
+    // 盤面の通常カードの影は残す
+    expect(shadows.boardShadow).not.toBe("none");
+
+    await page.keyboard.press("Escape");
+    await h.waitForVictoryEnd(page);
+  });
+
+  test("カスケードの飛行クローンは transform で動く(P1)", async ({ page }) => {
+    await startVictory(page);
+
+    const start = await page.evaluate(() => {
+      const clone = document.querySelector("#anim-layer .victory-clone");
+      if (!clone) {
+        return null;
+      }
+      window.__p1Clone = clone;
+      return {
+        left: clone.style.left,
+        top: clone.style.top,
+        transform: clone.style.transform,
+      };
+    });
+    expect(start).not.toBeNull();
+    expect(start.left).toBe("0px");
+    expect(start.top).toBe("0px");
+    expect(start.transform).toMatch(/translate3d\(/);
+
+    const after = await page.evaluate(async () => {
+      const clone = window.__p1Clone;
+      const before = clone.style.transform;
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      return {
+        left: clone.style.left,
+        top: clone.style.top,
+        before,
+        after: clone.style.transform,
+      };
+    });
+    expect(after.left).toBe("0px");
+    expect(after.top).toBe("0px");
+    expect(after.after).toMatch(/translate3d\(/);
+    // 位置は left/top ではなく transform の値だけが動く
+    expect(after.after).not.toBe(after.before);
+
+    await page.keyboard.press("Escape");
+    await h.waitForVictoryEnd(page);
+  });
+
+  test("静止したカードはキャンバスへ移り、アニメレイヤーに溜まらない(B2)", async ({ page }) => {
+    test.setTimeout(30000);
+    await startVictory(page);
+
+    await page.waitForFunction(() => window.__victoryDebug.resting >= 10, undefined, {
+      timeout: 15000,
+    });
+    const during = await page.evaluate(() => ({
+      released: window.__victoryDebug.released,
+      resting: window.__victoryDebug.resting,
+      positions: window.__victoryDebug.restingPositions.length,
+      clones: document.querySelectorAll("#anim-layer .victory-clone").length,
+    }));
+    expect(during.resting).toBeGreaterThanOrEqual(10);
+    expect(during.positions).toBe(during.resting);
+    // アニメレイヤーには「まだ飛んでいる枚数」しか残らない
+    expect(during.clones).toBe(during.released - during.resting);
+    expect(during.clones).toBeGreaterThan(0);
+    // 軌跡と静止カードは別キャンバスに描かれている
+    expect(await h.trailPixelCount(page)).toBeGreaterThan(0);
+    expect(await h.stampPixelCount(page)).toBeGreaterThan(0);
+
+    await page.waitForFunction(() => window.__victoryDebug.resting === 52, undefined, {
+      timeout: 20000,
+    });
+    expect(await page.locator("#anim-layer .victory-clone").count()).toBe(0);
+    // 花火開始前なのでオーバーレイはまだ出ていない
+    expect(await h.overlayVisible(page)).toBe(false);
+
+    // 完了後の光景: 静止位置にカード面が見えている(フェルトではない)
+    const position = await page.evaluate(() => window.__victoryDebug.restingPositions[0]);
+    const box = {
+      x: Math.round(position.x + position.width * 0.55),
+      y: Math.round(position.y + position.height * 0.08),
+      width: Math.max(4, Math.round(position.width * 0.25)),
+      height: Math.max(4, Math.round(position.height * 0.12)),
+    };
+    const mean = await averagePixels(page, box);
+    console.log(
+      `[resting card] rgb=(${mean.r.toFixed(1)},${mean.g.toFixed(1)},${mean.b.toFixed(1)}) ` +
+        `lum=${mean.lum.toFixed(1)}`
+    );
+    expect(mean.lum).toBeGreaterThan(150);
+  });
+
+  test("リサイズ後もカスケードの床がフッター上端に一致する", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setAnimations(page, true);
+    // 初期化後に画面幅を変え、ジオメトリキャッシュが追随することを確認する
+    await page.setViewportSize({ width: 600, height: 800 });
+    await page.waitForTimeout(300);
+
+    await h.setWinBoard(page);
+    await h.waitForVictoryStart(page);
+    await page.waitForFunction(() => window.__victoryDebug.resting >= 1, undefined, {
+      timeout: 8000,
+    });
+
+    const result = await page.evaluate(() => {
+      const position = window.__victoryDebug.restingPositions[0];
+      const footer = document.querySelector(".site-footer");
+      return {
+        bottom: position.y + position.height,
+        footerTop: footer.getBoundingClientRect().top,
+      };
+    });
+    expect(Math.abs(result.bottom - result.footerTop)).toBeLessThanOrEqual(3);
+
+    await page.keyboard.press("Escape");
+    await h.waitForVictoryEnd(page);
   });
 
   test("全カードが床に触れた 1 秒後に仕上げ花火が始まり、20 発すべて上がって完了する", async ({
@@ -246,17 +427,22 @@ test.describe("勝利時カスケード", () => {
     expect(await h.overlayVisible(page)).toBe(true);
     expect(after.visualsRemaining).toBe(true);
     expect(after.cleared).toBe(false);
-    expect(await page.locator("#anim-layer .victory-clone").count()).toBe(52);
+    // 全カードが静止済みで、DOM クローンは残らずキャンバスに描かれている(B2)
+    expect(after.resting).toBe(52);
+    expect(after.restingPositions).toHaveLength(52);
+    expect(await page.locator("#anim-layer .victory-clone").count()).toBe(0);
+    // 静止カードは stamp、軌跡は trail に分かれている
     expect(await h.stampPixelCount(page)).toBeGreaterThan(0);
+    expect(await h.trailPixelCount(page)).toBeGreaterThan(0);
 
-    // U-1: 静止したクローンの下端がフッター上端のラインに一致する
+    // U-1: 静止したカードの下端がフッター上端のラインに一致する
     const geometry = await page.evaluate(() => {
       const footer = document.querySelector(".site-footer");
       const game = document.getElementById("game");
       const footerTop = footer.getBoundingClientRect().top;
       const gameBottom = game.getBoundingClientRect().bottom;
-      const bottoms = [...document.querySelectorAll("#anim-layer .victory-clone")].map(
-        (el) => el.getBoundingClientRect().bottom
+      const bottoms = window.__victoryDebug.restingPositions.map(
+        (position) => position.y + position.height
       );
       return {
         footerTop,
@@ -278,6 +464,7 @@ test.describe("勝利時カスケード", () => {
     expect(await page.locator("#anim-layer .card").count()).toBe(0);
     expect(await page.locator("#game .card.anim-hidden").count()).toBe(0);
     expect(await h.stampPixelCount(page)).toBe(0);
+    expect(await h.trailPixelCount(page)).toBe(0);
     expect(await page.locator("#home-cells .card").count()).toBe(52);
 
     const state = await h.state(page);
@@ -310,6 +497,7 @@ test.describe("勝利時カスケード", () => {
     expect(await page.locator("#anim-layer .card").count()).toBe(0);
     expect(await page.locator("#game .card.anim-hidden").count()).toBe(0);
     expect(await h.stampPixelCount(page)).toBe(0);
+    expect(await h.trailPixelCount(page)).toBe(0);
 
     const state = await h.state(page);
     expect(state.gameNumber).toBe(2);
@@ -326,6 +514,7 @@ test.describe("勝利時カスケード", () => {
     expect(await h.overlayVisible(page)).toBe(true);
     expect(await page.locator("#game .card.anim-hidden").count()).toBe(0);
     expect(await h.stampPixelCount(page)).toBe(0);
+    expect(await h.trailPixelCount(page)).toBe(0);
     expect((await h.state(page)).won).toBe(true);
   });
 
@@ -341,6 +530,7 @@ test.describe("勝利時カスケード", () => {
     expect(await h.overlayVisible(page)).toBe(true);
     expect(await page.locator("#game .card.anim-hidden").count()).toBe(0);
     expect(await h.stampPixelCount(page)).toBe(0);
+    expect(await h.trailPixelCount(page)).toBe(0);
     expect((await h.state(page)).won).toBe(true);
   });
 });

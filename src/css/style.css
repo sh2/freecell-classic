@@ -7,8 +7,6 @@
   --gold: #e6c15a;
   --slot-bg: rgba(255, 255, 255, 0.08);
   --slot-border: rgba(255, 255, 255, 0.35);
-  /* 自動解答中に盤面(#game)と飛行クローンへ掛ける輝度(両者で共有) */
-  --auto-solving-brightness: 0.83;
 }
 
 * {
@@ -274,6 +272,19 @@ body {
   background: rgba(230, 193, 90, 0.15);
 }
 
+/* セル着地時にスロットの枠を光らせる専用要素。影は静止で、opacity だけを
+   WAAPI で動かす(box-shadow のアニメーションによる毎フレーム再描画を避ける)。
+   inset はスロットの枠線(2px)の外側に合わせ、従来の box-shadow と同じ
+   範囲にする */
+.slot-glow {
+  position: absolute;
+  inset: -2px;
+  border-radius: calc(var(--card-radius) + 2px);
+  pointer-events: none;
+  opacity: 0;
+  will-change: opacity;
+}
+
 .slot.home::after,
 .slot.free::after {
   content: attr(data-label);
@@ -300,6 +311,9 @@ body {
   min-height: var(--card-h);
   position: relative;
   flex: 0 0 auto;
+  /* 列内の描画・レイアウト・スタイル計算を列の中に閉じ込める。
+     paint は使わない(スロットのグローが列の外へはみ出して見えなくなるため) */
+  contain: layout style;
 }
 
 .cascade .slot {
@@ -466,6 +480,13 @@ body {
   cursor: default;
 }
 
+/* 勝利時カスケードのクローンは影を持たない(B1)。
+   静止後はスタンプ用キャンバスの絵に置き換わるため、影の再合成を避ける。
+   盤面の通常カードの影は変更しない */
+#anim-layer .card.victory-clone {
+  box-shadow: none;
+}
+
 /* ---------- 配布アニメーションの飛行クローン ---------- */
 
 #anim-layer .card.deal-clone {
@@ -473,10 +494,12 @@ body {
   will-change: transform;
 }
 
-/* ---------- 勝利時カスケードのスタンプ ---------- */
+/* ---------- 勝利時カスケードのスタンプ / 軌跡 ---------- */
 
-/* 飛行中のカード面を焼き付ける専用 Canvas。盤面より上・飛行クローン
-   (#anim-layer) より下に置き、入力は一切受け取らない */
+/* 飛行中の軌跡(#trail-canvas)を下、静止カードの最終像(#stamp-canvas)を上に
+   重ねる。どちらも盤面より上・飛行クローン(#anim-layer)より下で、
+   入力は一切受け取らない。静止カードが軌跡より手前に見える */
+#trail-canvas,
 #stamp-canvas {
   position: fixed;
   inset: 0;
@@ -484,19 +507,26 @@ body {
   width: 100%;
   height: 100%;
   pointer-events: none;
+}
+
+#trail-canvas {
+  z-index: 1390;
+}
+
+#stamp-canvas {
   z-index: 1400;
 }
 
-/* ---------- セル着地の小破裂 (フリーセル / ホーム) ---------- */
+/* セル着地の小破裂 (フリーセル / ホーム) */
 
-/* 勝利花火 (#fx-canvas) とは別レイヤー。盤面より上、#anim-layer より上、
-   勝利花火より下に置き、入力は一切受け取らない */
-#landing-fx-canvas {
+/* 破裂1つ分の小さいキャンバス。勝利花火 (#fx-canvas) とは別レイヤーで、
+   盤面より上、#anim-layer より上、勝利花火より下に置き、入力は一切
+   受け取らない。位置は transform、サイズは JS が設定する */
+.landing-burst-canvas {
   position: fixed;
-  inset: 0;
+  left: 0;
+  top: 0;
   display: block;
-  width: 100%;
-  height: 100%;
   pointer-events: none;
   z-index: 1550;
 }
@@ -766,20 +796,40 @@ body {
   }
 }
 
-/* 自動解答中は盤面と飛行クローンの両方の画素を同じ係数で暗くする。
-   opacity だと盤面だけが緑のフェルトと混ざって緑かぶりし、飛行カードが
-   相対的に赤く見えるため、背後に影響されない brightness フィルタを使う。
-   係数は --auto-solving-brightness で共有する */
+/* 自動解答中は盤面と飛行クローンの画素を同じだけ暗くする。以前は両者に
+   filter: brightness(0.83) を掛けていたが、飛行のたびに盤面全体の再合成が
+   走るため、カード面・枠・スロットのラベルなどをあらかじめ暗くした静的な
+   色へ切り替える(フィルタは使わない)。暗い色は brightness(0.83) 相当。
+   クラスは view.setAutoSolving が自動解答中だけ付け外しするため、通常プレイ・
+   配布・勝利カスケードの表示には掛からない */
 #game.auto-solving {
   pointer-events: none;
-  filter: brightness(var(--auto-solving-brightness));
+  /* スロットの半透明の白も 0.83 倍した値にする */
+  --slot-bg: rgba(212, 212, 212, 0.08);
+  --slot-border: rgba(212, 212, 212, 0.35);
 }
 
-/* 飛行クローン(#anim-layer)も盤面と同じ係数で暗くする。クラスは
-   view.setAutoSolving が自動解答中だけ付け外しするため、通常プレイ・配布・
-   勝利カスケードの飛行には掛からない */
-#anim-layer.auto-solving {
-  filter: brightness(var(--auto-solving-brightness));
+/* 盤面カードと飛行クローン(#anim-layer)のカード面を同じ静的な暗色にする */
+#game.auto-solving .card,
+#anim-layer.auto-solving .card {
+  background: linear-gradient(160deg, #d4d4d4 0%, #c9c6bf 100%);
+  border-color: #9a9588;
+}
+
+#game.auto-solving .card.red,
+#anim-layer.auto-solving .card.red {
+  color: #a62a24;
+}
+
+#game.auto-solving .card.black,
+#anim-layer.auto-solving .card.black {
+  color: #181821;
+}
+
+/* スロットのランク / ✦ ラベル(白 0.83 倍) */
+#game.auto-solving .slot.home::after,
+#game.auto-solving .slot.free::after {
+  color: #d4d4d4;
 }
 
 

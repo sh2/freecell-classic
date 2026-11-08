@@ -9,11 +9,12 @@ import { SUITS, RANKS, NUM_CASCADES, NUM_FREE, NUM_HOME } from "./constants.js";
 import * as rules from "./rules.js";
 import * as gameState from "./game-state.js";
 import { createDragPhysics } from "./drag-physics.js";
-import { burst, particleCountFor } from "./fx.js";
+import { burst, particleCountFor, canvasDpr } from "./fx.js";
 import {
   MAX_SHARD_BURSTS,
   SHARD_DURATION_MS,
   SHARD_LENGTH,
+  SHARD_SPEED_MAX,
   SHARD_WIDTH,
   SLOT_GLOW_DURATION_MS,
   SLOT_GLOW_PEAK_ALPHA,
@@ -93,7 +94,24 @@ export function createView() {
   const homeSlotEls = [];
   const cascadeEls = [];
   let dragLayer = null;
-  let cardElMap = null; // render() 時に構築する cardId -> 要素のマップ
+  // cardId -> 盤面のカード要素。render() をまたいで保持し、出入りのあった
+  // カードだけを生成・破棄する(毎回 52 枚を作り直さない)。
+  const cardElMap = new Map();
+  // 盤面ジオメトリのキャッシュ。初期化とリサイズのときだけ測り直す(P3)。
+  const boardGeometry = {
+    cardWidth: 88,
+    cardHeight: 124,
+    areaTop: 0,
+    footerTop: null,
+    footerReserve: 68,
+    viewportWidth: 0,
+    viewportHeight: 0,
+    budget: 280,
+  };
+  let boardGeometryResizeBound = false;
+  // 同期描画中だけ対象カードのトランジションを止める(P4)。
+  const transitionSuppressEls = new Map();
+  let transitionSuppressSeq = 0;
   let toastHandle = null;
   let deal = null; // 進行中の配布アニメーション
   let victory = null; // 進行中の勝利時カスケード
@@ -128,6 +146,8 @@ export function createView() {
     fireworks: 0, // 今回打ち上げた仕上げ花火の数
     fireworksLog: [], // 発ごとの記録 { number, sizeMultiplier, particleMultiplier, particleCount, x, y, firedAt, intervalBeforeMs }
     stamps: 0, // 今回スタンプした回数
+    resting: 0, // 今回静止してキャンバスへ移したカード数
+    restingPositions: [], // 静止したカードの最終位置 { cardId, x, y, width, height }
     skipped: false, // 今回スキップされたか
     interrupted: 0, // 新規ゲームなどで中断された回数
     completed: 0, // 最後まで完了した回数
@@ -156,10 +176,173 @@ export function createView() {
   }
 
   function cardElById(cardId) {
-    if (cardElMap) {
-      return cardElMap.get(Number(cardId)) ?? null;
+    const id = Number(cardId);
+    const el = cardElMap.get(id);
+    if (el) {
+      return el;
     }
-    return document.querySelector(`#game .card[data-card-id="${cardId}"]`);
+    return document.querySelector(`#game .card[data-card-id="${id}"]`);
+  }
+
+  // 再描画時に要素から落とす一時クラス。selected / movable は
+  // updateHighlights が状態との差分だけを付け替える。
+  const CARD_TRANSIENT_CLASSES = [
+    "drop-hint",
+    "drop-target",
+    "drag-hidden",
+    "shake",
+    "anim-hidden",
+    "hint-source",
+    "hint-target",
+  ];
+  const CARD_TRANSITION_CLASSES = new Set([
+    "selected",
+    "movable",
+    "drop-hint",
+    "drop-target",
+    "hint-source",
+    "hint-target",
+  ]);
+
+  /** 同期描画中だけ、そのカードのトランジションを止める */
+  function suppressCardTransition(el) {
+    if (!el) {
+      return;
+    }
+    transitionSuppressSeq++;
+    const token = transitionSuppressSeq;
+    transitionSuppressEls.set(el, token);
+    el.style.transition = "none";
+    // 最初の描画を済ませた次のフレームで戻す。連続描画では最新の指定だけ有効。
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (transitionSuppressEls.get(el) !== token) {
+          return;
+        }
+        transitionSuppressEls.delete(el);
+        el.style.transition = "";
+      });
+    });
+  }
+
+  function clearCardTransitionSuppression(el) {
+    if (!el || !transitionSuppressEls.has(el)) {
+      return;
+    }
+    transitionSuppressEls.delete(el);
+    el.style.transition = "";
+  }
+
+  /**
+   * 指定カードの要素を返す。前回の render で使った要素があればそれを再利用し、
+   * 再描画で消える一時クラスだけを落とす。選択・移動可能のクラスは
+   * updateHighlights が差分で更新する。配置スタイル(top / z-index)は
+   * 呼び出し側のゾーンに合わせて設定する。無ければ生成する。
+   */
+  function reusableCardEl(card) {
+    let el = cardElMap.get(card.id);
+    if (!el) {
+      el = makeCardEl(card);
+      cardElMap.set(card.id, el);
+      return el;
+    }
+    for (const cls of CARD_TRANSIENT_CLASSES) {
+      if (!el.classList.contains(cls)) {
+        continue;
+      }
+      if (CARD_TRANSITION_CLASSES.has(cls)) {
+        suppressCardTransition(el);
+      }
+      el.classList.remove(cls);
+    }
+    return el;
+  }
+
+  /** 列以外のゾーンへ置くカードから、列用の配置スタイルを落とす */
+  function resetCardPlacement(el) {
+    if (el.style.top !== "") {
+      el.style.top = "";
+    }
+    if (el.style.zIndex !== "") {
+      el.style.zIndex = "";
+    }
+  }
+
+  /**
+   * コンテナ内のカード子要素を desiredEls の順に揃える。
+   * desiredEls に無いカードは取り除き、既に同じ並びなら DOM を触らない。
+   * ゾーン間を移動した要素は insertBefore で付け替える(要素は作り直さない)。
+   */
+  function reconcileCards(container, desiredEls) {
+    const desired = new Set(desiredEls);
+    for (const child of [...container.children]) {
+      if (child.classList.contains("card") && !desired.has(child)) {
+        container.removeChild(child);
+      }
+    }
+    const current = [];
+    for (const child of container.children) {
+      if (child.classList.contains("card")) {
+        current.push(child);
+      }
+    }
+    if (
+      current.length === desiredEls.length &&
+      current.every((el, i) => el === desiredEls[i])
+    ) {
+      return;
+    }
+    // 後ろから揃えると、動かす必要のある要素だけを挿入できる。
+    let next = null;
+    for (let i = desiredEls.length - 1; i >= 0; i--) {
+      const el = desiredEls[i];
+      if (el.parentNode === container && el.nextElementSibling === next) {
+        next = el;
+        continue;
+      }
+      container.insertBefore(el, next);
+      next = el;
+    }
+  }
+
+  /**
+   * 盤面ジオメトリを実測して保持する(P3)。render() からは呼ばず、
+   * 盤面初期化時と resize のときだけ呼ぶ。
+   */
+  function measureBoardGeometry() {
+    const freeSlot = freeSlotEls[0];
+    const cascade = cascadeEls[0];
+    const footerEl = document.querySelector(".site-footer");
+    const gameEl = document.getElementById("game");
+    if (freeSlot) {
+      const rect = freeSlot.getBoundingClientRect();
+      boardGeometry.cardWidth = rect.width || 88;
+      boardGeometry.cardHeight = rect.height || 124;
+    }
+    if (cascade) {
+      boardGeometry.areaTop = cascade.getBoundingClientRect().top;
+    }
+    const footerRect = footerEl ? footerEl.getBoundingClientRect() : null;
+    boardGeometry.footerTop = footerRect ? footerRect.top : null;
+    boardGeometry.viewportWidth = window.innerWidth;
+    boardGeometry.viewportHeight = window.innerHeight;
+    const gamePadBottom = gameEl
+      ? parseFloat(getComputedStyle(gameEl).paddingBottom) || 0
+      : 0;
+    boardGeometry.footerReserve =
+      gamePadBottom + (footerRect ? footerRect.height : 56) + 12;
+    boardGeometry.budget = Math.max(
+      280,
+      boardGeometry.viewportHeight - boardGeometry.areaTop - boardGeometry.footerReserve
+    );
+  }
+
+  function bindBoardGeometryResize() {
+    if (boardGeometryResizeBound || typeof window === "undefined") {
+      return;
+    }
+    window.addEventListener("resize", measureBoardGeometry);
+    boardGeometryResizeBound = true;
   }
 
   /* ---------------- セル着地エフェクト ---------------- */
@@ -175,71 +358,137 @@ export function createView() {
     window.__landingFxDebug = landingDebug;
   }
 
-  // 小破裂は勝利花火 (#fx-canvas) と別の canvas に描く。
-  // 既存 fx の rAF ループと互いの clearRect が競合しないようにするため。
-  let landingCanvas = null;
-  let landingCtx = null;
-  let landingViewWidth = 0;
-  let landingViewHeight = 0;
+  // 小破裂は勝利花火 (#fx-canvas) と別の、破裂1つ分の小さい canvas に描く。
+  // 破片の最大到達距離(速さ最大 × 寿命 + 線の長さ + 線幅 + 余白)を覆う
+  // 正方形を、破裂の中心に配置する。
+  const LANDING_BURST_RADIUS = Math.ceil(
+    SHARD_SPEED_MAX * (SHARD_DURATION_MS / 1000) + SHARD_LENGTH + SHARD_WIDTH / 2 + 6
+  );
+  const LANDING_BURST_SIZE = LANDING_BURST_RADIUS * 2;
+  const landingSurfaces = []; // 同時上限と同じ数だけ用意する canvas プール
   let landingRafId = null;
   let landingLastFrame = null;
   let landingResizeBound = false;
   const shardBursts = [];
+  const slotGlowEls = new WeakMap(); // slot -> 事前生成した .slot-glow
 
-  /** canvas の実サイズを devicePixelRatio に合わせて更新する */
-  function resizeLandingCanvas() {
-    if (!landingCanvas || !landingCtx) {
-      return;
+  /** canvas の実サイズを devicePixelRatio (上限 2) に合わせて更新する */
+  function resizeLandingSurface(surface) {
+    const dpr = canvasDpr(window.devicePixelRatio);
+    surface.dpr = dpr;
+    const canvas = surface.canvas;
+    canvas.width = Math.max(1, Math.round(LANDING_BURST_SIZE * dpr));
+    canvas.height = Math.max(1, Math.round(LANDING_BURST_SIZE * dpr));
+    canvas.style.width = `${LANDING_BURST_SIZE}px`;
+    canvas.style.height = `${LANDING_BURST_SIZE}px`;
+    surface.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (surface.burst) {
+      // リサイズでキャンバスは消える。次のフレームで現在位置を描き直す。
+      surface.burst.dirty = null;
+      positionLandingSurface(surface, surface.burst);
     }
-    const dpr = window.devicePixelRatio || 1;
-    landingViewWidth = window.innerWidth;
-    landingViewHeight = window.innerHeight;
-    landingCanvas.width = Math.max(1, Math.round(landingViewWidth * dpr));
-    landingCanvas.height = Math.max(1, Math.round(landingViewHeight * dpr));
-    landingCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
-  /** 小破裂用の canvas を取得する。HTML に無ければ生成する */
-  function ensureLandingCanvas() {
-    if (landingCanvas && landingCtx) {
+  function resizeLandingCanvases() {
+    for (const surface of landingSurfaces) {
+      resizeLandingSurface(surface);
+    }
+  }
+
+  /** 破裂の中心に小さい canvas を配置する(位置は transform で動かす) */
+  function positionLandingSurface(surface, burst) {
+    const left = Math.round(burst.x - LANDING_BURST_RADIUS);
+    const top = Math.round(burst.y - LANDING_BURST_RADIUS);
+    burst.left = left;
+    burst.top = top;
+    surface.canvas.style.transform = `translate3d(${left}px, ${top}px, 0px)`;
+  }
+
+  /** 破裂1つ分の canvas を生成する(index 0 は HTML の既存要素を使う) */
+  function createLandingSurface(index) {
+    if (typeof document === "undefined") {
+      return null;
+    }
+    let canvas = index === 0 ? document.getElementById("landing-fx-canvas") : null;
+    if (!canvas) {
+      canvas = document.createElement("canvas");
+      canvas.id = `landing-burst-canvas-${index}`;
+      document.body.appendChild(canvas);
+    }
+    canvas.classList.add("landing-burst-canvas");
+    canvas.setAttribute("aria-hidden", "true");
+    canvas.dataset.burstSize = String(LANDING_BURST_SIZE);
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      return null;
+    }
+    const surface = { canvas, ctx, dpr: 1, burst: null };
+    resizeLandingSurface(surface);
+    canvas.style.visibility = "hidden";
+    landingSurfaces.push(surface);
+    return surface;
+  }
+
+  /** 小破裂用の canvas プールを確保する(盤面初期化時に呼ぶ) */
+  function ensureLandingCanvases() {
+    if (landingSurfaces.length >= MAX_SHARD_BURSTS) {
       return true;
     }
-    if (typeof document === "undefined") {
-      return false;
+    while (landingSurfaces.length < MAX_SHARD_BURSTS) {
+      if (!createLandingSurface(landingSurfaces.length)) {
+        return false;
+      }
     }
-    landingCanvas = document.getElementById("landing-fx-canvas");
-    if (!landingCanvas) {
-      landingCanvas = document.createElement("canvas");
-      landingCanvas.id = "landing-fx-canvas";
-      landingCanvas.setAttribute("aria-hidden", "true");
-      document.body.appendChild(landingCanvas);
-    }
-    landingCtx = landingCanvas.getContext("2d");
-    if (!landingCtx) {
-      landingCanvas = null;
-      return false;
-    }
-    resizeLandingCanvas();
     if (!landingResizeBound && typeof window !== "undefined") {
-      window.addEventListener("resize", resizeLandingCanvas);
+      window.addEventListener("resize", resizeLandingCanvases);
       landingResizeBound = true;
     }
     return true;
   }
 
-  /** 着地先スロットの枠を 260ms だけ光らせる */
+  /** 空いている破裂用 canvas を返す */
+  function freeLandingSurface() {
+    return landingSurfaces.find((surface) => surface.burst === null) ?? null;
+  }
+
+  /**
+   * スロットの光要素を事前生成する。影はここで静止した状態にしておき、
+   * 着地時は opacity だけを動かす(着地フレームで要素生成と影の初回描画を
+   * 起こさない)。
+   */
+  function createSlotGlow(slot) {
+    const glow = document.createElement("div");
+    glow.className = "slot-glow";
+    glow.setAttribute("aria-hidden", "true");
+    glow.style.boxShadow = `0 0 14px 3px rgba(${SLOT_GLOW_RGB}, ${SLOT_GLOW_PEAK_ALPHA})`;
+    slot.appendChild(glow);
+    slotGlowEls.set(slot, glow);
+    return glow;
+  }
+
+  /**
+   * 着地先スロットの枠を 260ms だけ光らせる。
+   * box-shadow は事前生成した .slot-glow に静止したまま持たせ、
+   * その opacity だけを WAAPI で 0 → ピーク → 0 と動かす。
+   * ピークの色・広がり・濃さは従来と同じ。
+   */
   function playSlotGlow(slot) {
-    if (!slot || typeof slot.animate !== "function") {
+    if (!slot) {
       return;
     }
-    const transparent = `0 0 0 0 rgba(${SLOT_GLOW_RGB}, 0)`;
-    const peak = `0 0 14px 3px rgba(${SLOT_GLOW_RGB}, ${SLOT_GLOW_PEAK_ALPHA})`;
-    slot.animate(
-      [
-        { boxShadow: transparent },
-        { boxShadow: peak, offset: 0.35 },
-        { boxShadow: transparent },
-      ],
+    let glow = slotGlowEls.get(slot);
+    if (!glow) {
+      // 通常は buildBoard で生成済み。欠けている場合だけ補う。
+      glow = createSlotGlow(slot);
+    }
+    if (typeof glow.animate !== "function") {
+      return;
+    }
+    for (const anim of glow.getAnimations()) {
+      anim.cancel();
+    }
+    glow.animate(
+      [{ opacity: 0 }, { opacity: 1, offset: 0.35 }, { opacity: 0 }],
       { duration: SLOT_GLOW_DURATION_MS, easing: "ease-out" }
     );
   }
@@ -256,7 +505,9 @@ export function createView() {
         playSlotGlow(slot);
       }
     }
+    const willChangeToken = snapWillChangeEls.get(el);
     if (typeof el.animate !== "function") {
+      clearSnapWillChange(el, willChangeToken);
       return;
     }
     const anim = el.animate(
@@ -265,25 +516,43 @@ export function createView() {
     );
     anim.onfinish = () => {
       anim.cancel();
+      // 同じカードが次の飛行を始めていたら、その指定は消さない
+      clearSnapWillChange(el, willChangeToken);
     };
   }
 
-  /** 小破裂を 1 回追加する。同時上限を超えたら何もしない */
+  /** 小破裂を 1 回追加する。同時上限を超えたら何もしない。
+   *  追加直後に 1 フレーム目を描き、次の rAF を待たずに「はじけ始め」を出す。 */
   function playShardBurst(el, suit) {
     if (shardBursts.length >= MAX_SHARD_BURSTS) {
       return false;
     }
-    if (!ensureLandingCanvas()) {
+    if (!ensureLandingCanvases()) {
+      return false;
+    }
+    const surface = freeLandingSurface();
+    if (!surface) {
       return false;
     }
     const rect = el.getBoundingClientRect();
-    shardBursts.push({
+    const burst = {
       x: rect.left + rect.width / 2,
       y: rect.top + rect.height / 2,
       color: shardColorForSuit(suit),
       shards: createShards(),
       age: 0,
-    });
+      surface,
+      left: 0,
+      top: 0,
+      dirty: null,
+    };
+    surface.burst = burst;
+    positionLandingSurface(surface, burst);
+    surface.ctx.clearRect(0, 0, LANDING_BURST_SIZE, LANDING_BURST_SIZE);
+    surface.canvas.style.visibility = "visible";
+    shardBursts.push(burst);
+    // 発火と同時に最初のフレームを描く(次の rAF を待たない)
+    renderShardBurst(burst, 0);
     landingDebug.activeShardBursts = shardBursts.length;
     if (landingRafId === null) {
       landingLastFrame = performance.now();
@@ -292,10 +561,88 @@ export function createView() {
     return true;
   }
 
-  /** 小破裂を 1 フレーム分更新・描画する (重力・残像なし) */
+  /** 2 つの矩形を包含する矩形を返す(片方が null なら他方) */
+  function unionRect(a, b) {
+    if (!a) {
+      return b;
+    }
+    if (!b) {
+      return a;
+    }
+    return {
+      left: Math.min(a.left, b.left),
+      top: Math.min(a.top, b.top),
+      right: Math.max(a.right, b.right),
+      bottom: Math.max(a.bottom, b.bottom),
+    };
+  }
+
+  /** 破裂の 1 フレームを、その破裂専用の小さい canvas に描く */
+  function renderShardBurst(burst, dt) {
+    const life = SHARD_DURATION_MS / 1000;
+    burst.age += dt;
+    if (burst.age >= life) {
+      return false;
+    }
+    const surface = burst.surface;
+    const ctx = surface.ctx;
+    const centerX = burst.x - burst.left;
+    const centerY = burst.y - burst.top;
+    const alpha = shardAlphaAt(burst.age / life);
+    const pad = SHARD_WIDTH / 2 + 2;
+    const segments = [];
+    let currentDirty = null;
+    for (const shard of burst.shards) {
+      const dx = Math.cos(shard.angle);
+      const dy = Math.sin(shard.angle);
+      const distance = shard.speed * burst.age;
+      const x = centerX + dx * distance;
+      const y = centerY + dy * distance;
+      const ex = x + dx * SHARD_LENGTH;
+      const ey = y + dy * SHARD_LENGTH;
+      segments.push({ x, y, ex, ey });
+      currentDirty = unionRect(currentDirty, {
+        left: Math.min(x, ex) - pad,
+        top: Math.min(y, ey) - pad,
+        right: Math.max(x, ex) + pad,
+        bottom: Math.max(y, ey) + pad,
+      });
+    }
+
+    const dirty = unionRect(burst.dirty, currentDirty);
+    if (dirty) {
+      ctx.clearRect(dirty.left, dirty.top, dirty.right - dirty.left, dirty.bottom - dirty.top);
+    }
+    ctx.lineWidth = SHARD_WIDTH;
+    ctx.lineCap = "round";
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = burst.color;
+    for (const segment of segments) {
+      ctx.beginPath();
+      ctx.moveTo(segment.x, segment.y);
+      ctx.lineTo(segment.ex, segment.ey);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    burst.dirty = currentDirty;
+    return true;
+  }
+
+  /** 破裂の終了: 小さい canvas を消してプールへ戻す */
+  function releaseLandingSurface(surface) {
+    if (!surface) {
+      return;
+    }
+    surface.ctx.clearRect(0, 0, LANDING_BURST_SIZE, LANDING_BURST_SIZE);
+    surface.canvas.style.visibility = "hidden";
+    surface.burst = null;
+  }
+
+  /** 小破裂を 1 フレーム分更新・描画する (重力・残像なし)。
+   *  破裂ごとの小さい canvas の中だけで消去・描画が完結する。 */
   function landingTick(now) {
     landingRafId = null;
-    if (!landingCtx) {
+    if (landingSurfaces.length === 0) {
       shardBursts.length = 0;
       landingDebug.activeShardBursts = 0;
       landingLastFrame = null;
@@ -306,41 +653,20 @@ export function createView() {
     }
     const dt = Math.min(0.05, Math.max(0, (now - landingLastFrame) / 1000));
     landingLastFrame = now;
-    const life = SHARD_DURATION_MS / 1000;
 
-    landingCtx.clearRect(0, 0, landingViewWidth, landingViewHeight);
-    landingCtx.lineWidth = SHARD_WIDTH;
-    landingCtx.lineCap = "round";
     for (let i = shardBursts.length - 1; i >= 0; i--) {
       const burst = shardBursts[i];
-      burst.age += dt;
-      if (burst.age >= life) {
+      if (!renderShardBurst(burst, dt)) {
+        releaseLandingSurface(burst.surface);
         shardBursts.splice(i, 1);
-        continue;
-      }
-      const alpha = shardAlphaAt(burst.age / life);
-      landingCtx.globalAlpha = alpha;
-      landingCtx.strokeStyle = burst.color;
-      for (const shard of burst.shards) {
-        const dx = Math.cos(shard.angle);
-        const dy = Math.sin(shard.angle);
-        const distance = shard.speed * burst.age;
-        const x = burst.x + dx * distance;
-        const y = burst.y + dy * distance;
-        landingCtx.beginPath();
-        landingCtx.moveTo(x, y);
-        landingCtx.lineTo(x + dx * SHARD_LENGTH, y + dy * SHARD_LENGTH);
-        landingCtx.stroke();
       }
     }
-    landingCtx.globalAlpha = 1;
     landingDebug.activeShardBursts = shardBursts.length;
 
     if (shardBursts.length > 0) {
       landingRafId = window.requestAnimationFrame(landingTick);
     } else {
       landingLastFrame = null;
-      landingCtx.clearRect(0, 0, landingViewWidth, landingViewHeight);
     }
   }
 
@@ -397,19 +723,22 @@ export function createView() {
         return;
       }
     }
-    // 再描画で DOM が作り直されるため、進行中の配布と飛行は即座に確定する
+    // 再描画で盤面を更新する前に、進行中の配布と飛行は即座に確定する
     finishDeal({ forced: true });
     cancelActiveFlight();
-    cardElMap = new Map();
+    const desiredIds = new Set();
     // --- フリーセル ---
     for (let i = 0; i < NUM_FREE; i++) {
       const slot = freeSlotEls[i];
-      slot.querySelectorAll(".card").forEach((el) => el.remove());
-      if (state.freeCells[i]) {
-        const el = makeCardEl(state.freeCells[i]);
-        cardElMap.set(state.freeCells[i].id, el);
-        slot.appendChild(el);
+      const card = state.freeCells[i];
+      const desired = [];
+      if (card) {
+        const el = reusableCardEl(card);
+        resetCardPlacement(el);
+        desired.push(el);
+        desiredIds.add(card.id);
       }
+      reconcileCards(slot, desired);
     }
     // --- ホーム ---
     // ホームの山札を全カード重ねて描画する(見た目は最上位 1 枚と同じ)。
@@ -417,37 +746,28 @@ export function createView() {
     // DOM 要素を持たせるため(最上位だけ描画すると下のカードの要素が無い)。
     for (let i = 0; i < NUM_HOME; i++) {
       const slot = homeSlotEls[i];
-      slot.querySelectorAll(".card").forEach((el) => el.remove());
       const pile = state.foundations[i];
       slot.dataset.label = pile.length > 0 ? SUITS[pile[pile.length - 1].suit] : "A";
-      pile.forEach((card) => {
-        const el = makeCardEl(card);
-        cardElMap.set(card.id, el);
-        slot.appendChild(el);
+      const desired = pile.map((card) => {
+        const el = reusableCardEl(card);
+        resetCardPlacement(el);
+        desiredIds.add(card.id);
+        return el;
       });
+      reconcileCards(slot, desired);
     }
     // --- カスケード ---
-    const cardH = freeSlotEls[0].getBoundingClientRect().height || 124;
-    const areaTop = cascadeEls[0].getBoundingClientRect().top;
+    // ジオメトリは初期化・リサイズ時に測って保持した値を使う(P3)。
     // 山の下端がフッター(画面下端に張り付いている)より下に伸びないよう、
     // 「#game の下パディング + フッターの高さ + 余白」を下側の予約域として
     // 確保する。これにより通常のディールでは山が伸縮してもフッターは
     // 押し出されない。予約域を超える極端な積み上げでは budget の下限
     // (280px)が優先され、フッターはコンテンツに押されて下へ追い出される
     // (スクロールで到達できる)
-    const footerEl = document.querySelector(".site-footer");
-    const gameEl = document.getElementById("game");
-    const gamePadBottom = gameEl
-      ? parseFloat(getComputedStyle(gameEl).paddingBottom) || 0
-      : 0;
-    const footerReserve =
-      gamePadBottom +
-      (footerEl ? footerEl.getBoundingClientRect().height : 56) +
-      12;
-    const budget = Math.max(280, window.innerHeight - areaTop - footerReserve);
+    const cardH = boardGeometry.cardHeight;
+    const budget = boardGeometry.budget;
     for (let i = 0; i < NUM_CASCADES; i++) {
       const wrap = cascadeEls[i];
-      wrap.querySelectorAll(".card").forEach((el) => el.remove());
       const pile = state.cascades[i];
       const overlap =
         pile.length > 1
@@ -458,13 +778,26 @@ export function createView() {
       // 要素がカードの下に回り込まないようにするため)
       wrap.style.height =
         pile.length > 0 ? (pile.length - 1) * overlap + cardH + "px" : "";
-      pile.forEach((card, idx) => {
-        const el = makeCardEl(card);
+      const desired = pile.map((card, idx) => {
+        const el = reusableCardEl(card);
         el.style.top = idx * overlap + "px";
         el.style.zIndex = idx + 1;
-        cardElMap.set(card.id, el);
-        wrap.appendChild(el);
+        desiredIds.add(card.id);
+        return el;
       });
+      reconcileCards(wrap, desired);
+    }
+    // 状態から消えたカード(テスト用 fixture など)の要素を片付ける
+    for (const [id, el] of cardElMap) {
+      if (desiredIds.has(id)) {
+        continue;
+      }
+      if (el.parentNode) {
+        el.parentNode.removeChild(el);
+      }
+      clearSnapWillChange(el);
+      clearCardTransitionSuppression(el);
+      cardElMap.delete(id);
     }
     updateHighlights(state);
     updateStatus(state);
@@ -486,6 +819,44 @@ export function createView() {
   let animationsEnabled =
     typeof matchMedia === "undefined" || !matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  // スナップ対象の実カードに付けた will-change を管理する(B)。
+  // 同じカードを続けて動かしても古いタイマーが新しい指定を消さないよう、
+  // 要素ごとの世代トークンで解除する。
+  const snapWillChangeEls = new Map();
+  let snapWillChangeSeq = 0;
+
+  /** 着地先カードへ will-change: transform を付け、解除用トークンを返す */
+  function markSnapWillChange(el) {
+    if (!el) {
+      return null;
+    }
+    snapWillChangeSeq++;
+    const token = snapWillChangeSeq;
+    snapWillChangeEls.set(el, token);
+    el.style.willChange = "transform";
+    return token;
+  }
+
+  /** will-change を外す。token 指定時は現在のトークンと一致する場合だけ外す */
+  function clearSnapWillChange(el, token = undefined) {
+    if (!el || !snapWillChangeEls.has(el)) {
+      return;
+    }
+    if (token !== undefined && snapWillChangeEls.get(el) !== token) {
+      return;
+    }
+    snapWillChangeEls.delete(el);
+    el.style.willChange = "";
+  }
+
+  /** 残っている will-change をすべて外す(中断・アニメーション無効化時) */
+  function clearAllSnapWillChange() {
+    for (const el of snapWillChangeEls.keys()) {
+      el.style.willChange = "";
+    }
+    snapWillChangeEls.clear();
+  }
+
   function getAnimLayer() {
     if (!animLayer) {
       animLayer = document.createElement("div");
@@ -505,6 +876,7 @@ export function createView() {
       armedSteps = [];
       finishDeal({ forced: true });
       cancelActiveFlight();
+      clearAllSnapWillChange();
     }
   }
 
@@ -556,6 +928,7 @@ export function createView() {
       }
       for (const el of activeFlight.hiddenEls) {
         el.classList.remove("anim-hidden");
+        clearSnapWillChange(el);
       }
       activeFlight = null;
     }
@@ -608,6 +981,14 @@ export function createView() {
         if (dist < 2) {
           continue; // ほぼ同じ位置なら飛ばない(隠す必要もない)
         }
+        // 着地先の実カードを先に合成レイヤーへ載せ、着地フレームで
+        // スナップ(scale)がメインスレッドの混雑に巻き込まれないようにする。
+        const willChangeToken = markSnapWillChange(el);
+        // 何らかの理由でスナップが走らなくても外し忘れないための保険
+        window.setTimeout(
+          () => clearSnapWillChange(el, willChangeToken),
+          flightDuration(dist) + SNAP_DURATION_MS + 100
+        );
         el.classList.add("anim-hidden");
         flight.hiddenEls.push(el);
         const clone = el.cloneNode(true);
@@ -619,7 +1000,7 @@ export function createView() {
         clone.style.zIndex = origin.z > 0 ? origin.z : zCounter;
         zCounter++;
         layer.appendChild(clone);
-        cards.push({ el, clone, dx, dy, dist });
+        cards.push({ el, clone, dx, dy, dist, willChangeToken });
       }
       plans.push(cards);
     }
@@ -640,6 +1021,13 @@ export function createView() {
           );
           anim.onfinish = () => {
             c.el.classList.remove("anim-hidden");
+            // フリー／ホームへの着地はスナップ終了まで will-change を維持する。
+            // 列への着地(スナップなし)・reduced-motion ではここで外す。
+            const keepsForSnap =
+              !prefersReducedMotion() && c.el.closest(".slot.free, .slot.home") !== null;
+            if (!keepsForSnap) {
+              clearSnapWillChange(c.el, c.willChangeToken);
+            }
             c.clone.remove();
           };
           flight.animations.push(anim);
@@ -964,13 +1352,13 @@ export function createView() {
     return canvas;
   }
 
-  /** #stamp-canvas をビューポートと devicePixelRatio に合わせて初期化する */
-  function setupStampCanvas() {
-    const canvas = document.getElementById("stamp-canvas");
+  /** #stamp-canvas / #trail-canvas を解像度上限 2 で初期化する */
+  function setupCascadeCanvas(id) {
+    const canvas = document.getElementById(id);
     if (!canvas) {
       return null;
     }
-    const dpr = (typeof window !== "undefined" && window.devicePixelRatio) || 1;
+    const dpr = canvasDpr(typeof window !== "undefined" ? window.devicePixelRatio : 1);
     canvas.width = Math.max(1, Math.round(window.innerWidth * dpr));
     canvas.height = Math.max(1, Math.round(window.innerHeight * dpr));
     const ctx = canvas.getContext("2d");
@@ -1100,10 +1488,6 @@ export function createView() {
     if (!controller || controller.finished) {
       return;
     }
-    const gameEl = document.getElementById("game");
-    if (gameEl) {
-      controller.gameRect = gameEl.getBoundingClientRect();
-    }
     const fireNumber = controller.fireworksLaunched + 1;
     const isFinal = fireNumber === FIREWORK_COUNT;
     const point = isFinal
@@ -1181,6 +1565,7 @@ export function createView() {
       el.classList.remove("anim-hidden");
     }
     clearStampCanvas(controller.stamp);
+    clearStampCanvas(controller.trail);
     if (victoryAftermath === controller) {
       victoryAftermath = null;
     }
@@ -1268,6 +1653,49 @@ export function createView() {
     controller.releaseTimer = setTimeout(releaseVictoryCard, RELEASE_INTERVAL_MS);
   }
 
+  /** 飛行カードの現在位置を指定キャンバスへ描く */
+  function stampVictorySprite(controller, flight, target, countStamp) {
+    const sprite = controller.sprites.get(flight.cardId);
+    if (!sprite) {
+      return false;
+    }
+    target.ctx.drawImage(sprite, flight.x, flight.y, flight.width, flight.height);
+    if (countStamp) {
+      victoryDebug.stamps++;
+    }
+    return true;
+  }
+
+  /**
+   * 飛行が静止したカードを最終位置でスタンプ用キャンバスへ焼き、DOM クローンを外す。
+   * 以後の見た目はスタンプ用キャンバスの絵だけになる(B2)。
+   * 軌跡は別キャンバス(#trail-canvas)なので、静止後の再スタンプは行わない。
+   */
+  function restVictoryFlight(controller, flight) {
+    stampVictorySprite(controller, flight, controller.stamp, true);
+    flight.resting = true;
+    controller.restingCount++;
+    victoryDebug.resting = controller.restingCount;
+    victoryDebug.restingPositions.push({
+      cardId: flight.cardId,
+      x: flight.x,
+      y: flight.y,
+      width: flight.width,
+      height: flight.height,
+    });
+    const clone = flight.clone;
+    if (clone) {
+      if (clone.parentNode) {
+        clone.parentNode.removeChild(clone);
+      }
+      const index = controller.clones.indexOf(clone);
+      if (index !== -1) {
+        controller.clones.splice(index, 1);
+      }
+      flight.clone = null;
+    }
+  }
+
   /** ホーム山から 1 枚をクローンとして放出する */
   function releaseVictoryCard() {
     const controller = victory;
@@ -1315,11 +1743,12 @@ export function createView() {
       "drag-hidden"
     );
     clone.classList.add("victory-clone");
-    clone.style.left = `${flight.x}px`;
-    clone.style.top = `${flight.y}px`;
+    clone.style.left = "0px";
+    clone.style.top = "0px";
     clone.style.width = `${flight.width}px`;
     clone.style.height = `${flight.height}px`;
     clone.style.zIndex = String(2000 + controller.releaseIndex);
+    clone.style.transform = `translate3d(${flight.x}px, ${flight.y}px, 0px)`;
     getAnimLayer().appendChild(clone);
     realEl.classList.add("anim-hidden");
 
@@ -1329,6 +1758,14 @@ export function createView() {
     controller.hiddenEls.push(realEl);
     victoryDebug.released = controller.flights.length;
     scheduleNextVictoryRelease();
+  }
+
+  /** クローンの位置は transform だけで更新する(left/top は 0 固定) */
+  function positionVictoryClone(flight) {
+    if (!flight.clone) {
+      return;
+    }
+    flight.clone.style.transform = `translate3d(${flight.x}px, ${flight.y}px, 0px)`;
   }
 
   /** 放出済みカードの物理更新とスタンプ描画 */
@@ -1354,21 +1791,23 @@ export function createView() {
         victoryDebug.floorTouches++;
         maybeScheduleVictoryFireworks();
       }
-      flight.clone.style.left = `${flight.x}px`;
-      flight.clone.style.top = `${flight.y}px`;
+      if (flight.resting) {
+        restVictoryFlight(controller, flight);
+      } else {
+        positionVictoryClone(flight);
+      }
     }
 
-    if (now - controller.lastStamp >= STAMP_INTERVAL_MS) {
+    const hasFlying = controller.flights.some((flight) => !flight.resting);
+    const stampDue = now - controller.lastStamp >= STAMP_INTERVAL_MS;
+    if (hasFlying && stampDue) {
       controller.lastStamp = now;
       for (const flight of controller.flights) {
         if (flight.resting) {
           continue;
         }
-        const sprite = controller.sprites.get(flight.cardId);
-        if (sprite) {
-          controller.stamp.ctx.drawImage(sprite, flight.x, flight.y, flight.width, flight.height);
-          victoryDebug.stamps++;
-        }
+        // 軌跡は stamp の下にある専用キャンバスへ描く
+        stampVictorySprite(controller, flight, controller.trail, true);
       }
     }
 
@@ -1399,17 +1838,18 @@ export function createView() {
     }
     const layer = getAnimLayer();
     const gameEl = document.getElementById("game");
-    const stamp = setupStampCanvas();
+    const stamp = setupCascadeCanvas("stamp-canvas");
+    const trail = setupCascadeCanvas("trail-canvas");
     const firstEl = cardElById(schedule[0].cardId);
-    if (!layer || !gameEl || !stamp || !firstEl) {
+    if (!layer || !gameEl || !stamp || !trail || !firstEl) {
       return false;
     }
     // 勝利の最終手がまだ飛んでいる場合、そのクローンと anim-hidden を確定して
     // からカスケードを始める(ホーム山の見た目と隠し状態が競合しないようにする)
     cancelActiveFlight();
-    const cardRect = firstEl.getBoundingClientRect();
-    const cardWidth = cardRect.width || 88;
-    const cardHeight = cardRect.height || 124;
+    // カード寸法とフッター上端は保持値を使う(P3)
+    const cardWidth = boardGeometry.cardWidth || 88;
+    const cardHeight = boardGeometry.cardHeight || 124;
     const cardById = new Map();
     for (const pile of state.foundations) {
       for (const card of pile) {
@@ -1424,25 +1864,32 @@ export function createView() {
         sprites.set(item.cardId, sprite);
       }
     }
+    // 花火の位置は盤面の実寸(ゲーム高さは山の伸びで変わる)から決める。
+    // 開始時に一度だけ測る。
     const gameRect = gameEl.getBoundingClientRect();
-    const footerEl = document.querySelector(".site-footer");
-    const footerTop = footerEl ? footerEl.getBoundingClientRect().top : null;
+    const footerTop = boardGeometry.footerTop;
     const controller = {
       onComplete,
       schedule,
       releaseIndex: 0,
       flights: [],
+      restingCount: 0,
       clones: [],
       hiddenEls: [],
       sprites,
       stamp,
+      trail,
       cardWidth,
       cardHeight,
       gameRect,
       bounds: {
         left: 0,
-        right: window.innerWidth,
-        floor: resolveFloorY(footerTop, gameRect.bottom, window.innerHeight),
+        right: boardGeometry.viewportWidth || window.innerWidth,
+        floor: resolveFloorY(
+          footerTop,
+          gameRect.bottom,
+          boardGeometry.viewportHeight || window.innerHeight
+        ),
       },
       releaseTimer: null,
       rafId: null,
@@ -1464,6 +1911,8 @@ export function createView() {
     victoryDebug.fireworks = 0;
     victoryDebug.fireworksLog = [];
     victoryDebug.stamps = 0;
+    victoryDebug.resting = 0;
+    victoryDebug.restingPositions = [];
     victoryDebug.skipped = false;
     victoryDebug.visualsRemaining = true;
     victoryDebug.cleared = false;
@@ -1477,36 +1926,38 @@ export function createView() {
     return victory !== null;
   }
 
+  /** カードのクラスを差分で付け替える。トランジション対象なら同期描画中だけ止める */
+  function setCardClass(el, cls, on) {
+    if (el.classList.contains(cls) === on) {
+      return;
+    }
+    if (CARD_TRANSITION_CLASSES.has(cls)) {
+      suppressCardTransition(el);
+    }
+    el.classList.toggle(cls, on);
+  }
+
   function updateHighlights(state) {
-    // つかめるカードに hover 効果を付ける
-    document.querySelectorAll("#game .card.movable").forEach((el) => el.classList.remove("movable"));
+    const movableIds = new Set();
     for (let i = 0; i < NUM_CASCADES; i++) {
       const pile = state.cascades[i];
       for (let pos = 0; pos < pile.length; pos++) {
         if (rules.isValidSequence(pile.slice(pos))) {
-          const el = cardElById(pile[pos].id);
-          if (el) {
-            el.classList.add("movable");
-          }
+          movableIds.add(pile[pos].id);
         }
       }
     }
     for (let i = 0; i < NUM_FREE; i++) {
       if (state.freeCells[i]) {
-        const el = cardElById(state.freeCells[i].id);
-        if (el) {
-          el.classList.add("movable");
-        }
+        movableIds.add(state.freeCells[i].id);
       }
     }
-    // 選択中カードのハイライト
-    if (state.selected) {
-      for (const card of gameState.selectedGroup(state)) {
-        const el = cardElById(card.id);
-        if (el) {
-          el.classList.add("selected");
-        }
-      }
+    const selectedIds = new Set(
+      state.selected ? gameState.selectedGroup(state).map((card) => card.id) : []
+    );
+    for (const [id, el] of cardElMap) {
+      setCardClass(el, "movable", movableIds.has(id));
+      setCardClass(el, "selected", selectedIds.has(id));
     }
   }
 
@@ -1727,6 +2178,7 @@ export function createView() {
       slot.dataset.index = i;
       slot.dataset.label = "✦";
       freeArea.appendChild(slot);
+      createSlotGlow(slot);
       freeSlotEls.push(slot);
     }
     for (let i = 0; i < NUM_HOME; i++) {
@@ -1736,6 +2188,7 @@ export function createView() {
       slot.dataset.index = i;
       slot.dataset.label = "A";
       homeArea.appendChild(slot);
+      createSlotGlow(slot);
       homeSlotEls.push(slot);
     }
     for (let i = 0; i < NUM_CASCADES; i++) {
@@ -1749,6 +2202,11 @@ export function createView() {
       cascadeArea.appendChild(wrap);
       cascadeEls.push(wrap);
     }
+    // 小破裂用 canvas は初回着地ではなく盤面初期化時に確保・サイズ決定する
+    ensureLandingCanvases();
+    // 盤面ジオメトリはここで一度だけ測り、以後はリサイズ時だけ更新する(P3)
+    measureBoardGeometry();
+    bindBoardGeometryResize();
   }
 
   /* ---------------- ドラッグ & ドロップ用 DOM 操作 ---------------- */

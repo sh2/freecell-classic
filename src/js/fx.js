@@ -80,6 +80,20 @@ export const MAX_TRAILS = 240;
 /** 基準となるホームセル幅 (px)。これより狭い画面では効果を比例縮小する */
 export const BASE_CARD_WIDTH = 88;
 
+/** canvas の内部解像度に使う devicePixelRatio の上限 (B3) */
+export const MAX_CANVAS_DPR = 2;
+
+/**
+ * canvas の内部解像度に使う倍率を返す。
+ * devicePixelRatio が 2 を超える環境でも 2 に抑え、描画負荷を軽くする。
+ * 不正値は 1 として扱う。
+ */
+export function canvasDpr(devicePixelRatio) {
+  const dpr =
+    Number.isFinite(devicePixelRatio) && devicePixelRatio > 0 ? devicePixelRatio : 1;
+  return Math.min(MAX_CANVAS_DPR, dpr);
+}
+
 /** 発火点の縦位置。対象セルの上端から高さに対する比率 */
 export const ORIGIN_Y_RATIO = 0.33;
 
@@ -241,12 +255,12 @@ function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-/** canvas の実サイズを devicePixelRatio に合わせて更新する */
+/** canvas の実サイズを devicePixelRatio (上限 2) に合わせて更新する */
 function resizeCanvas() {
   if (!canvas || !ctx) {
     return;
   }
-  const dpr = window.devicePixelRatio || 1;
+  const dpr = canvasDpr(window.devicePixelRatio);
   viewWidth = window.innerWidth;
   viewHeight = window.innerHeight;
   canvas.width = Math.max(1, Math.round(viewWidth * dpr));

@@ -257,6 +257,28 @@ export function stampPixelCount(page) {
   });
 }
 
+/** #trail-canvas 上の不透明ピクセル数 */
+export function trailPixelCount(page) {
+  return page.evaluate(() => {
+    const canvas = document.getElementById("trail-canvas");
+    if (!canvas) {
+      return 0;
+    }
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      return 0;
+    }
+    const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let count = 0;
+    for (let i = 3; i < data.length; i += 4) {
+      if (data[i] > 0) {
+        count++;
+      }
+    }
+    return count;
+  });
+}
+
 /** 勝利オーバーレイが表示されているか */
 export function overlayVisible(page) {
   return page.evaluate(() => {
@@ -292,44 +314,40 @@ export function landingFxDebug(page) {
   );
 }
 
-/** #landing-fx-canvas 上の不透明ピクセル数 */
+/** 小破裂用キャンバス群 (.landing-burst-canvas) 上の不透明ピクセル数 */
 export function landingFxPixelCount(page) {
   return page.evaluate(() => {
-    const canvas = document.getElementById("landing-fx-canvas");
-    if (!canvas) {
-      return 0;
-    }
-    const ctx = canvas.getContext("2d");
-    if (!ctx) {
-      return 0;
-    }
-    const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    let count = 0;
-    for (let i = 3; i < data.length; i += 4) {
-      if (data[i] > 0) {
-        count++;
-      }
-    }
-    return count;
-  });
-}
-
-/** #landing-fx-canvas に不透明ピクセルが現れるまで待つ */
-export function waitForLandingFxPixels(page, timeout = 2000) {
-  return page.waitForFunction(
-    () => {
-      const canvas = document.getElementById("landing-fx-canvas");
-      if (!canvas) {
-        return false;
-      }
+    let total = 0;
+    for (const canvas of document.querySelectorAll(".landing-burst-canvas")) {
       const ctx = canvas.getContext("2d");
       if (!ctx) {
-        return false;
+        continue;
       }
       const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
       for (let i = 3; i < data.length; i += 4) {
         if (data[i] > 0) {
-          return true;
+          total++;
+        }
+      }
+    }
+    return total;
+  });
+}
+
+/** 小破裂用キャンバス群に不透明ピクセルが現れるまで待つ */
+export function waitForLandingFxPixels(page, timeout = 2000) {
+  return page.waitForFunction(
+    () => {
+      for (const canvas of document.querySelectorAll(".landing-burst-canvas")) {
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          continue;
+        }
+        const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        for (let i = 3; i < data.length; i += 4) {
+          if (data[i] > 0) {
+            return true;
+          }
         }
       }
       return false;

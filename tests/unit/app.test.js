@@ -426,6 +426,21 @@ describe("createApp: 移動アニメーションの予約", () => {
     expect(view.animStepsHistory.flat(2)).toEqual([7, 3, 7]);
   });
 
+  it("自動送りの各段はその段で動くカードの矩形だけを測る", () => {
+    const view = createMockView();
+    const deps = createFakeDeps();
+    const app = createApp({ view, deps });
+    app.startGame(1);
+    app.setBoard({ cascades: [[3, 7]] });
+    view.calls.length = 0;
+
+    app.dblClickAutoMove({ zone: "cascade", index: 0, cardIndex: 1 });
+
+    // 手動(♠2) → 自動(♠1) → 自動(♠2) の各段で、動く 1 枚だけを実測する
+    const rectCalls = view.calls.filter((c) => c.startsWith("rects:"));
+    expect(rectCalls).toEqual(["rects:7", "rects:3", "rects:7"]);
+  });
+
   it("自動移動ボタンでは送ったカード分だけのステップが予約される", () => {
     const view = createMockView();
     const deps = createFakeDeps();
