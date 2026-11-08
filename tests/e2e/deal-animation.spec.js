@@ -206,4 +206,28 @@ test.describe("配布アニメーション", () => {
     expect(await page.locator("#game .card.anim-hidden").count()).toBe(0);
     expect(await page.locator(".deal-stock, .deal-stock-card").count()).toBe(0);
   });
+
+  test("prefers-reduced-motion では配布アニメーションを走らせず即座に配置する", async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await h.openGame(page, 1);
+    await h.setAnimations(page, true);
+    const before = await h.dealDebug(page);
+    expect(
+      await page.evaluate(
+        () => matchMedia("(prefers-reduced-motion: reduce)").matches
+      )
+    ).toBe(true);
+
+    await h.startGame(page, 2);
+
+    const after = await h.dealDebug(page);
+    expect(after.immediate).toBeGreaterThan(before.immediate);
+    expect(after.active).toBe(false);
+    expect(after.dealtCount).toBe(52);
+    await expect(page.locator("#game .card")).toHaveCount(52);
+    await expect(page.locator("#game .card.anim-hidden")).toHaveCount(0);
+    await expect(page.locator("#anim-layer .card.deal-clone")).toHaveCount(0);
+  });
 });

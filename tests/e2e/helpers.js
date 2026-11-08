@@ -9,10 +9,12 @@
 
 /**
  * ページを開き、ヘルパーを注入して指定ゲーム番号で開始する。
+ * options.disableAnimations を false にすると、ヘルパーによる
+ * アニメーション無効化を行わない(OS の reduced-motion を検証する用)。
  */
-export async function openGame(page, gameNumber) {
+export async function openGame(page, gameNumber, options = {}) {
   await page.goto("/");
-  await injectPageHelpers(page);
+  await injectPageHelpers(page, options);
   await page.evaluate((n) => window.__testApi.startGame(n), gameNumber);
 }
 
@@ -20,13 +22,18 @@ export async function openGame(page, gameNumber) {
  * 公開テスト API とクリック/ドラッグ用の座標探索ヘルパーをページへ注入する。
  * (座標探索は既存スキルで検証済みの elementFromPoint 走査をそのまま利用)
  */
-export async function injectPageHelpers(page) {
-  await page.evaluate(async () => {
+export async function injectPageHelpers(
+  page,
+  { disableAnimations = true } = {}
+) {
+  await page.evaluate(async (shouldDisableAnimations) => {
     const main = await import("./src/js/main.js");
     window.__testApi = main.getTestApi();
     // E2E は「操作直後に DOM が完成している」前提の検証が多いので、
     // カード移動アニメーションは無効化しておく(必要なテストは個別に有効化する)
-    window.__testApi.setAnimationsEnabled(false);
+    if (shouldDisableAnimations) {
+      window.__testApi.setAnimationsEnabled(false);
+    }
     window.__clickPoint = function (cardId) {
       const el = document.querySelector(`#game .card[data-card-id="${cardId}"]`);
       if (!el) {
@@ -53,7 +60,7 @@ export async function injectPageHelpers(page) {
       const r = el.getBoundingClientRect();
       return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
     };
-  });
+  }, disableAnimations);
 }
 
 /* ---------------- 状態の取得 ---------------- */

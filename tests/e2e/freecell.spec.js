@@ -946,6 +946,24 @@ test.describe("移動アニメーション", () => {
     await expect(page.locator("#anim-layer .card")).toHaveCount(0);
     expect((await h.domState(page)).free[0]).toBe(23);
   });
+
+  test("prefers-reduced-motion ではカード移動の飛行が走らない", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    // ヘルパーによる強制無効化は行わず、OS 設定だけで無効になることを見る
+    await h.openGame(page, 1, { disableAnimations: false });
+    await h.setAutoMove(page, false);
+    expect(
+      await page.evaluate(
+        () => matchMedia("(prefers-reduced-motion: reduce)").matches
+      )
+    ).toBe(true);
+
+    await h.clickCard(page, 23);
+    await h.clickSlot(page, "free", 0);
+
+    await expect(page.locator("#anim-layer .card")).toHaveCount(0);
+    expect((await h.domState(page)).free[0]).toBe(23);
+  });
 });
 
 test.describe("ソルバー", () => {
@@ -1062,6 +1080,24 @@ test.describe("ソルバー", () => {
         }
       };
       void NativeWorker;
+    });
+  }
+
+  /** ソルバー Worker を応答させず、計算中の UI 状態を保つモック */
+  async function installHangingWorker(page) {
+    await page.addInitScript(() => {
+      window.Worker = class HangingWorker {
+        constructor() {
+          this.onmessage = null;
+          this.onerror = null;
+        }
+        postMessage() {
+          // テストが終了するまで結果を返さない
+        }
+        terminate() {
+          // 何もしない
+        }
+      };
     });
   }
 
@@ -1600,6 +1636,53 @@ test.describe("ソルバー", () => {
     );
     expect(Math.abs(diffLum)).toBeLessThanOrEqual(8);
     expect(Math.abs(diffRG)).toBeLessThanOrEqual(4);
+  });
+
+  test("自動解答: 計算中は新規ゲーム系の操作が無効になる", async ({ page }) => {
+    await installHangingWorker(page);
+    await h.openGame(page, 1);
+    await h.setBoard(page, nearWinBoard());
+    await page.locator("#auto-solve-toggle").check();
+    await expect(page.locator("#game.auto-solving")).toBeVisible({ timeout: 2000 });
+
+    await expect(page.locator("#new-game-btn")).toBeDisabled();
+    await expect(page.locator("#restart-btn")).toBeDisabled();
+    await expect(page.locator("#seed-input")).toBeDisabled();
+    await expect(page.locator("#start-game-btn")).toBeDisabled();
+
+    // トグルOFFによる中断はできる
+    await page.locator("#auto-solve-toggle").uncheck();
+    await expect(page.locator("#game")).not.toHaveClass(/auto-solving/);
+  });
+
+  test("自動解答: 計算中は「自動で送る」トグルが無効になる", async ({ page }) => {
+    await installHangingWorker(page);
+    await h.openGame(page, 1);
+    await h.setBoard(page, nearWinBoard());
+    await expect(page.locator("#auto-move-toggle")).toBeEnabled();
+
+    await page.locator("#auto-solve-toggle").check();
+    await expect(page.locator("#game.auto-solving")).toBeVisible({ timeout: 2000 });
+
+    await expect(page.locator("#auto-move-toggle")).toBeDisabled();
+    // 自動解答トグルは OFF でキャンセルできるよう有効のまま
+    await expect(page.locator("#auto-solve-toggle")).toBeEnabled();
+
+    await page.locator("#auto-solve-toggle").uncheck();
+    await expect(page.locator("#auto-move-toggle")).toBeEnabled();
+  });
+
+  test("自動解答: 終了後に「自動で送る」の設定が復元される", async ({ page }) => {
+    await h.openGame(page, 1);
+    await h.setAutoMove(page, false);
+    await h.setBoard(page, nearWinBoard());
+
+    await page.locator("#auto-solve-toggle").check();
+    await expect(page.locator("#overlay")).toBeVisible({ timeout: 10000 });
+
+    // 開始時に false だった設定が、勝利で終了した後も false のまま
+    await expect(page.locator("#auto-move-toggle")).not.toBeChecked();
+    await expect(page.locator("#auto-solve-toggle")).not.toBeChecked();
   });
 });
 
