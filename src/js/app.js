@@ -68,17 +68,25 @@ export function createApp({ view, deps = {} }) {
 
   /* ---------------- モデル操作後の副作用 ---------------- */
 
-  /** 成功手の共通副作用: lastClick リセット → タイマー開始 → 描画 → ホーム到着演出 → 勝利・詰み処理 */
-  function onMoveSucceeded(homeCardId = null) {
+  /** 着地エフェクト用に、移動先ゾーンと着地カードの情報をまとめる */
+  function landingInfoFor(zone, card) {
+    if (!card || !zone) {
+      return null;
+    }
+    return { zone, cardId: card.id, rank: card.rank, suit: card.suit };
+  }
+
+  /** 成功手の共通副作用: lastClick リセット → タイマー開始 → 描画 → 着地エフェクト → 勝利・詰み処理 */
+  function onMoveSucceeded(landing = null) {
     if (interactions) {
       interactions.resetLastClick();
     }
     startTimerIfNeeded();
     view.render(state);
-    if (homeCardId !== null && typeof view.burstAtHome === "function") {
+    if (landing !== null && typeof view.playLandingEffects === "function") {
       // 飛行アニメーションがある場合は着地後に発火する(無ければ即時)
       view.runAfterAnimations(() => {
-        view.burstAtHome(homeCardId);
+        view.playLandingEffects(landing);
       });
     }
     checkWin();
@@ -113,14 +121,14 @@ export function createApp({ view, deps = {} }) {
       return;
     }
     view.setNextRenderAnimation([{ cardIds: [card.id], origins }]);
-    onMoveSucceeded(card.id);
+    onMoveSucceeded(landingInfoFor("home", card));
     view.runAfterAnimations(chainAutoNext);
   }
 
   /** 手動移動の描画・飛行を開始し、完了後に自動ホーム送りを連鎖させる */
-  function commitMove(manualSteps, homeCardId = null) {
+  function commitMove(manualSteps, landing = null) {
     view.setNextRenderAnimation(manualSteps);
-    onMoveSucceeded(homeCardId);
+    onMoveSucceeded(landing);
     if (autoMoveEnabled) {
       view.runAfterAnimations(chainAutoNext);
     }
@@ -137,24 +145,26 @@ export function createApp({ view, deps = {} }) {
       view.clearHint();
     }
     // 移動後の state ではカードが from に残らないため、移動前にカード群を控える
-    const groupIds = gameState.groupFrom(state, from).map((c) => c.id);
+    const group = gameState.groupFrom(state, from);
+    const groupIds = group.map((c) => c.id);
     const res = gameState.attemptMove(state, from, destZone, destIndex);
     if (res.ok) {
       // 移動前の DOM はまだ古い位置にあるため、成功が確定してから矩形を取得できる
       const origins = opts.fromDrag ? view.getDragCardRects() : view.getCardRects(groupIds);
-      commitMove([{ cardIds: groupIds, origins }], destZone === "home" ? groupIds[0] : null);
+      commitMove([{ cardIds: groupIds, origins }], landingInfoFor(destZone, group[0]));
     }
     return res;
   }
 
   /** 解答再生用に1手ずつアニメーション付きで適用する。成功時は飛行を予約して描画する */
   function applyMoveAnimated(from, destZone, destIndex) {
-    const groupIds = gameState.groupFrom(state, from).map((c) => c.id);
+    const group = gameState.groupFrom(state, from);
+    const groupIds = group.map((c) => c.id);
     const res = gameState.attemptMove(state, from, destZone, destIndex);
     if (res.ok) {
       const origins = view.getCardRects(groupIds);
       view.setNextRenderAnimation([{ cardIds: groupIds, origins }]);
-      onMoveSucceeded(destZone === "home" ? groupIds[0] : null);
+      onMoveSucceeded(landingInfoFor(destZone, group[0]));
     }
     return res;
   }
@@ -231,7 +241,9 @@ export function createApp({ view, deps = {} }) {
       return false;
     }
     // 移動前のカード矩形(アニメーションの移動元)。groupFrom は先頭 1 枚のみ返す
-    const dblCardIds = gameState.groupFrom(state, loc).map((c) => c.id);
+    const dblGroup = gameState.groupFrom(state, loc);
+    const dblCardIds = dblGroup.map((c) => c.id);
+    const dblCard = dblGroup[0];
     const dblOrigins = view.getCardRects(dblCardIds);
     const moved = gameState.dblClickAutoMove(state, loc);
     if (!moved) {
@@ -241,7 +253,9 @@ export function createApp({ view, deps = {} }) {
       view.clearHint();
     }
     const movedToHome = state.foundations.some((pile) => pile.some((card) => card.id === dblCardIds[0]));
-    commitMove([{ cardIds: dblCardIds, origins: dblOrigins }], movedToHome ? dblCardIds[0] : null);
+    const movedToFree = state.freeCells.some((card) => card && card.id === dblCardIds[0]);
+    const destZone = movedToHome ? "home" : movedToFree ? "free" : null;
+    commitMove([{ cardIds: dblCardIds, origins: dblOrigins }], landingInfoFor(destZone, dblCard));
     return true;
   }
 

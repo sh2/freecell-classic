@@ -8,8 +8,24 @@
 import { SUITS, RANKS, NUM_CASCADES, NUM_FREE, NUM_HOME } from "./constants.js";
 import * as rules from "./rules.js";
 import * as gameState from "./game-state.js";
-import { burst, ORIGIN_Y_RATIO } from "./fx.js";
 import { createDragPhysics } from "./drag-physics.js";
+import { burst } from "./fx.js";
+import {
+  MAX_SHARD_BURSTS,
+  SHARD_DURATION_MS,
+  SHARD_LENGTH,
+  SHARD_WIDTH,
+  SLOT_GLOW_DURATION_MS,
+  SLOT_GLOW_PEAK_ALPHA,
+  SLOT_GLOW_RGB,
+  SNAP_DURATION_MS,
+  SNAP_EASING,
+  SNAP_SCALE_START,
+  createShards,
+  extraEffectFor,
+  shardAlphaAt,
+  shardColorForSuit,
+} from "./landing-fx.js";
 import {
   DEAL_EASING,
   DEAL_FLIGHT_MS,
@@ -142,15 +158,217 @@ export function createView() {
     return document.querySelector(`#game .card[data-card-id="${cardId}"]`);
   }
 
-  /** 指定カードが置かれたホームスロットの上端 33% の高さで花火を発火する */
-  function burstAtHome(cardId) {
-    const el = cardElById(cardId);
-    const slot = el && el.closest ? el.closest("#home-cells .slot") : null;
-    if (!slot) {
+  /* ---------------- セル着地エフェクト ---------------- */
+
+  /** E2E 検証専用のデバッグ情報 (発火回数と最終発火の行き先・ランク) */
+  const landingDebug = {
+    snap: 0, // スナップフィットの発火回数
+    burst: 0, // 小破裂の発火回数
+    last: null, // 最後に着地エフェクトを出した { zone, rank, cardId, suit }
+    activeShardBursts: 0, // 描画中の小破裂数
+  };
+  if (typeof window !== "undefined") {
+    window.__landingFxDebug = landingDebug;
+  }
+
+  // 小破裂は勝利花火 (#fx-canvas) と別の canvas に描く。
+  // 既存 fx の rAF ループと互いの clearRect が競合しないようにするため。
+  let landingCanvas = null;
+  let landingCtx = null;
+  let landingViewWidth = 0;
+  let landingViewHeight = 0;
+  let landingRafId = null;
+  let landingLastFrame = null;
+  let landingResizeBound = false;
+  const shardBursts = [];
+
+  /** canvas の実サイズを devicePixelRatio に合わせて更新する */
+  function resizeLandingCanvas() {
+    if (!landingCanvas || !landingCtx) {
+      return;
+    }
+    const dpr = window.devicePixelRatio || 1;
+    landingViewWidth = window.innerWidth;
+    landingViewHeight = window.innerHeight;
+    landingCanvas.width = Math.max(1, Math.round(landingViewWidth * dpr));
+    landingCanvas.height = Math.max(1, Math.round(landingViewHeight * dpr));
+    landingCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  /** 小破裂用の canvas を取得する。HTML に無ければ生成する */
+  function ensureLandingCanvas() {
+    if (landingCanvas && landingCtx) {
+      return true;
+    }
+    if (typeof document === "undefined") {
       return false;
     }
-    const r = slot.getBoundingClientRect();
-    return burst(r.left + r.width / 2, r.top + r.height * ORIGIN_Y_RATIO, r.width);
+    landingCanvas = document.getElementById("landing-fx-canvas");
+    if (!landingCanvas) {
+      landingCanvas = document.createElement("canvas");
+      landingCanvas.id = "landing-fx-canvas";
+      landingCanvas.setAttribute("aria-hidden", "true");
+      document.body.appendChild(landingCanvas);
+    }
+    landingCtx = landingCanvas.getContext("2d");
+    if (!landingCtx) {
+      landingCanvas = null;
+      return false;
+    }
+    resizeLandingCanvas();
+    if (!landingResizeBound && typeof window !== "undefined") {
+      window.addEventListener("resize", resizeLandingCanvas);
+      landingResizeBound = true;
+    }
+    return true;
+  }
+
+  /** 着地先スロットの枠を 260ms だけ光らせる */
+  function playSlotGlow(slot) {
+    if (!slot || typeof slot.animate !== "function") {
+      return;
+    }
+    const transparent = `0 0 0 0 rgba(${SLOT_GLOW_RGB}, 0)`;
+    const peak = `0 0 14px 3px rgba(${SLOT_GLOW_RGB}, ${SLOT_GLOW_PEAK_ALPHA})`;
+    slot.animate(
+      [
+        { boxShadow: transparent },
+        { boxShadow: peak, offset: 0.35 },
+        { boxShadow: transparent },
+      ],
+      { duration: SLOT_GLOW_DURATION_MS, easing: "ease-out" }
+    );
+  }
+
+  /**
+   * 着地した実カードを scale 1.07 → 1 に収める。
+   * 飛行クローンではなく実カードへ transform を当てるため、
+   * left/top などのレイアウトには影響しない。
+   */
+  function playSnap(el, zone) {
+    if (zone === "free" || zone === "home") {
+      const slot = el.closest ? el.closest(".slot") : null;
+      if (slot) {
+        playSlotGlow(slot);
+      }
+    }
+    if (typeof el.animate !== "function") {
+      return;
+    }
+    const anim = el.animate(
+      [{ transform: `scale(${SNAP_SCALE_START})` }, { transform: "scale(1)" }],
+      { duration: SNAP_DURATION_MS, easing: SNAP_EASING }
+    );
+    anim.onfinish = () => {
+      anim.cancel();
+    };
+  }
+
+  /** 小破裂を 1 回追加する。同時上限を超えたら何もしない */
+  function playShardBurst(el, suit) {
+    if (shardBursts.length >= MAX_SHARD_BURSTS) {
+      return false;
+    }
+    if (!ensureLandingCanvas()) {
+      return false;
+    }
+    const rect = el.getBoundingClientRect();
+    shardBursts.push({
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+      color: shardColorForSuit(suit),
+      shards: createShards(),
+      age: 0,
+    });
+    landingDebug.activeShardBursts = shardBursts.length;
+    if (landingRafId === null) {
+      landingLastFrame = performance.now();
+      landingRafId = window.requestAnimationFrame(landingTick);
+    }
+    return true;
+  }
+
+  /** 小破裂を 1 フレーム分更新・描画する (重力・残像なし) */
+  function landingTick(now) {
+    landingRafId = null;
+    if (!landingCtx) {
+      shardBursts.length = 0;
+      landingDebug.activeShardBursts = 0;
+      landingLastFrame = null;
+      return;
+    }
+    if (landingLastFrame === null) {
+      landingLastFrame = now;
+    }
+    const dt = Math.min(0.05, Math.max(0, (now - landingLastFrame) / 1000));
+    landingLastFrame = now;
+    const life = SHARD_DURATION_MS / 1000;
+
+    landingCtx.clearRect(0, 0, landingViewWidth, landingViewHeight);
+    landingCtx.lineWidth = SHARD_WIDTH;
+    landingCtx.lineCap = "round";
+    for (let i = shardBursts.length - 1; i >= 0; i--) {
+      const burst = shardBursts[i];
+      burst.age += dt;
+      if (burst.age >= life) {
+        shardBursts.splice(i, 1);
+        continue;
+      }
+      const alpha = shardAlphaAt(burst.age / life);
+      landingCtx.globalAlpha = alpha;
+      landingCtx.strokeStyle = burst.color;
+      for (const shard of burst.shards) {
+        const dx = Math.cos(shard.angle);
+        const dy = Math.sin(shard.angle);
+        const distance = shard.speed * burst.age;
+        const x = burst.x + dx * distance;
+        const y = burst.y + dy * distance;
+        landingCtx.beginPath();
+        landingCtx.moveTo(x, y);
+        landingCtx.lineTo(x + dx * SHARD_LENGTH, y + dy * SHARD_LENGTH);
+        landingCtx.stroke();
+      }
+    }
+    landingCtx.globalAlpha = 1;
+    landingDebug.activeShardBursts = shardBursts.length;
+
+    if (shardBursts.length > 0) {
+      landingRafId = window.requestAnimationFrame(landingTick);
+    } else {
+      landingLastFrame = null;
+      landingCtx.clearRect(0, 0, landingViewWidth, landingViewHeight);
+    }
+  }
+
+  /**
+   * 着地エフェクトを 1 回出す。
+   * フリーセル / ホームセルの着地だけを対象にし、列・無効設定・
+   * reduced-motion では何もしない。
+   */
+  function playLandingEffects(landing) {
+    if (!landing || !animationsEnabled || prefersReducedMotion()) {
+      return false;
+    }
+    const { zone, cardId, rank, suit } = landing;
+    if (zone !== "free" && zone !== "home") {
+      return false;
+    }
+    if (!Number.isInteger(cardId) || !Number.isInteger(rank)) {
+      return false;
+    }
+    const el = cardElById(cardId);
+    if (!el) {
+      return false;
+    }
+
+    landingDebug.last = { zone, rank, cardId, suit };
+    playSnap(el, zone);
+    landingDebug.snap++;
+
+    if (extraEffectFor(zone) === "burst" && playShardBurst(el, suit)) {
+      landingDebug.burst++;
+    }
+    return true;
   }
 
   /* ---------------- 描画 ---------------- */
@@ -2062,7 +2280,7 @@ export function createView() {
     showConfirmRestart,
     resolveConfirmDialog,
     cardElById,
-    burstAtHome,
+    playLandingEffects,
     setAnimationsEnabled,
     startDealAnimation,
     isDealActive,

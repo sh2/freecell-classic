@@ -485,7 +485,21 @@ body {
   z-index: 1400;
 }
 
-/* ---------- パーティクル花火 (ホーム移動) ---------- */
+/* ---------- セル着地の小破裂 (フリーセル / ホーム) ---------- */
+
+/* 勝利花火 (#fx-canvas) とは別レイヤー。盤面より上、#anim-layer より上、
+   勝利花火より下に置き、入力は一切受け取らない */
+#landing-fx-canvas {
+  position: fixed;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1550;
+}
+
+/* ---------- パーティクル花火 (勝利時の仕上げ花火) ---------- */
 
 #fx-canvas {
   position: fixed;

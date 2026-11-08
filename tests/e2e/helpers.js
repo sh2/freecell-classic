@@ -283,6 +283,62 @@ export function hintSheenDebug(page) {
   );
 }
 
+/* ---------------- セル着地エフェクト (landing) ---------------- */
+
+/** セル着地エフェクトのデバッグ情報 (window.__landingFxDebug) を複製して返す */
+export function landingFxDebug(page) {
+  return page.evaluate(() =>
+    window.__landingFxDebug ? JSON.parse(JSON.stringify(window.__landingFxDebug)) : null
+  );
+}
+
+/** #landing-fx-canvas 上の不透明ピクセル数 */
+export function landingFxPixelCount(page) {
+  return page.evaluate(() => {
+    const canvas = document.getElementById("landing-fx-canvas");
+    if (!canvas) {
+      return 0;
+    }
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      return 0;
+    }
+    const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let count = 0;
+    for (let i = 3; i < data.length; i += 4) {
+      if (data[i] > 0) {
+        count++;
+      }
+    }
+    return count;
+  });
+}
+
+/** #landing-fx-canvas に不透明ピクセルが現れるまで待つ */
+export function waitForLandingFxPixels(page, timeout = 2000) {
+  return page.waitForFunction(
+    () => {
+      const canvas = document.getElementById("landing-fx-canvas");
+      if (!canvas) {
+        return false;
+      }
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        return false;
+      }
+      const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      for (let i = 3; i < data.length; i += 4) {
+        if (data[i] > 0) {
+          return true;
+        }
+      }
+      return false;
+    },
+    undefined,
+    { timeout }
+  );
+}
+
 /* ---------------- パーティクル花火 (fx) ---------------- */
 
 /** パーティクル花火の発火回数 (window.__fxDebug.bursts) */

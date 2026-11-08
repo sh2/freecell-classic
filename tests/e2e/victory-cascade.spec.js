@@ -56,8 +56,8 @@ test.describe("勝利時カスケード", () => {
     expect(during.visibleHome).toBe(52 - during.debug.released);
     expect(during.overlayHidden).toBe(true);
     expect(during.clones).toBeGreaterThanOrEqual(during.debug.released);
-    // スタンプ用の DOM 要素は #stamp-canvas だけ (#fx-canvas は既存)
-    expect(during.canvases).toBe(2);
+    // スタンプ用の DOM 要素は #stamp-canvas だけ (#fx-canvas / #landing-fx-canvas は既存)
+    expect(during.canvases).toBe(3);
     expect(await h.stampPixelCount(page)).toBeGreaterThan(0);
 
     // Escape でスキップし、その入力がゲーム操作にならない
