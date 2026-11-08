@@ -24,6 +24,8 @@ import {
   groupForIndex,
   speedRangeForGroup,
   pickBurstColor,
+  particleCountFor,
+  burstScales,
   fadeFactors,
   shouldStartEmber,
   emberColorForProgress,
@@ -70,6 +72,30 @@ describe("fx 調整用定数", () => {
 
   it("同時バースト上限は3", () => {
     expect(MAX_BURSTS).toBe(3);
+  });
+
+  it("粒数倍率は既定で96粒、1.4の二乗で188粒、2.0の二乗で384粒、不正値は等倍", () => {
+    expect(particleCountFor()).toBe(96);
+    expect(particleCountFor(1)).toBe(96);
+    expect(particleCountFor(1.96)).toBe(188);
+    expect(particleCountFor(4)).toBe(384);
+    expect(particleCountFor(0)).toBe(96);
+    expect(particleCountFor(Number.NaN)).toBe(96);
+  });
+
+  it("大きさ倍率は広がりにだけ掛かり、粒と重力は画面幅由来の scale のまま", () => {
+    const standard = burstScales(BASE_CARD_WIDTH, 1);
+    const large = burstScales(BASE_CARD_WIDTH, 2);
+    // 倍率 2.0 でも粒の大きさ・重力に使う scale は標準と同じ
+    expect(large.particleScale).toBe(standard.particleScale);
+    // 広がり (初速) だけが倍率どおり大きくなる
+    expect(large.spreadScale).toBe(standard.spreadScale * 2);
+
+    // 狭い画面では粒と重力は 0.5 倍、広がりは倍率を掛けた 1.0 倍
+    const narrow = burstScales(BASE_CARD_WIDTH / 2, 2);
+    expect(narrow.particleScale).toBe(0.5);
+    expect(narrow.spreadScale).toBe(1);
+    expect(burstScales(BASE_CARD_WIDTH, 0).spreadScale).toBe(1);
   });
 });
 

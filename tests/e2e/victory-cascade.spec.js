@@ -191,6 +191,48 @@ test.describe("勝利時カスケード", () => {
     // 花火中もまだオーバーレイは出ていない
     expect(await h.overlayVisible(page)).toBe(false);
 
+    // 発ごとの記録から、倍率の並び・粒数・間隔・最終発の位置を確認する
+    const log = atFireworks.fireworksLog;
+    expect(log).toHaveLength(20);
+    expect(log.map((fire) => fire.sizeMultiplier)).toEqual([
+      1.0, 1.4, 1.0, 1.0, 1.4, 1.0, 1.0, 1.4, 1.0, 1.0, 1.4, 1.0, 1.0, 1.4, 1.0, 1.0, 1.4,
+      1.0, 1.4, 2.0,
+    ]);
+    expect(log.map((fire) => fire.particleCount)).toEqual(
+      log.map((fire) => Math.round(96 * fire.sizeMultiplier ** 2))
+    );
+    expect(
+      log.filter((fire) => fire.sizeMultiplier === 1.0).every((fire) => fire.particleCount === 96)
+    ).toBe(true);
+    expect(
+      log.filter((fire) => fire.sizeMultiplier === 1.4).every((fire) => fire.particleCount === 188)
+    ).toBe(true);
+    expect(log[19].particleCount).toBe(384);
+
+    // 19発目→20発目だけ約1,000ms、他は約190ms
+    const intervals = log.slice(1).map((fire, index) => fire.firedAt - log[index].firedAt);
+    expect(intervals).toHaveLength(19);
+    for (let i = 0; i < intervals.length - 1; i++) {
+      expect(intervals[i]).toBeGreaterThanOrEqual(120);
+      expect(intervals[i]).toBeLessThanOrEqual(600);
+    }
+    expect(intervals[18]).toBeGreaterThanOrEqual(900);
+    expect(intervals[18]).toBeLessThanOrEqual(1600);
+
+    // 最終発は盤面の左右中央・上端から高さ35%
+    const gameBox = await page.locator("#game").boundingBox();
+    const final = log[19];
+    expect(Math.abs(final.x - (gameBox.x + gameBox.width / 2))).toBeLessThanOrEqual(1);
+    expect(Math.abs(final.y - (gameBox.y + gameBox.height * 0.35))).toBeLessThanOrEqual(1);
+
+    // 倍率 2.0 は広がりにだけ掛かり、粒の大きさ用 scale は標準と同じ
+    const fxScales = await page.evaluate(() => ({
+      particle: window.__fxDebug.lastParticleScale,
+      spread: window.__fxDebug.lastSpreadScale,
+    }));
+    expect(fxScales.particle).toBeGreaterThan(0);
+    expect(fxScales.spread).toBeCloseTo(fxScales.particle * 2, 5);
+
     await h.waitForVictoryEnd(page);
     const after = await h.victoryDebug(page);
     expect(after.fires).toBe(1); // 繰り返し発火しない

@@ -17,6 +17,10 @@ import {
   FIREWORK_DELAY_MS,
   FIREWORK_MARGIN,
   FIREWORK_BURST_LIMIT,
+  FIREWORK_SIZE_MULTIPLIERS,
+  FIREWORK_FINAL_HOLD_MS,
+  FIREWORK_FINAL_X_RATIO,
+  FIREWORK_FINAL_Y_RATIO,
   GRACE_MS,
   CENTER_MARK_MIN_WIDTH,
   buildReleaseSchedule,
@@ -25,6 +29,10 @@ import {
   stepFlight,
   resolveFloorY,
   fireworkPoint,
+  fireworkSizeMultiplier,
+  fireworkParticleMultiplier,
+  finalFireworkPoint,
+  fireworkGapBefore,
 } from "../../src/js/victory-cascade.js";
 
 /** スート s・ランク r のカード id */
@@ -245,5 +253,50 @@ describe("仕上げ花火の位置", () => {
     const point = fireworkPoint(() => 0.5, { left: 0, top: 0, width: 10, height: 10 });
     expect(Number.isFinite(point.x)).toBe(true);
     expect(Number.isFinite(point.y)).toBe(true);
+  });
+});
+
+describe("仕上げ花火の大きさと最終発", () => {
+  const expected = [
+    1.0, 1.4, 1.0, 1.0, 1.4, 1.0, 1.0, 1.4, 1.0, 1.0, 1.4, 1.0, 1.0, 1.4, 1.0, 1.0, 1.4,
+    1.0, 1.4, 2.0,
+  ];
+
+  it("倍率の並びは固定で、標準12・大7・特大1の20発", () => {
+    expect(FIREWORK_SIZE_MULTIPLIERS).toEqual(expected);
+    expect(FIREWORK_SIZE_MULTIPLIERS).toHaveLength(FIREWORK_COUNT);
+    expect(FIREWORK_SIZE_MULTIPLIERS.filter((value) => value === 1.0)).toHaveLength(12);
+    expect(FIREWORK_SIZE_MULTIPLIERS.filter((value) => value === 1.4)).toHaveLength(7);
+    expect(FIREWORK_SIZE_MULTIPLIERS.filter((value) => value === 2.0)).toHaveLength(1);
+  });
+
+  it("発番号 (1始まり) から倍率を返し、範囲外は等倍", () => {
+    for (let fireNumber = 1; fireNumber <= FIREWORK_COUNT; fireNumber++) {
+      expect(fireworkSizeMultiplier(fireNumber)).toBe(expected[fireNumber - 1]);
+    }
+    expect(fireworkSizeMultiplier(0)).toBe(1);
+    expect(fireworkSizeMultiplier(FIREWORK_COUNT + 1)).toBe(1);
+  });
+
+  it("最終発は盤面の左右中央・上端から高さの35%", () => {
+    const rect = { left: 100, top: 50, width: 600, height: 400 };
+    const point = finalFireworkPoint(rect);
+    expect(FIREWORK_FINAL_X_RATIO).toBe(0.5);
+    expect(FIREWORK_FINAL_Y_RATIO).toBe(0.35);
+    expect(point.x).toBeCloseTo(rect.left + rect.width / 2, 5);
+    expect(point.y).toBeCloseTo(rect.top + rect.height * 0.35, 5);
+  });
+
+  it("粒数倍率は大きさ倍率の二乗になる", () => {
+    expect(fireworkParticleMultiplier(1)).toBeCloseTo(1, 10);
+    expect(fireworkParticleMultiplier(5)).toBeCloseTo(1.96, 10);
+    expect(fireworkParticleMultiplier(20)).toBeCloseTo(4, 10);
+  });
+
+  it("最終発の直前だけ1,000ms、それ以外は190ms", () => {
+    expect(FIREWORK_FINAL_HOLD_MS).toBe(1000);
+    expect(fireworkGapBefore(2)).toBe(FIREWORK_INTERVAL_MS);
+    expect(fireworkGapBefore(19)).toBe(FIREWORK_INTERVAL_MS);
+    expect(fireworkGapBefore(FIREWORK_COUNT)).toBe(FIREWORK_FINAL_HOLD_MS);
   });
 });

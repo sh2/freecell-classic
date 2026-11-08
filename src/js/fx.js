@@ -99,7 +99,15 @@ let lastFrameTime = null;
 let resizeBound = false;
 
 /** E2E 検証専用のデバッグ情報 */
-const debug = { bursts: 0, lastScale: 1, lastColor: null, trails: 0 };
+const debug = {
+  bursts: 0,
+  lastScale: 1,
+  lastParticleScale: 1,
+  lastSpreadScale: 1,
+  lastParticleCount: PARTICLE_COUNT,
+  lastColor: null,
+  trails: 0,
+};
 if (typeof window !== "undefined") {
   window.__fxDebug = debug;
 }
@@ -116,6 +124,32 @@ function clamp01(value) {
 export function groupForIndex(index, total = PARTICLE_COUNT) {
   const outlineCount = Math.round(total * OUTLINE_RATIO);
   return index < outlineCount ? "outline" : "inner";
+}
+
+/**
+ * 粒数倍率から実際に出すパーティクル数を返す。
+ * 不正値は等倍として扱う。
+ */
+export function particleCountFor(particleMultiplier = 1) {
+  const multiplier =
+    Number.isFinite(particleMultiplier) && particleMultiplier > 0 ? particleMultiplier : 1;
+  return Math.round(PARTICLE_COUNT * multiplier);
+}
+
+/**
+ * 画面幅と大きさ倍率から、花火に使う scale を返す。
+ * particleScale は粒の大きさ・重力用 (画面幅由来のみ、上限 1)、
+ * spreadScale は初速 (広がり) 用で、大きさ倍率はここにだけ掛ける。
+ */
+export function burstScales(cardWidth = BASE_CARD_WIDTH, sizeMultiplier = 1) {
+  const rawScale = Number.isFinite(cardWidth) && cardWidth > 0 ? cardWidth / BASE_CARD_WIDTH : 1;
+  const particleScale = Math.min(1, rawScale);
+  const multiplier =
+    Number.isFinite(sizeMultiplier) && sizeMultiplier > 0 ? sizeMultiplier : 1;
+  return {
+    particleScale,
+    spreadScale: particleScale * multiplier,
+  };
 }
 
 /** 集団ごとの速さ係数レンジ */
@@ -377,11 +411,20 @@ function drawFrame(now) {
 /**
  * 指定座標 (ビューポート座標) でパーティクル花火を 1 回発火する。
  * cardWidth が基準幅より小さい場合は、広がり・粒・重力を比例縮小する。
+ * options.sizeMultiplier は初速 (広がり) にだけ掛ける大きさ倍率、
+ * options.particleMultiplier は粒数倍率 (既定はいずれも等倍 = 従来挙動)。
+ * 粒の大きさと重力には sizeMultiplier を掛けない。
  * reduced-motion 時、同時バースト上限超過時は何もせず false を返す。
  * maxBursts は 1 回の呼び出しだけ同時上限を引き上げる(既定は MAX_BURSTS)。
  * 勝利時カスケードの仕上げ花火で 20 発を落とさずに上げるための最小拡張。
  */
-export function burst(x, y, cardWidth = BASE_CARD_WIDTH, maxBursts = MAX_BURSTS) {
+export function burst(
+  x,
+  y,
+  cardWidth = BASE_CARD_WIDTH,
+  maxBursts = MAX_BURSTS,
+  options = {}
+) {
   if (prefersReducedMotion()) {
     return false;
   }
@@ -394,15 +437,15 @@ export function burst(x, y, cardWidth = BASE_CARD_WIDTH, maxBursts = MAX_BURSTS)
   if (!ensureCanvas()) {
     return false;
   }
-  const rawScale = Number.isFinite(cardWidth) && cardWidth > 0 ? cardWidth / BASE_CARD_WIDTH : 1;
-  const scale = Math.min(1, rawScale);
+  const { particleScale, spreadScale } = burstScales(cardWidth, options.sizeMultiplier);
+  const particleCount = particleCountFor(options.particleMultiplier);
   const color = pickBurstColor(debug.lastColor);
   const particles = [];
-  for (let i = 0; i < PARTICLE_COUNT; i++) {
-    const group = groupForIndex(i, PARTICLE_COUNT);
+  for (let i = 0; i < particleCount; i++) {
+    const group = groupForIndex(i, particleCount);
     const range = speedRangeForGroup(group);
     const speedFactor = range.min + Math.random() * (range.max - range.min);
-    const speed = SPEED * scale * speedFactor;
+    const speed = SPEED * spreadScale * speedFactor;
     const angle = Math.random() * Math.PI * 2;
     const lifeFactor = 1 - LIFE_JITTER * Math.random();
     const life = (DURATION_MS / 1000) * lifeFactor;
@@ -415,7 +458,7 @@ export function burst(x, y, cardWidth = BASE_CARD_WIDTH, maxBursts = MAX_BURSTS)
       vy: Math.sin(angle) * speed,
       age: 0,
       life,
-      size: PARTICLE_SIZE * scale * (0.75 + Math.random() * 0.5),
+      size: PARTICLE_SIZE * particleScale * (0.75 + Math.random() * 0.5),
       emberThreshold:
         EMBER_THRESHOLD_MIN + Math.random() * (EMBER_THRESHOLD_MAX - EMBER_THRESHOLD_MIN),
       emberStart: null,
@@ -423,9 +466,13 @@ export function burst(x, y, cardWidth = BASE_CARD_WIDTH, maxBursts = MAX_BURSTS)
       nextTrailAt: trailInterval * (0.5 + Math.random() * 0.5),
     });
   }
-  activeBursts.push({ color, particles, scale });
+  // 重力は粒と同じく画面幅由来の scale だけに従わせる
+  activeBursts.push({ color, particles, scale: particleScale });
   debug.bursts++;
-  debug.lastScale = scale;
+  debug.lastScale = particleScale;
+  debug.lastParticleScale = particleScale;
+  debug.lastSpreadScale = spreadScale;
+  debug.lastParticleCount = particleCount;
   debug.lastColor = color;
   if (rafId === null) {
     lastFrameTime = performance.now();

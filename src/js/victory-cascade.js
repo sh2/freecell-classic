@@ -52,6 +52,19 @@ export const FIREWORK_DELAY_MS = 1000;
 /** 花火を打ち上げる盤面内の余白 (px) */
 export const FIREWORK_MARGIN = 40;
 
+/** 仕上げ花火の大きさ倍率。1 発目から 20 発目の順に固定 */
+export const FIREWORK_SIZE_MULTIPLIERS = [
+  1.0, 1.4, 1.0, 1.0, 1.4, 1.0, 1.0, 1.4, 1.0, 1.0, 1.4, 1.0, 1.0, 1.4, 1.0, 1.0, 1.4, 1.0,
+  1.4, 2.0,
+];
+
+/** 最終発の直前だけ空ける「ため」 (ミリ秒) */
+export const FIREWORK_FINAL_HOLD_MS = 1000;
+
+/** 最終発の打ち上げ位置。盤面の左端・上端からの比率 */
+export const FIREWORK_FINAL_X_RATIO = 0.5;
+export const FIREWORK_FINAL_Y_RATIO = 0.35;
+
 /** 仕上げ花火 1 発あたりの同時バースト上限 (既存 fx の上限を回避する) */
 export const FIREWORK_BURST_LIMIT = FIREWORK_COUNT;
 
@@ -213,4 +226,41 @@ export function fireworkPoint(random, rect, margin = FIREWORK_MARGIN) {
     x: rect.left + margin + random() * width,
     y: rect.top + margin + random() * height,
   };
+}
+
+/**
+ * 発番号 (1 始まり) に対応する大きさ倍率を返す。
+ * 範囲外は等倍へフォールバックする。
+ */
+export function fireworkSizeMultiplier(fireNumber) {
+  const value = FIREWORK_SIZE_MULTIPLIERS[Math.round(fireNumber) - 1];
+  return Number.isFinite(value) ? value : 1;
+}
+
+/**
+ * 発番号 (1 始まり) に対応する粒数倍率を返す。
+ * 輪の面積に合わせて密度を保つため、大きさ倍率の二乗にする。
+ */
+export function fireworkParticleMultiplier(fireNumber) {
+  const sizeMultiplier = fireworkSizeMultiplier(fireNumber);
+  return sizeMultiplier * sizeMultiplier;
+}
+
+/**
+ * 最終発の打ち上げ位置を盤面矩形から返す。
+ * 左右中央・上端から高さの 35%。
+ */
+export function finalFireworkPoint(rect) {
+  return {
+    x: rect.left + rect.width * FIREWORK_FINAL_X_RATIO,
+    y: rect.top + rect.height * FIREWORK_FINAL_Y_RATIO,
+  };
+}
+
+/**
+ * 発番号 (1 始まり) の直前の間隔を返す。
+ * 最終発の直前だけ「ため」、それ以外は通常の間隔。
+ */
+export function fireworkGapBefore(fireNumber) {
+  return fireNumber >= FIREWORK_COUNT ? FIREWORK_FINAL_HOLD_MS : FIREWORK_INTERVAL_MS;
 }

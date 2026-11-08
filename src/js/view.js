@@ -9,7 +9,7 @@ import { SUITS, RANKS, NUM_CASCADES, NUM_FREE, NUM_HOME } from "./constants.js";
 import * as rules from "./rules.js";
 import * as gameState from "./game-state.js";
 import { createDragPhysics } from "./drag-physics.js";
-import { burst } from "./fx.js";
+import { burst, particleCountFor } from "./fx.js";
 import {
   MAX_SHARD_BURSTS,
   SHARD_DURATION_MS,
@@ -55,7 +55,6 @@ import {
 import {
   RELEASE_INTERVAL_MS,
   FIREWORK_COUNT,
-  FIREWORK_INTERVAL_MS,
   FIREWORK_DELAY_MS,
   FIREWORK_BURST_LIMIT,
   GRACE_MS,
@@ -76,7 +75,11 @@ import {
   CENTER_MARK_MIN_WIDTH,
   buildReleaseSchedule,
   createFlightState,
+  finalFireworkPoint,
+  fireworkGapBefore,
+  fireworkParticleMultiplier,
   fireworkPoint,
+  fireworkSizeMultiplier,
   initialVelocity,
   resolveFloorY,
   stepFlight,
@@ -123,6 +126,7 @@ export function createView() {
     released: 0, // 今回放出した枚数
     floorTouches: 0, // 今回床に触れたカード数
     fireworks: 0, // 今回打ち上げた仕上げ花火の数
+    fireworksLog: [], // 発ごとの記録 { number, sizeMultiplier, particleMultiplier, particleCount, x, y, firedAt, intervalBeforeMs }
     stamps: 0, // 今回スタンプした回数
     skipped: false, // 今回スキップされたか
     interrupted: 0, // 新規ゲームなどで中断された回数
@@ -1100,12 +1104,34 @@ export function createView() {
     if (gameEl) {
       controller.gameRect = gameEl.getBoundingClientRect();
     }
-    const point = fireworkPoint(Math.random, controller.gameRect);
-    burst(point.x, point.y, controller.cardWidth, FIREWORK_BURST_LIMIT);
+    const fireNumber = controller.fireworksLaunched + 1;
+    const isFinal = fireNumber === FIREWORK_COUNT;
+    const point = isFinal
+      ? finalFireworkPoint(controller.gameRect)
+      : fireworkPoint(Math.random, controller.gameRect);
+    const sizeMultiplier = fireworkSizeMultiplier(fireNumber);
+    const particleMultiplier = fireworkParticleMultiplier(fireNumber);
+    const firedAt = performance.now();
+    burst(point.x, point.y, controller.cardWidth, FIREWORK_BURST_LIMIT, {
+      sizeMultiplier,
+      particleMultiplier,
+    });
+    const previous = victoryDebug.fireworksLog[victoryDebug.fireworksLog.length - 1];
+    victoryDebug.fireworksLog.push({
+      number: fireNumber,
+      sizeMultiplier,
+      particleMultiplier,
+      particleCount: particleCountFor(particleMultiplier),
+      x: point.x,
+      y: point.y,
+      firedAt,
+      intervalBeforeMs: previous ? firedAt - previous.firedAt : null,
+    });
     controller.fireworksLaunched++;
     victoryDebug.fireworks = controller.fireworksLaunched;
     if (controller.fireworksLaunched < FIREWORK_COUNT) {
-      controller.fireworksTimer = setTimeout(launchVictoryFirework, FIREWORK_INTERVAL_MS);
+      const nextNumber = controller.fireworksLaunched + 1;
+      controller.fireworksTimer = setTimeout(launchVictoryFirework, fireworkGapBefore(nextNumber));
     } else {
       controller.fireworksTimer = null;
       maybeFinishVictory();
@@ -1436,6 +1462,7 @@ export function createView() {
     victoryDebug.released = 0;
     victoryDebug.floorTouches = 0;
     victoryDebug.fireworks = 0;
+    victoryDebug.fireworksLog = [];
     victoryDebug.stamps = 0;
     victoryDebug.skipped = false;
     victoryDebug.visualsRemaining = true;
