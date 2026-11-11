@@ -137,15 +137,17 @@ export function setAnimations(page, enabled) {
   return page.evaluate((v) => window.__testApi.setAnimationsEnabled(v), enabled);
 }
 
-/** 移動アニメーションの完了を待つ(飛行クローン・隠しカードがなくなったら解決)。
+/** 移動アニメーションの完了を待つ(飛行クローン・隠しカード・
+ *  reduced-motion 時のウェイトがすべてなくなったら解決)。
  *  勝利時カスケードのクローンと、演出中に隠れるホームの実カードは対象外。 */
-export function waitForAnimationsDone(page, timeout = 3000) {
+export function waitForAnimationsDone(page, timeout = 5000) {
   return page.waitForFunction(
     () =>
       document.querySelectorAll("#anim-layer .card:not(.victory-clone)").length === 0 &&
       [...document.querySelectorAll("#game .card.anim-hidden")].filter(
         (el) => !el.closest("#home-cells")
-      ).length === 0,
+      ).length === 0 &&
+      !(window.__animDebug && window.__animDebug.pending),
     undefined,
     { timeout }
   );

@@ -99,6 +99,10 @@ export function createSolverClient({ app, view }) {
       stopWorker();
     }
     if (autoSolving) {
+      // ウェイト中に OFF/新規ゲームされたとき、古い再生コールバックを残さない
+      if (typeof view.cancelPendingWait === "function") {
+        view.cancelPendingWait();
+      }
       finishAutoSolve();
     } else {
       clearReplayTimer();

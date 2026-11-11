@@ -963,6 +963,7 @@ export function createView() {
     clearHint,
     setAutoSolving,
     runAfterAnimations: cardAnimations.runAfterAnimations,
+    cancelPendingWait: cardAnimations.cancelPendingWait,
     getCardRects: cardAnimations.getCardRects,
     getDragCardRects: cardAnimations.getDragCardRects,
     animateDragLayerBack: cardAnimations.animateDragLayerBack,

@@ -106,7 +106,8 @@ export function createApp({ view, deps = {} }) {
     }
     // 全カードではなく、この段で動くカードの矩形だけを実測する
     const origins = view.getCardRects([card.id]);
-    view.setNextRenderAnimation([{ cardIds: [card.id], origins }]);
+    // 飛行が走らない環境でもアニメーション時と同じ間隔で次段へ進む
+    view.setNextRenderAnimation([{ cardIds: [card.id], origins }], { pace: true });
     onMoveSucceeded(landingInfoFor("home", card));
     view.runAfterAnimations(chainAutoNext);
   }
@@ -149,7 +150,8 @@ export function createApp({ view, deps = {} }) {
     const res = gameState.attemptMove(state, from, destZone, destIndex);
     if (res.ok) {
       const origins = view.getCardRects(groupIds);
-      view.setNextRenderAnimation([{ cardIds: groupIds, origins }]);
+      // 自動解答の再生も、飛行が走らない環境では本来の飛行時間を待つ
+      view.setNextRenderAnimation([{ cardIds: groupIds, origins }], { pace: true });
       onMoveSucceeded(landingInfoFor(destZone, group[0]));
     }
     return res;

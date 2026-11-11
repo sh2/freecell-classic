@@ -317,6 +317,7 @@ test.describe("ダブルクリック自動移動", () => {
     expect((await h.state(page)).selected).toEqual({ zone: "free", index: 0, cardIndex: 0 });
     // 自動移動で 2C と AC をホームへ送る(成功手で判定がリセットされる)
     await page.click("#auto-move-btn");
+    await h.waitForAnimationsDone(page);
     expect((await h.state(page)).moveCount).toBe(2);
     // 直後に同じ 6S をクリック → 選択されるだけで自動移動しない
     await h.clickCard(page, 23);
@@ -345,6 +346,7 @@ test.describe("自動移動", () => {
       foundations: [[], [1, 5], [2, 6], [3, 7]], // ♣ 空 / ♦2 / ♥2 / ♠2
     });
     await page.click("#auto-move-btn");
+    await h.waitForAnimationsDone(page);
     let s = await h.state(page);
     expect(s.moveCount).toBe(3);
     expect(s.foundations[0]).toEqual([0, 4, 8]); // AC, 2C, 3C
@@ -381,6 +383,7 @@ test.describe("自動移動", () => {
       foundations: [[], [], [], []],
     });
     await page.click("#auto-move-btn");
+    await h.waitForAnimationsDone(page);
     const s = await h.state(page);
     expect(s.moveCount).toBe(2);
     expect(s.foundations[0]).toEqual([0, 4]);
