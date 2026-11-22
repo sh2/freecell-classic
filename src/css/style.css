@@ -664,6 +664,48 @@ body {
   }
 }
 
+/* ---------- 大きい画面 ---------- */
+
+@media (min-width: 801px) {
+  :root {
+    --card-w: max(88px, min(108px, calc(44px + 5vw), calc((100dvh - 500px) * 0.45)));
+    --card-h: calc(var(--card-w) * 1.409);
+  }
+
+  #game {
+    width: 100%;
+    max-width: calc(var(--card-w) * 8 + 176px);
+  }
+
+  .card .corner .rank {
+    font-size: calc(var(--card-w) * 0.2);
+  }
+
+  .card .corner .suit {
+    font-size: calc(var(--card-w) * 0.191);
+  }
+
+  .card .center-mark .center-rank {
+    font-size: calc(var(--card-w) * 0.382);
+  }
+
+  .card .center-mark .center-suit {
+    font-size: calc(var(--card-w) * 0.245);
+  }
+
+  .slot.home::after,
+  .slot.free::after {
+    font-size: calc(var(--card-w) * 0.291);
+  }
+}
+
+@media (min-width: 801px) and (max-height: 700px) {
+  #game {
+    /* 13枚の列でもフッターを画面内に収める */
+    padding-bottom: 32px;
+  }
+}
+
 /* ---------- 小さい画面 ---------- */
 
 @media (max-width: 800px) {
@@ -848,4 +890,3 @@ body {
 #game.auto-solving .slot.free::after {
   color: #d4d4d4;
 }
-
