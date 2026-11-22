@@ -220,7 +220,8 @@ export function createHintView({
   /* ---------------- ヒントボタンの進捗表示 ---------------- */
 
   // 押下直後はスピナーのみで、一定時間経過しても計算が続いている場合だけ
-  // ボタンの文字を段階表示(高速探索中…/安全探索中…)へ切り替える。
+  // ボタンの文字を段階表示(探索中)へ切り替える。高速/安全の区別は
+  // 利用者に示す必要がないため、段階が進んでも表示は変えない。
   // 即答する盤面(キャッシュヒット・高速で解ける配置)では遅延内に完了するため
   // 文字は一度も変わらずチラつかない。自動解答ラベルはヒント中は変えない。
   const HINT_STAGE_DELAY_MS = 300;
@@ -228,10 +229,9 @@ export function createHintView({
   let hintStageText = null; // 遅延確定前に届いた最新の段階テキスト
 
   function stageLabelFor(stage) {
-    if (stage === "safe" || stage === "safe2") {
-      return "安全探索中…";
-    }
-    return "高速探索中…";
+    // 段階(高速/安全)は内部状態としてのみ使い、表示は「探索中」に統一する
+    void stage;
+    return "探索中";
   }
 
   /** ヒントボタンへ段階テキストを反映する(遅延確定後に呼ばれる) */
@@ -288,7 +288,7 @@ export function createHintView({
           if (label.dataset.prevText === undefined) {
             label.dataset.prevText = label.textContent;
           }
-          label.textContent = "計算中…";
+          label.textContent = "計算中";
         } else {
           // 完了・キャンセル時は必ず「自動解答」に戻す
           label.textContent = "自動解答";
@@ -311,12 +311,12 @@ export function createHintView({
     if (mode === "auto") {
       const label = document.getElementById("auto-solve-label");
       if (label) {
-        if (stage === "safe" || stage === "safe2") {
-          label.textContent = "安全探索中…";
-        } else if (stage === "replay") {
-          label.textContent = "自動解答中…";
+        // 高速/安全の区別は利用者に示さず「探索中」に統一する。
+        // 再生段階だけは計算と区別して「解答中」と表示する
+        if (stage === "replay") {
+          label.textContent = "解答中";
         } else {
-          label.textContent = "高速探索中…";
+          label.textContent = "探索中";
         }
       }
       return;

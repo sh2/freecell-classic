@@ -157,7 +157,7 @@ test.describe("ソルバー", () => {
     await h.openGame(page, 1);
     // 段階表示は自動解答(トグル)でのみ行われる。ヒントではラベルは変わらない
     await page.locator("#auto-solve-toggle").check();
-    await expect(page.locator("#auto-solve-label")).toHaveText("安全探索中…");
+    await expect(page.locator("#auto-solve-label")).toHaveText("探索中");
     await expect(page.locator("#toast")).toContainText("探索上限内では解答を発見できませんでした", { timeout: 1000 });
     // 終了後はトグルがOFFに戻る
     await expect(page.locator("#auto-solve-toggle")).not.toBeChecked({ timeout: 2000 });
@@ -244,8 +244,9 @@ test.describe("ソルバー", () => {
     await expect(page.locator("#hint-btn")).toHaveClass(/busy/);
     await expect(page.locator("#hint-btn")).toHaveAttribute("aria-busy", "true");
     // 遅延(300ms)確定後に段階表示へ切り替わる
-    await expect(page.locator("#hint-btn")).toHaveText("高速探索中…", { timeout: 2000 });
-    await expect(page.locator("#hint-btn")).toHaveText("安全探索中…", { timeout: 2000 });
+    await expect(page.locator("#hint-btn")).toHaveText("探索中", { timeout: 2000 });
+    // 安全段階へ進んでも表示は「探索中」のまま変わらない
+    await expect(page.locator("#hint-btn")).toHaveText("探索中", { timeout: 2000 });
     // ヒント中も自動解答ラベルは変化しない
     await expect(page.locator("#auto-solve-label")).toHaveText("自動解答");
     // 完了したらハイライト+トーストを表示し、ボタンは「ヒント」へ戻る
@@ -378,7 +379,7 @@ test.describe("ソルバー", () => {
     await h.openGame(page, 1);
     await h.setBoard(page, h.nearWinBoard());
     await page.click("#hint-btn");
-    await expect(page.locator("#toast")).toContainText("ソルバーでエラーが発生しました", {
+    await expect(page.locator("#toast")).toContainText("エラーが発生しました", {
       timeout: 2000,
     });
     // busy 表示が解除され、ボタンは「ヒント」へ戻る
@@ -392,7 +393,7 @@ test.describe("ソルバー", () => {
     await h.openGame(page, 1);
     await h.setBoard(page, h.nearWinBoard());
     await page.locator("#auto-solve-toggle").check();
-    await expect(page.locator("#toast")).toContainText("ソルバーでエラーが発生しました", {
+    await expect(page.locator("#toast")).toContainText("エラーが発生しました", {
       timeout: 2000,
     });
     // ブロックが解除され、トグルとラベルは初期状態へ戻る

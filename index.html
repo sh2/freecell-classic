@@ -16,11 +16,11 @@
 </head>
 <body>
   <header class="toolbar">
-    <h1>フリーセル</h1>
+    <h1 class="visually-hidden">フリーセル</h1>
     <div class="controls">
       <div class="control-group" aria-label="新しいゲーム">
         <button id="new-game-btn" title="ランダムなゲーム番号で新しいゲームを開始">新しいゲーム</button>
-        <label class="seed-label" title="ゲーム番号を指定して開始">
+        <label class="seed-label" title="ゲーム番号を指定して開始する">
           No.<input id="seed-input" type="number" min="1" value="1" />
         </label>
         <button id="start-game-btn" title="入力した番号でゲームを開始">開始</button>
@@ -31,22 +31,22 @@
       </div>
       <div class="control-group" aria-label="ホーム回収">
         <button id="auto-move-btn" title="安全にホームへ送れるカードをまとめて送る">ホームへ送る</button>
-        <label class="auto-toggle" title="操作のたびに、安全なカードを自動でホームへ送ります">
+        <label class="auto-toggle" title="操作のたびに、安全なカードを自動でホームへ送る">
           <input id="auto-move-toggle" type="checkbox" checked />
           <span>自動で送る</span>
         </label>
       </div>
       <div class="control-group" aria-label="ヒントと自動解答">
         <button id="hint-btn" title="現在の盤面から次の一手を計算して表示する" aria-live="polite">ヒント</button>
-        <label class="auto-toggle" title="解を探索して1手ずつ自動で進めます">
+        <label class="auto-toggle" title="解を探索して1手ずつ自動で進める">
           <input id="auto-solve-toggle" type="checkbox" />
           <span id="auto-solve-label">自動解答</span>
         </label>
       </div>
-      <div class="control-group control-group--info" aria-label="情報">
-        <span id="move-counter" class="move-counter">手数: 0</span>
-        <span id="timer" class="timer">0:00</span>
-      </div>
+    </div>
+    <div class="control-group control-group--info" aria-label="情報">
+      <span id="move-counter" class="move-counter">手数: 0</span>
+      <span id="timer" class="timer">0:00</span>
     </div>
   </header>
 
@@ -94,7 +94,7 @@
 
   <div id="overlay" class="overlay hidden">
     <div class="overlay-card">
-      <h2 id="overlay-title">クリア！</h2>
+      <h2 id="overlay-title">🎉 クリア！</h2>
       <p id="overlay-message"></p>
       <button id="overlay-undo" class="hidden">1手戻す</button>
       <button id="overlay-new-game">新しいゲーム</button>

@@ -131,7 +131,7 @@ export function createSolverClient({ app, view }) {
     app.setAutoMoveEnabled(false);
     autoSolving = true;
     app.setAutoSolving(true);
-    view.setSolverStage("replay"); // ラベルを「自動解答中…」に
+    view.setSolverStage("replay"); // ラベルを「解答中」に
 
     const step = () => {
       if (!autoSolving || !replayMoves) {
@@ -335,7 +335,7 @@ export function createSolverClient({ app, view }) {
       } else {
         setBusy(false);
       }
-      view.showToast("ソルバーでエラーが発生しました");
+      view.showToast("エラーが発生しました");
     };
     worker.postMessage({
       type: "solve",

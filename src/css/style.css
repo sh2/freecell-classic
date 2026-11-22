@@ -35,25 +35,29 @@ body {
   overflow-x: auto;
 }
 
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* ---------- ツールバー ---------- */
 
 .toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 8px 16px;
   padding: 10px 18px;
   background: rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(4px);
-}
-
-.toolbar h1 {
-  margin: 0;
-  font-size: 1.25rem;
-  letter-spacing: 0.12em;
-  color: var(--gold);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .controls {
@@ -61,6 +65,8 @@ body {
   align-items: center;
   flex-wrap: wrap;
   gap: 10px 14px;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .control-group {
@@ -78,6 +84,18 @@ body {
   background: transparent;
   border-color: transparent;
   padding-inline: 2px;
+  flex: 0 0 auto;
+  align-self: flex-start;
+  margin-top: 7px;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .control-group--info {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
 }
 
 .controls button {
@@ -136,22 +154,21 @@ body {
   accent-color: var(--gold);
 }
 
-/* 自動解答ラベル: テキストが変化(計算中…/安全探索中…/自動解答中…)しても
-   ボタン位置が動かないよう幅を固定する */
+/* 自動解答ラベル: テキストが変化(計算中/探索中/解答中)しても
+   ボタン位置が動かないよう幅を固定する(最長は通常表示「自動解答」の
+   4文字に合わせて 4em) */
 .auto-toggle #auto-solve-label {
-  min-width: 6em;
+  min-width: 4em;
   text-align: center;
   display: inline-block;
 }
 
-/* ヒントボタン: 計算中はスピナーを表示し、遅延後に文字を段階表示
-   (高速探索中…/安全探索中…)へ切り替える。静止時から最小幅を固定して、
-   押下・段階切替・完了復元のどの遷移でもツールバーの配置が動かないようにする
-   (自動解答ラベルの min-width 固定と同じ方針) */
+/* ヒントボタン: 計算中はスピナーを表示し、遅延後に文字を「探索中」へ
+   切り替える。探索中(スピナー付き)の幅に合わせて最小幅を確保し、
+   計算開始でツールバーが動かないようにする */
 #hint-btn {
-  min-width: 10.5em;
+  min-width: 6.5em;
 }
-
 #hint-btn.busy {
   display: inline-flex;
   align-items: center;
@@ -831,5 +848,4 @@ body {
 #game.auto-solving .slot.free::after {
   color: #d4d4d4;
 }
-
 
