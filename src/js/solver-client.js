@@ -20,6 +20,9 @@ export const REPLAY_WAIT_MS = 250;
  *  通常プレイの自動ホーム送りと同じく待たずに次へ連鎖させる */
 export const REPLAY_HOME_WAIT_MS = 0;
 
+/** 再描画で飛行完了コールバックが破棄された場合の再確認間隔(ms) */
+const REPLAY_FLIGHT_CHECK_MS = 250;
+
 /** 直前に再生した手の後に置く待ち時間(ms)を返す。
  *  ホーム行き(destZone === "home")は待ちゼロ、それ以外は 250ms。
  *  手がない(再生の先頭)場合も待たない。 */
@@ -40,6 +43,7 @@ export function createSolverClient({ app, view }) {
   let replayTimer = null;
   let replayIndex = 0;
   let replayMoves = null;
+  let replaySession = null;
   let savedAutoMoveEnabled = true;
 
   /** 現在の盤面をカード id の配列へ変換する(solver の入力形式) */
@@ -87,6 +91,7 @@ export function createSolverClient({ app, view }) {
     view.setSolverBusy(false, "auto");
     clearReplayTimer();
     replayMoves = null;
+    replaySession = null;
   }
 
   /** トグルOFFや新規ゲームで自動解答を中断する */
@@ -103,6 +108,7 @@ export function createSolverClient({ app, view }) {
     } else {
       clearReplayTimer();
       replayMoves = null;
+      replaySession = null;
       replayIndex = 0;
     }
   }
@@ -126,6 +132,8 @@ export function createSolverClient({ app, view }) {
     }
     replayMoves = moves;
     replayIndex = 0;
+    const session = {};
+    replaySession = session;
     // 自動ホーム送りは無効化してソルバーの手順通りに進める（元の設定を保存）
     savedAutoMoveEnabled = app.getAutoMoveEnabled();
     app.setAutoMoveEnabled(false);
@@ -134,7 +142,7 @@ export function createSolverClient({ app, view }) {
     view.setSolverStage("replay"); // ラベルを「解答中」に
 
     const step = () => {
-      if (!autoSolving || !replayMoves) {
+      if (!autoSolving || replaySession !== session) {
         return;
       }
       if (replayIndex >= replayMoves.length) {
@@ -158,17 +166,31 @@ export function createSolverClient({ app, view }) {
       // 飛行完了後、直前に再生した手の種類に応じて待ってから次へ。
       // ホーム行きは通常プレイの自動ホーム送りと同じく待たずに連鎖させる
       const waitMs = replayWaitMs(mv);
-      view.runAfterAnimations(() => {
-        if (!autoSolving) {
+      let flightFinished = false;
+      const onFlightFinished = () => {
+        if (flightFinished || !autoSolving || replaySession !== session) {
           return;
         }
+        flightFinished = true;
         clearReplayTimer();
         if (waitMs === REPLAY_HOME_WAIT_MS) {
           step();
         } else {
           replayTimer = setTimeout(step, waitMs);
         }
-      });
+      };
+      // render がコールバックを破棄しても、飛行がなくなれば再登録時に即実行される。
+      // 飛行が継続中なら再登録するため、長い飛行を時間だけで打ち切らない。
+      const checkFlight = () => {
+        if (flightFinished || !autoSolving || replaySession !== session) {
+          return;
+        }
+        view.runAfterAnimations(onFlightFinished);
+        if (!flightFinished && replaySession === session) {
+          replayTimer = setTimeout(checkFlight, REPLAY_FLIGHT_CHECK_MS);
+        }
+      };
+      checkFlight();
     };
     step();
   }
@@ -355,6 +377,7 @@ export function createSolverClient({ app, view }) {
     // ヒント(またはアイドル)のみが対象となり mode は "hint" で固定できる。
     clearReplayTimer();
     replayMoves = null;
+    replaySession = null;
     replayIndex = 0;
     activeRequest = null;
     stopWorker();

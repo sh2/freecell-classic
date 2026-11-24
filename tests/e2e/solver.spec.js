@@ -18,6 +18,51 @@ test.describe("ソルバー", () => {
     };
   }
 
+  /** リサイズによる飛行中断を繰り返せる、勝利まで 5 手の固定解 */
+  async function installResizeWorker(page) {
+    await page.addInitScript(() => {
+      const moves = [
+        { cardId: 51, count: 1, destZone: "free", destIndex: 2 },
+        { cardId: 51, count: 1, destZone: "free", destIndex: 0 },
+        { cardId: 51, count: 1, destZone: "free", destIndex: 2 },
+        { cardId: 47, count: 1, destZone: "home", destIndex: 3 },
+        { cardId: 51, count: 1, destZone: "home", destIndex: 3 },
+      ];
+      window.Worker = class MockSolverWorker {
+        postMessage(message) {
+          setTimeout(() => {
+            if (!this.terminated) {
+              this.onmessage?.({
+                data: { type: "result", requestId: message.requestId, result: { solved: true, moves } },
+              });
+            }
+          }, 0);
+        }
+        terminate() {
+          this.terminated = true;
+        }
+      };
+    });
+  }
+
+  /** 指定手の飛行を停止し、resize のデバウンス中にも飛行状態を維持する */
+  async function pauseReplayFlight(page, moveCount) {
+    await page.waitForFunction((count) => {
+      if (window.__testApi.snapshot().moveCount !== count) {
+        return false;
+      }
+      const clone = document.querySelector("#anim-layer .card");
+      const animations = clone?.getAnimations() ?? [];
+      if (animations.length === 0) {
+        return false;
+      }
+      for (const animation of animations) {
+        animation.pause();
+      }
+      return true;
+    }, moveCount);
+  }
+
   /** 列の上を横切る飛行を作る盤面。c0 の 6♠ を c7 の 7♦ へ移す手をモックで返す。
    *  中央の列はすべて 6 枚以上にして、飛行カードがカード面の上を通るようにする */
   function flyoverBoard() {
@@ -270,6 +315,110 @@ test.describe("ソルバー", () => {
     const s = await h.state(page);
     expect(s.won).toBe(true);
     expect(s.foundations[3]).toHaveLength(13);
+  });
+
+  test("自動解答: 飛行中と待機中の連続リサイズ後も各手を一度ずつ再生する", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 1080 });
+    await installResizeWorker(page);
+    await h.openGame(page, 1);
+    await h.setAutoMove(page, false);
+    await h.setAnimations(page, true);
+    await h.setBoard(page, twoMoveBoard());
+    await page.locator("#auto-solve-toggle").check();
+
+    await pauseReplayFlight(page, 1);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await expect(page.locator("#anim-layer .card")).toHaveCount(0);
+    expect((await h.state(page)).moveCount).toBe(1);
+    await page.setViewportSize({ width: 1280, height: 760 });
+
+    await pauseReplayFlight(page, 2);
+    await page.setViewportSize({ width: 1280, height: 700 });
+    await expect(page.locator("#anim-layer .card")).toHaveCount(0);
+    await expect.poll(async () => (await h.state(page)).won, { timeout: 10000 }).toBe(true);
+    const s = await h.state(page);
+    expect(s.moveCount).toBe(5);
+    expect(s.freeCells).toEqual([null, null, null, null]);
+    expect(s.cascades.every((pile) => pile.length === 0)).toBe(true);
+    expect(s.foundations).toEqual(
+      Array.from({ length: 4 }, (_, suit) => Array.from({ length: 13 }, (_, rank) => rank * 4 + suit))
+    );
+    await expect(page.locator("#auto-solve-toggle")).not.toBeChecked();
+    await expect(page.locator("#auto-move-toggle")).not.toBeChecked();
+    await expect(page.locator("#auto-solve-label")).toHaveText("自動解答");
+  });
+
+  for (const action of ["トグルOFF", "新規ゲーム"]) {
+    test(`自動解答: リサイズで飛行が中断した直後に${action}すると再開しない`, async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height: 1080 });
+      await installResizeWorker(page);
+      await h.openGame(page, 1);
+      await h.setAutoMove(page, true);
+      await h.setAnimations(page, true);
+      await h.setBoard(page, twoMoveBoard());
+      await page.locator("#auto-solve-toggle").check();
+      await pauseReplayFlight(page, 1);
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await expect(page.locator("#anim-layer .card")).toHaveCount(0);
+
+      if (action === "トグルOFF") {
+        await page.locator("#auto-solve-toggle").uncheck();
+      } else {
+        // 自動解答中の新規ゲームボタンは UI から無効。イベント経路の後始末を検証する。
+        await page.locator("#new-game-btn").dispatchEvent("click");
+      }
+      const stopped = await h.state(page);
+      await page.waitForTimeout(800);
+      const after = await h.state(page);
+      expect(after.moveCount).toBe(stopped.moveCount);
+      expect(after.cascades).toEqual(stopped.cascades);
+      expect(after.freeCells).toEqual(stopped.freeCells);
+      await expect(page.locator("#game")).not.toHaveClass(/auto-solving/);
+      await expect(page.locator("#auto-solve-toggle")).not.toBeChecked();
+      await expect(page.locator("#auto-move-toggle")).toBeChecked();
+      await expect(page.locator("#auto-solve-label")).toHaveText("自動解答");
+    });
+  }
+
+  test("自動解答: ゲームNo.1を縦方向に連続リサイズしても解の手数でクリアする", async ({ page }) => {
+    test.setTimeout(180000);
+    await page.addInitScript(() => {
+      const NativeWorker = window.Worker;
+      window.Worker = class RecordingWorker {
+        constructor(url, options) {
+          this.inner = new NativeWorker(url, options);
+          this.inner.onmessage = (event) => {
+            if (event.data.type === "result") {
+              window.__solutionMoves = event.data.result.moves;
+            }
+            this.onmessage?.(event);
+          };
+          this.inner.onerror = (event) => this.onerror?.(event);
+        }
+        postMessage(message) {
+          this.inner.postMessage(message);
+        }
+        terminate() {
+          this.inner.terminate();
+        }
+      };
+    });
+    await page.setViewportSize({ width: 1280, height: 1080 });
+    await h.openGame(page, 1);
+    await h.setAnimations(page, true);
+    await page.locator("#auto-solve-toggle").check();
+    for (const [index, height] of [900, 760, 700].entries()) {
+      await pauseReplayFlight(page, index + 1);
+      await page.setViewportSize({ width: 1280, height });
+      await expect(page.locator("#anim-layer .card")).toHaveCount(0);
+    }
+    await expect.poll(async () => (await h.state(page)).won, { timeout: 170000 }).toBe(true);
+    const s = await h.state(page);
+    expect(s.moveCount).toBe(await page.evaluate(() => window.__solutionMoves.length));
+    expect([...s.foundations].sort((a, b) => a[0] - b[0])).toEqual(
+      Array.from({ length: 4 }, (_, suit) => Array.from({ length: 13 }, (_, rank) => rank * 4 + suit))
+    );
+    await expect(page.locator("#auto-solve-toggle")).not.toBeChecked();
   });
 
   test("自動解答: トグルON中は盤面操作がブロックされる", async ({ page }) => {
