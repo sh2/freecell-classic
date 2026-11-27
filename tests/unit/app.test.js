@@ -254,6 +254,51 @@ describe("createApp: 勝利メッセージ", () => {
   });
 });
 
+describe("createApp: クリア集計", () => {
+  it("勝利演出の開始時に局ごとに 1 回送り、演出の完了や盤面再描画では送らない", () => {
+    const view = createMockView();
+    const deps = createFakeDeps();
+    deps.sendBeacon = vi.fn();
+    let finishVictory;
+    view.startVictoryCascade = vi.fn((state, onFinish) => {
+      finishVictory = onFinish;
+      return true;
+    });
+    const app = createApp({ view, deps });
+    app.startGame(1);
+    app.setWinBoard();
+    expect(deps.sendBeacon).toHaveBeenCalledTimes(1);
+    expect(deps.sendBeacon).toHaveBeenCalledWith("clear");
+    finishVictory();
+    app.setWinBoard();
+    expect(deps.sendBeacon).toHaveBeenCalledTimes(1);
+
+    app.restartGame();
+    app.setWinBoard();
+    expect(deps.sendBeacon).toHaveBeenCalledTimes(2);
+  });
+
+  it("自動解答の最終手でも送り、送信例外があっても勝利表示する", () => {
+    const view = createMockView();
+    const deps = createFakeDeps();
+    deps.sendBeacon = vi.fn(() => { throw new Error("blocked"); });
+    const app = createApp({ view, deps });
+    app.startGame(1);
+    app.setAutoSolving(true);
+    app.setBoard({
+      freeCells: [51],
+      foundations: Array.from({ length: 4 }, (_, suit) =>
+        Array.from({ length: suit === 3 ? 12 : 13 }, (_, rank) => rank * 4 + suit)
+      ),
+    });
+    expect(app.applyMoveAnimated({ zone: "free", index: 0 }, "home", 3).ok).toBe(true);
+    expect(deps.sendBeacon).toHaveBeenCalledOnce();
+    expect(deps.sendBeacon).toHaveBeenCalledWith("clear");
+    expect(app.getState().won).toBe(true);
+    expect(view.calls).toContain("win:1:1:0:00");
+  });
+});
+
 describe("createApp: 自動でホームへ送る(毎手)", () => {
   it("成功手の直後に自動移動が発動する(既定オン)", () => {
     const view = createMockView();

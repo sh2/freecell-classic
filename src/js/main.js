@@ -11,11 +11,13 @@ import { createView } from "./view.js";
 import { createApp } from "./app.js";
 import { createInteractions } from "./interactions.js";
 import { createSolverClient } from "./solver-client.js";
+import { sendAnalyticsBeacon } from "./analytics-beacon.js";
 
 let appInstance = null;
 let solverClient = null;
 
 export function init() {
+  sendAnalyticsBeacon("view");
   const view = createView();
   const app = createApp({ view });
   const interactions = createInteractions({ view, app });

@@ -10,6 +10,7 @@ import { NUM_CASCADES, NUM_FREE, NUM_HOME, MAX_GAME_NUMBER } from "./constants.j
 import { dealGame } from "./deal.js";
 import * as rules from "./rules.js";
 import * as gameState from "./game-state.js";
+import { sendAnalyticsBeacon } from "./analytics-beacon.js";
 
 /** アプリを生成する。view は必須、deps はテスト用の差し替え依存 */
 export function createApp({ view, deps = {} }) {
@@ -17,6 +18,7 @@ export function createApp({ view, deps = {} }) {
   const setIntervalFn = deps.setInterval ?? ((fn, ms) => setInterval(fn, ms));
   const clearIntervalFn = deps.clearInterval ?? ((handle) => clearInterval(handle));
   const random = deps.random ?? (() => Math.random());
+  const sendBeacon = deps.sendBeacon ?? sendAnalyticsBeacon;
 
   let state = null; // ゲーム状態(状態遷移層 game-state.js が所有・更新する)
   let timerStart = null; // タイマー状態(ゲーム状態には含めない)
@@ -24,6 +26,7 @@ export function createApp({ view, deps = {} }) {
   let interactions = null; // mount() で登録される入力層
   let autoMoveEnabled = true; // 成功手の直後に安全なカードを自動でホームへ送るか
   let autoSolving = false; // 自動解答中は手動操作をブロックする
+  let clearBeaconSent = false;
 
   /* ---------------- タイマー ---------------- */
 
@@ -251,6 +254,14 @@ export function createApp({ view, deps = {} }) {
     if (!gameState.checkWin(state)) {
       return;
     }
+    if (!clearBeaconSent) {
+      clearBeaconSent = true;
+      try {
+        sendBeacon("clear");
+      } catch {
+        // 集計の失敗は勝利処理を妨げない。
+      }
+    }
     // 経過時間の最終表示は timerStart を残したまま行う
     if (timerHandle) {
       clearIntervalFn(timerHandle);
@@ -286,6 +297,7 @@ export function createApp({ view, deps = {} }) {
 
   function startGame(num) {
     state = gameState.createState(num, dealGame(num));
+    clearBeaconSent = false;
     const seedInput = view.seedInput();
     if (seedInput) {
       seedInput.value = num;
