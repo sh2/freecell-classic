@@ -22,15 +22,32 @@ export function createCardAnimations({
   cardElById,
   getDragLayer,
   prefersReducedMotion,
+  // タイマーは単体テストで差し替え可能にする(既定はブラウザーの setTimeout)
+  setTimeoutFn = (fn, ms) => setTimeout(fn, ms),
+  clearTimeoutFn = (handle) => clearTimeout(handle),
 }) {
   let animLayer = null;
   let armedSteps = []; // 次の render 後に再生するアニメーション手順の予約
+  let armedPace = false; // 飛行しなかったときに本来の飛行時間だけ待つか
   let activeFlight = null; // 飛行中のアニメーション { animations, hiddenEls }
+  let paceTimer = null; // 飛行しなかった段のウェイト用タイマー
+  let paceActive = false; // ウェイト中(この間のコールバックは予約する)
   let afterCallbacks = []; // 飛行完了後に呼ぶコールバック(自動移動の連鎖用)
   let animGen = 0; // 再描画などで古い手順の連鎖を中断するための世代トークン
   let animationsEnabled =
     typeof matchMedia === "undefined" || !matchMedia("(prefers-reduced-motion: reduce)").matches;
   let deal = null; // 進行中の配布アニメーション
+
+  // E2E テスト用: 飛行・ウェイト・保留コールバックのいずれかが残っているか
+  if (typeof window !== "undefined") {
+    window.__animDebug = {
+      lastPaceMs: 0, // 直近に設定したウェイト(ms)
+      paceCount: 0, // ウェイトを開始した回数
+      get pending() {
+        return activeFlight !== null || paceActive;
+      },
+    };
+  }
 
   // スナップ対象の実カードに付けた will-change を管理する(B)。
   // 同じカードを続けて動かしても古いタイマーが新しい指定を消さないよう、
@@ -87,6 +104,7 @@ export function createCardAnimations({
         beforeDisableCleanup();
       }
       armedSteps = [];
+      armedPace = false;
       finishDeal({ forced: true });
       cancelActiveFlight();
       clearAllSnapWillChange();
@@ -125,9 +143,12 @@ export function createCardAnimations({
     return rects;
   }
 
-  /** 次に render() した直後に再生するアニメーション手順を予約する */
-  function setNextRenderAnimation(steps) {
-    armedSteps = animationsEnabled ? steps : [];
+  /** 次に render() した直後に再生するアニメーション手順を予約する。
+   *  opts.pace が true のとき、飛行が実際に走らなかった段では
+   *  本来の飛行時間ぶんだけ後続コールバックを遅らせる(自動送り・自動解答用)。 */
+  function setNextRenderAnimation(steps, { pace = false } = {}) {
+    armedSteps = steps;
+    armedPace = pace;
   }
 
   /** 飛行時間は距離に比例(近いほど速い、150〜400ms に clamp) */
@@ -135,11 +156,71 @@ export function createCardAnimations({
     return Math.min(400, Math.max(150, Math.round(dist * 0.45)));
   }
 
+  /** 予約済みステップの「本来の飛行時間」を求める。
+   *  複数枚の段では全カードの飛行完了を待つのと同じく最大値を返す。
+   *  render 後(移動先のレイアウト確定後)に呼ぶ。 */
+  function plannedFlightDurationMs(steps) {
+    let maxMs = 0;
+    for (const step of steps) {
+      for (const cardId of step.cardIds) {
+        const origin = step.origins ? step.origins[cardId] : null;
+        if (!origin) {
+          continue;
+        }
+        const el = cardElById(cardId);
+        if (!el) {
+          continue;
+        }
+        const dest = el.getBoundingClientRect();
+        const dist = Math.hypot(dest.left - origin.left, dest.top - origin.top);
+        maxMs = Math.max(maxMs, flightDuration(dist));
+      }
+    }
+    return maxMs;
+  }
+
+  /** 飛行が走らなかった段のウェイトを破棄する */
+  function cancelPendingPace() {
+    if (paceTimer !== null) {
+      clearTimeoutFn(paceTimer);
+      paceTimer = null;
+    }
+    paceActive = false;
+  }
+
+  /** 飛行が走らなかった段のウェイトを開始する。
+   *  ウェイト中のコールバックは登録順に予約し、時間が来たらまとめて呼ぶ。 */
+  function beginPace(durationMs) {
+    cancelPendingPace();
+    if (!(durationMs > 0)) {
+      return;
+    }
+    const gen = animGen;
+    paceActive = true;
+    if (typeof window !== "undefined" && window.__animDebug) {
+      window.__animDebug.lastPaceMs = durationMs;
+      window.__animDebug.paceCount++;
+    }
+    paceTimer = setTimeoutFn(() => {
+      paceTimer = null;
+      if (!paceActive || gen !== animGen) {
+        return;
+      }
+      paceActive = false;
+      const callbacks = afterCallbacks;
+      afterCallbacks = [];
+      for (const cb of callbacks) {
+        cb();
+      }
+    }, durationMs);
+  }
+
   /** 進行中の飛行アニメーションを即座に確定する(再描画の直前に呼ぶ)。
-   *  連鎖待ちのコールバックも破棄する(新しい描画が優先) */
+   *  連鎖待ちのコールバック・ウェイトも破棄する(新しい描画が優先) */
   function cancelActiveFlight() {
     animGen++;
     afterCallbacks = [];
+    cancelPendingPace();
     if (activeFlight) {
       for (const anim of activeFlight.animations) {
         anim.cancel();
@@ -155,14 +236,21 @@ export function createCardAnimations({
     }
   }
 
-  /** 現在の飛行(および連鎖待ち)がすべて完了した後に fn を呼ぶ。
-   *  飛行中でなければ即座に呼ぶ */
+  /** 現在の飛行・ウェイト(および連鎖待ち)がすべて完了した後に fn を呼ぶ。
+   *  飛行中でもウェイト中でもなければ即座に呼ぶ */
   function runAfterAnimations(fn) {
-    if (!activeFlight) {
+    if (!activeFlight && !paceActive) {
       fn();
       return;
     }
     afterCallbacks.push(fn);
+  }
+
+  /** 保留中のウェイトとコールバックを破棄する(自動解答の途中OFFなど)。
+   *  進行中の飛行そのものは止めない。 */
+  function cancelPendingWait() {
+    afterCallbacks = [];
+    cancelPendingPace();
   }
 
   /** render 後に予約済みステップを順に再生する(自動移動は 1 枚ずつ梯子状に送る)。
@@ -172,12 +260,21 @@ export function createCardAnimations({
    *  - 元の位置で一瞬消えてから出現するチラつきも防ぐ(描画前にクローンを置く)
    *  飛行だけを順番に開始する。 */
   function playArmedAnimations() {
-    if (armedSteps.length === 0 || !animationsEnabled) {
-      armedSteps = [];
+    const steps = armedSteps;
+    const pace = armedPace;
+    armedSteps = [];
+    armedPace = false;
+    if (steps.length === 0) {
       return;
     }
-    const steps = armedSteps;
-    armedSteps = [];
+    // 飛行が走らない環境(reduced-motion・アニメーション無効)では、
+    // ペーシング指定のある段だけ本来の飛行時間をウェイトで代替する。
+    if (!animationsEnabled) {
+      if (pace) {
+        beginPace(plannedFlightDurationMs(steps));
+      }
+      return;
+    }
     const gen = animGen;
     const layer = getAnimLayer();
     const flight = { animations: [], hiddenEls: [] };
@@ -223,6 +320,9 @@ export function createCardAnimations({
       plans.push(cards);
     }
     if (plans.every((cards) => cards.length === 0)) {
+      if (pace) {
+        beginPace(plannedFlightDurationMs(steps));
+      }
       return; // 飛行対象が無い
     }
     activeFlight = flight;
@@ -477,6 +577,7 @@ export function createCardAnimations({
     getDragCardRects,
     setNextRenderAnimation,
     cancelActiveFlight,
+    cancelPendingWait,
     runAfterAnimations,
     playArmedAnimations,
     animateDragLayerBack,

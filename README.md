@@ -32,7 +32,9 @@ python3 -m http.server 8000
 - クリック / ドラッグ&ドロップ操作
 - ダブルクリックでの自動移動(ホーム → フリーセル)
 - カード移動アニメーション(移動元の位置から目的地までクローンが飛行。
-  自動ホーム送りは 1 枚ずつ順番に送る。`prefers-reduced-motion` 環境では無効)
+  自動ホーム送りは 1 枚ずつ順番に送る。`prefers-reduced-motion` 環境では無効。
+  飛行が無効な環境でも、自動ホーム送りと自動解答の再生は本来の飛行時間ぶん
+  間隔を空けて進み、単発の手動移動は即時のまま)
 - 配布アニメーション(新しいゲームの開始時、フリーセルとホームセルの間
   (トップ行)に置いた起点から、52 枚が表向きのカードとして現れ、
   横一列ずつ各列へ順に飛んで配られる。約 0.9 秒。配布中に
@@ -85,7 +87,8 @@ python3 -m http.server 8000
   (高速探索中…/安全探索中…)を表示する)
 - 自動解答(トグル ON で解を探索し、1 手ずつ飛行アニメーションで自動再生。
   直前に再生した手がホーム行きなら待たずに連鎖し、列移動・フリーセルなら
-  250ms 間隔で進む。完了後は手動クリアと同じ流れで勝利時カスケード →
+  250ms 間隔で進む。飛行が無効な環境でも、各手の本来の飛行時間に同じ
+  待ちを足した間隔で進む。完了後は手動クリアと同じ流れで勝利時カスケード →
   クリアモーダルへ進む。
   探索中・再生中は盤面操作をブロックし、トグル OFF で中断できる。
   解のキャッシュがあれば再探索せずに再生する)
@@ -121,13 +124,14 @@ python3 -m http.server 8000
   - `src/js/victory-cascade.js`: 勝利時カスケード(調整用定数・放出順・飛行物理・花火の倍率 / ため / 位置の純粋ヘルパー)
   - `src/js/view.js`: カード DOM の差分描画、盤面ジオメトリ、`render()`、
     コントロールの有効 / 無効同期、トースト / オーバーレイ / 確認ダイアログ、
-    ドラッグ & ドロップの DOM と物理、各表示モジュールの接続(991行)
+    ドラッグ & ドロップの DOM と物理、各表示モジュールの接続(992行)
   - `src/js/hint-view.js`: ヒント発光、`showHint` / `clearHint`、
     ヒント / 自動解答の busy / stage 表示
   - `src/js/landing-effects.js`: 着地スナップ、スロットグロー、
     小破裂と canvas プール
   - `src/js/card-animations.js`: カード移動の飛行、配布アニメーション、
-    着地時の will-change、矩形取得、ドラッグ中断時の戻し
+    飛行が無効なときの自動シーケンスのペーシング、着地時の will-change、
+    矩形取得、ドラッグ中断時の戻し
   - `src/js/victory-cascade-view.js`: 勝利時カスケードの状態、カード面
     スプライト、stamp / trail canvas、入力抑止、放出・花火・片付け
   - `src/js/interactions.js`: クリック・Pointer Events・ドラッグ&ドロップ
@@ -137,7 +141,7 @@ python3 -m http.server 8000
   - E2E は責務別に `tests/e2e/gameplay.spec.js`、`rules-ui.spec.js`、
     `solver.spec.js`、`rendering.spec.js` と効果別スペック
     (`deal-animation` / `drag-physics` / `hint-sheen` /
-    `victory-cascade`)に分かれている。
+    `reduced-motion-pacing` / `victory-cascade`)に分かれている。
   - E2E の共通処理は `tests/e2e/helpers/` の `state.js`、`effects.js`、
     `canvas.js`、`input.js` に分けている。
 

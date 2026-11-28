@@ -43,9 +43,10 @@ function createMockView() {
     failFeedback() {
       calls.push("failFeedback");
     },
-    setNextRenderAnimation(steps) {
+    setNextRenderAnimation(steps, options = {}) {
       calls.push(`anim:${steps.length}`);
       view.lastAnimSteps = steps;
+      view.lastAnimOptions = options;
       view.animStepsHistory.push(steps.map((s) => s.cardIds.slice()));
     },
     runAfterAnimations(fn) {
@@ -447,6 +448,21 @@ describe("createApp: 移動アニメーションの予約", () => {
     app.setAutoMoveEnabled(false);
     app.attemptMove({ zone: "cascade", index: 0, cardIndex: 5 }, "cascade", 4);
     expect(view.calls).toContain("anim:1");
+  });
+
+  it("ペーシングは自動送りの段だけに指定され、手動移動には付かない", () => {
+    const view = createMockView();
+    const deps = createFakeDeps();
+    const app = createApp({ view, deps });
+    app.startGame(1);
+    app.setAutoMoveEnabled(false);
+    firstMove(app);
+    expect(view.lastAnimOptions.pace).toBeFalsy();
+
+    // 自動移動ボタンの連鎖は本来の飛行時間でペーシングする
+    app.startGame(12);
+    expect(app.autoMoveHome()).toBe(true);
+    expect(view.lastAnimOptions).toEqual({ pace: true });
   });
 
   it("ダブルクリック自動移動では対象カード + 連鎖カードのステップが予約される", () => {
